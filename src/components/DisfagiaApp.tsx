@@ -1,0 +1,850 @@
+import React, { useState } from 'react';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, BarChart, Bar, ResponsiveContainer } from 'recharts';
+import { User, Camera, Upload, MessageCircle, AlertTriangle, CheckCircle, Calendar, TrendingUp, FileText, Phone } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
+import { Textarea } from '@/components/ui/textarea';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
+
+const DisfagiaApp = () => {
+  const [currentUser, setCurrentUser] = useState<string | null>(null);
+  const [currentView, setCurrentView] = useState('login');
+  const [triageData, setTriageData] = useState({});
+  const [dailyRecords, setDailyRecords] = useState([
+    { date: '2025-08-10', risco: 2, sintomas: 1, consistencia: 'normal' },
+    { date: '2025-08-11', risco: 3, sintomas: 2, consistencia: 'modificada' },
+    { date: '2025-08-12', risco: 1, sintomas: 0, consistencia: 'normal' },
+    { date: '2025-08-13', risco: 4, sintomas: 3, consistencia: 'líquida' },
+    { date: '2025-08-14', risco: 2, sintomas: 1, consistencia: 'pastosa' },
+    { date: '2025-08-15', risco: 1, sintomas: 0, consistencia: 'normal' },
+    { date: '2025-08-16', risco: 2, sintomas: 1, consistencia: 'normal' }
+  ]);
+
+  const patients = [
+    { id: 1, name: 'Maria Silva', age: 78, lastUpdate: '2025-08-16', riskLevel: 'baixo', caregiver: 'Ana Silva (filha)' },
+    { id: 2, name: 'João Santos', age: 65, lastUpdate: '2025-08-16', riskLevel: 'alto', caregiver: 'Carlos Santos (filho)' },
+    { id: 3, name: 'Rosa Lima', age: 82, lastUpdate: '2025-08-15', riskLevel: 'médio', caregiver: 'Home Care Plus' }
+  ];
+
+  const LoginScreen = () => (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-primary/5 flex items-center justify-center p-4">
+      <Card className="w-full max-w-md shadow-xl">
+        <CardContent className="p-8">
+          <div className="text-center mb-8">
+            <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center mx-auto mb-4">
+              <User className="h-8 w-8 text-primary-foreground" />
+            </div>
+            <h1 className="text-2xl font-bold text-foreground mb-2">DisfagiaMonitor</h1>
+            <p className="text-muted-foreground">Cuidado especializado ao seu alcance</p>
+          </div>
+          
+          <div className="space-y-4">
+            <Button 
+              onClick={() => {setCurrentUser('cuidador'); setCurrentView('dashboard')}}
+              className="w-full h-12"
+              size="lg"
+            >
+              <User className="h-5 w-5 mr-2" />
+              Entrar como Cuidador
+            </Button>
+            
+            <Button 
+              onClick={() => {setCurrentUser('profissional'); setCurrentView('dashboard')}}
+              className="w-full h-12 bg-medical-green hover:bg-medical-green/90"
+              size="lg"
+            >
+              <FileText className="h-5 w-5 mr-2" />
+              Entrar como Fonoaudiólogo
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+
+  const CaregiverDashboard = () => (
+    <div className="min-h-screen bg-background">
+      <header className="bg-card shadow-sm border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+                <User className="h-5 w-5 text-primary-foreground" />
+              </div>
+              <h1 className="text-xl font-semibold text-foreground">DisfagiaMonitor</h1>
+            </div>
+            <div className="flex items-center space-x-4">
+              <span className="text-sm text-muted-foreground">Cuidador: Ana Silva</span>
+              <Button 
+                onClick={() => setCurrentView('login')}
+                variant="ghost"
+                size="sm"
+              >
+                Sair
+              </Button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <nav className="bg-card border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex space-x-8">
+            {['dashboard', 'triagem', 'registro', 'historico', 'comunicacao'].map((view) => (
+              <Button
+                key={view}
+                onClick={() => setCurrentView(view)}
+                variant="ghost"
+                className={`rounded-none border-b-2 ${
+                  currentView === view 
+                    ? 'border-primary text-primary' 
+                    : 'border-transparent text-muted-foreground hover:text-foreground hover:border-muted'
+                }`}
+              >
+                {view === 'dashboard' && 'Resumo'}
+                {view === 'triagem' && 'Triagem'}
+                {view === 'registro' && 'Registro Diário'}
+                {view === 'historico' && 'Histórico'}
+                {view === 'comunicacao' && 'Comunicação'}
+              </Button>
+            ))}
+          </div>
+        </div>
+      </nav>
+
+      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        {currentView === 'dashboard' && <CaregiverDashboardContent />}
+        {currentView === 'triagem' && <TriagemForm />}
+        {currentView === 'registro' && <DailyRecordForm />}
+        {currentView === 'historico' && <HistoryView />}
+        {currentView === 'comunicacao' && <CommunicationView />}
+      </main>
+    </div>
+  );
+
+  const CaregiverDashboardContent = () => (
+    <div className="px-4 py-6 sm:px-0">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <CheckCircle className="h-8 w-8 text-medical-green" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-muted-foreground">Status Atual</p>
+                <p className="text-2xl font-semibold text-foreground">Baixo Risco</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <Calendar className="h-8 w-8 text-primary" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-muted-foreground">Última Avaliação</p>
+                <p className="text-2xl font-semibold text-foreground">Hoje</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <TrendingUp className="h-8 w-8 text-medical-green" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-muted-foreground">Tendência</p>
+                <p className="text-2xl font-semibold text-foreground">Melhorando</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Evolução do Risco - Últimos 7 dias</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={200}>
+              <LineChart data={dailyRecords}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="date" tickFormatter={(value) => new Date(value).getDate().toString()} />
+                <YAxis domain={[0, 5]} />
+                <Tooltip labelFormatter={(value) => new Date(value as string).toLocaleDateString()} />
+                <Line type="monotone" dataKey="risco" stroke="#ef4444" strokeWidth={2} name="Nível de Risco" />
+              </LineChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Ações Rápidas</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              <Button 
+                onClick={() => setCurrentView('registro')}
+                variant="outline"
+                className="w-full justify-start h-auto p-4"
+              >
+                <Calendar className="h-5 w-5 text-primary mr-3" />
+                <span>Fazer Registro de Hoje</span>
+              </Button>
+              <Button 
+                onClick={() => setCurrentView('comunicacao')}
+                variant="outline"
+                className="w-full justify-start h-auto p-4"
+              >
+                <MessageCircle className="h-5 w-5 text-medical-green mr-3" />
+                <span>Falar com Fonoaudiólogo</span>
+              </Button>
+              <Button 
+                variant="outline"
+                className="w-full justify-start h-auto p-4"
+              >
+                <Phone className="h-5 w-5 text-medical-red mr-3" />
+                <span>Emergência: (11) 9999-9999</span>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Card className="mt-6 bg-medical-amber-light border-medical-amber">
+        <CardContent className="p-4">
+          <div className="flex items-start">
+            <AlertTriangle className="h-5 w-5 text-medical-amber mt-0.5" />
+            <div className="ml-3">
+              <h4 className="text-sm font-medium text-medical-amber">Orientação do Fonoaudiólogo</h4>
+              <p className="text-sm text-medical-amber mt-1">
+                Continue oferecendo alimentos pastosos. Evite líquidos finos. Próxima reavaliação em 3 dias.
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+
+  const TriagemForm = () => {
+    const [currentQuestion, setCurrentQuestion] = useState(0);
+    const [answers, setAnswers] = useState<Record<string, number>>({});
+
+    const questions = [
+      {
+        id: 'tosse',
+        question: 'O paciente tosse ou engasga durante ou após as refeições?',
+        options: [
+          { value: 0, label: 'Nunca' },
+          { value: 1, label: 'Raramente' },
+          { value: 2, label: 'Às vezes' },
+          { value: 3, label: 'Frequentemente' },
+          { value: 4, label: 'Sempre' }
+        ]
+      },
+      {
+        id: 'voz',
+        question: 'A voz fica molhada ou rouca após comer ou beber?',
+        options: [
+          { value: 0, label: 'Nunca' },
+          { value: 1, label: 'Raramente' },
+          { value: 2, label: 'Às vezes' },
+          { value: 3, label: 'Frequentemente' },
+          { value: 4, label: 'Sempre' }
+        ]
+      },
+      {
+        id: 'escape',
+        question: 'Há escape de alimento ou líquido pela boca durante a alimentação?',
+        options: [
+          { value: 0, label: 'Nunca' },
+          { value: 1, label: 'Raramente' },
+          { value: 2, label: 'Às vezes' },
+          { value: 3, label: 'Frequentemente' },
+          { value: 4, label: 'Sempre' }
+        ]
+      },
+      {
+        id: 'deglutir',
+        question: 'O paciente precisa fazer esforço ou múltiplas tentativas para engolir?',
+        options: [
+          { value: 0, label: 'Nunca' },
+          { value: 1, label: 'Raramente' },
+          { value: 2, label: 'Às vezes' },
+          { value: 3, label: 'Frequentemente' },
+          { value: 4, label: 'Sempre' }
+        ]
+      },
+      {
+        id: 'pneumonia',
+        question: 'O paciente teve pneumonia recorrente nos últimos 6 meses?',
+        options: [
+          { value: 0, label: 'Não' },
+          { value: 4, label: 'Sim' }
+        ]
+      }
+    ];
+
+    const handleAnswer = (value: number) => {
+      const newAnswers = { ...answers, [questions[currentQuestion].id]: value };
+      setAnswers(newAnswers);
+
+      if (currentQuestion < questions.length - 1) {
+        setCurrentQuestion(currentQuestion + 1);
+      } else {
+        // Calcular score
+        const totalScore = Object.values(newAnswers).reduce((sum, val) => sum + val, 0);
+        let riskLevel = 'baixo';
+        if (totalScore >= 12) riskLevel = 'alto';
+        else if (totalScore >= 6) riskLevel = 'médio';
+
+        alert(`Triagem concluída! Pontuação: ${totalScore}\nNível de risco: ${riskLevel}`);
+        setCurrentView('dashboard');
+      }
+    };
+
+    return (
+      <div className="px-4 py-6 sm:px-0">
+        <div className="max-w-2xl mx-auto">
+          <Card className="shadow-lg">
+            <CardContent className="p-8">
+              <div className="mb-6">
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-2xl font-bold text-foreground">Triagem de Disfagia</h2>
+                  <span className="text-sm text-muted-foreground">
+                    Pergunta {currentQuestion + 1} de {questions.length}
+                  </span>
+                </div>
+                <Progress value={((currentQuestion + 1) / questions.length) * 100} className="h-2" />
+              </div>
+
+              <div className="mb-8">
+                <h3 className="text-lg font-medium text-foreground mb-6">
+                  {questions[currentQuestion].question}
+                </h3>
+                
+                <div className="space-y-3">
+                  {questions[currentQuestion].options.map((option) => (
+                    <Button
+                      key={option.value}
+                      onClick={() => handleAnswer(option.value)}
+                      variant="outline"
+                      className="w-full justify-start h-auto p-4 text-left"
+                    >
+                      {option.label}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+
+              {currentQuestion > 0 && (
+                <Button
+                  onClick={() => setCurrentQuestion(currentQuestion - 1)}
+                  variant="ghost"
+                >
+                  ← Pergunta anterior
+                </Button>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  };
+
+  const DailyRecordForm = () => {
+    const [formData, setFormData] = useState({
+      sintomas: [] as string[],
+      consistencia: '',
+      observacoes: '',
+      videoFile: null,
+      photoFile: null
+    });
+
+    const sintomas = [
+      'Tosse durante alimentação',
+      'Engasgo',
+      'Voz molhada após comer',
+      'Escape de alimento pela boca',
+      'Dificuldade para engolir',
+      'Recusa alimentar',
+      'Demora excessiva para comer'
+    ];
+
+    const consistencias = [
+      'Normal',
+      'Pastosa',
+      'Líquida modificada',
+      'Líquida fina'
+    ];
+
+    const handleSubmit = () => {
+      alert('Registro salvo com sucesso!');
+      setCurrentView('dashboard');
+    };
+
+    return (
+      <div className="px-4 py-6 sm:px-0">
+        <div className="max-w-2xl mx-auto">
+          <Card className="shadow-lg">
+            <CardHeader>
+              <CardTitle className="text-2xl">Registro Diário</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div>
+                <Label className="text-base font-medium mb-3 block">
+                  Sintomas observados hoje (marque todos que se aplicam):
+                </Label>
+                <div className="space-y-3">
+                  {sintomas.map((sintoma) => (
+                    <div key={sintoma} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={sintoma}
+                        onCheckedChange={(checked) => {
+                          if (checked) {
+                            setFormData({...formData, sintomas: [...formData.sintomas, sintoma]});
+                          } else {
+                            setFormData({...formData, sintomas: formData.sintomas.filter(s => s !== sintoma)});
+                          }
+                        }}
+                      />
+                      <Label htmlFor={sintoma} className="text-sm">{sintoma}</Label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <Label className="text-base font-medium mb-3 block">
+                  Consistência dos alimentos oferecidos:
+                </Label>
+                <RadioGroup 
+                  value={formData.consistencia} 
+                  onValueChange={(value) => setFormData({...formData, consistencia: value})}
+                >
+                  {consistencias.map((consistencia) => (
+                    <div key={consistencia} className="flex items-center space-x-2">
+                      <RadioGroupItem value={consistencia} id={consistencia} />
+                      <Label htmlFor={consistencia} className="text-sm">{consistencia}</Label>
+                    </div>
+                  ))}
+                </RadioGroup>
+              </div>
+
+              <div>
+                <Label htmlFor="observacoes" className="text-base font-medium mb-2 block">
+                  Observações adicionais:
+                </Label>
+                <Textarea
+                  id="observacoes"
+                  rows={4}
+                  placeholder="Descreva qualquer comportamento ou situação relevante..."
+                  value={formData.observacoes}
+                  onChange={(e) => setFormData({...formData, observacoes: e.target.value})}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <Label className="text-base font-medium mb-2 block">
+                    Vídeo da alimentação (opcional):
+                  </Label>
+                  <div className="border-2 border-dashed border-muted rounded-lg p-6 text-center hover:border-primary/50 transition-colors cursor-pointer">
+                    <Camera className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                    <p className="text-sm text-muted-foreground">Toque para gravar vídeo</p>
+                  </div>
+                </div>
+
+                <div>
+                  <Label className="text-base font-medium mb-2 block">
+                    Foto do prato (opcional):
+                  </Label>
+                  <div className="border-2 border-dashed border-muted rounded-lg p-6 text-center hover:border-primary/50 transition-colors cursor-pointer">
+                    <Upload className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                    <p className="text-sm text-muted-foreground">Toque para tirar foto</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex space-x-4">
+                <Button
+                  onClick={handleSubmit}
+                  className="flex-1"
+                >
+                  Salvar Registro
+                </Button>
+                <Button
+                  onClick={() => setCurrentView('dashboard')}
+                  variant="outline"
+                >
+                  Cancelar
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  };
+
+  const HistoryView = () => (
+    <div className="px-4 py-6 sm:px-0">
+      <Card className="shadow-lg mb-6">
+        <CardHeader>
+          <CardTitle className="text-2xl">Histórico de Evolução</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div>
+              <h3 className="text-lg font-medium text-foreground mb-4">Nível de Risco ao Longo do Tempo</h3>
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart data={dailyRecords}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="date" tickFormatter={(value) => new Date(value).toLocaleDateString()} />
+                  <YAxis domain={[0, 5]} />
+                  <Tooltip labelFormatter={(value) => new Date(value as string).toLocaleDateString()} />
+                  <Legend />
+                  <Line type="monotone" dataKey="risco" stroke="#ef4444" strokeWidth={2} name="Nível de Risco" />
+                  <Line type="monotone" dataKey="sintomas" stroke="#f59e0b" strokeWidth={2} name="Sintomas" />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+
+            <div>
+              <h3 className="text-lg font-medium text-foreground mb-4">Consistência dos Alimentos</h3>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={dailyRecords}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="date" tickFormatter={(value) => new Date(value).getDate().toString()} />
+                  <YAxis />
+                  <Tooltip labelFormatter={(value) => new Date(value as string).toLocaleDateString()} />
+                  <Bar dataKey="sintomas" fill="hsl(var(--primary))" name="Quantidade de Sintomas" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="shadow-lg">
+        <CardHeader>
+          <CardTitle>Registros Recentes</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {dailyRecords.slice(-5).reverse().map((record, index) => (
+              <Card key={index} className="border">
+                <CardContent className="p-4">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <p className="font-medium text-foreground">{new Date(record.date).toLocaleDateString()}</p>
+                      <p className="text-sm text-muted-foreground">Consistência: {record.consistencia}</p>
+                      <p className="text-sm text-muted-foreground">Sintomas observados: {record.sintomas}</p>
+                    </div>
+                    <Badge 
+                      variant={
+                        record.risco <= 1 ? "default" :
+                        record.risco <= 3 ? "secondary" : "destructive"
+                      }
+                      className={
+                        record.risco <= 1 ? 'bg-medical-green text-medical-green-foreground' :
+                        record.risco <= 3 ? 'bg-medical-amber text-medical-amber-foreground' :
+                        'bg-medical-red text-medical-red-foreground'
+                      }
+                    >
+                      {record.risco <= 1 ? 'Baixo Risco' :
+                       record.risco <= 3 ? 'Médio Risco' : 'Alto Risco'}
+                    </Badge>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+
+  const CommunicationView = () => (
+    <div className="px-4 py-6 sm:px-0">
+      <div className="max-w-4xl mx-auto">
+        <Card className="shadow-lg">
+          <CardHeader>
+            <CardTitle className="text-2xl">Comunicação com Profissional</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-2">
+                <div className="border rounded-lg h-96 p-4 mb-4 overflow-y-auto bg-muted/30">
+                  <div className="space-y-4">
+                    <div className="flex items-start space-x-3">
+                      <div className="w-8 h-8 bg-medical-green rounded-full flex items-center justify-center">
+                        <User className="h-4 w-4 text-medical-green-foreground" />
+                      </div>
+                      <Card className="flex-1">
+                        <CardContent className="p-3">
+                          <p className="text-sm font-medium text-foreground">Dra. Fernanda (Fonoaudióloga)</p>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            Olá Ana! Vi que o João teve alguns episódios de tosse ontem. Como ele está hoje?
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-1">Hoje, 09:30</p>
+                        </CardContent>
+                      </Card>
+                    </div>
+
+                    <div className="flex items-start space-x-3 justify-end">
+                      <Card className="bg-primary text-primary-foreground max-w-xs">
+                        <CardContent className="p-3">
+                          <p className="text-sm">
+                            Bom dia, Doutora! Hoje ele está melhor. Ofereci a papinha pastosa como orientado e não houve tosse.
+                          </p>
+                          <p className="text-xs text-primary-foreground/70 mt-1">Hoje, 10:15</p>
+                        </CardContent>
+                      </Card>
+                      <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
+                        <User className="h-4 w-4 text-primary-foreground" />
+                      </div>
+                    </div>
+
+                    <div className="flex items-start space-x-3">
+                      <div className="w-8 h-8 bg-medical-green rounded-full flex items-center justify-center">
+                        <User className="h-4 w-4 text-medical-green-foreground" />
+                      </div>
+                      <Card className="flex-1">
+                        <CardContent className="p-3">
+                          <p className="text-sm font-medium text-foreground">Dra. Fernanda</p>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            Ótimo! Continue com a consistência pastosa por mais 3 dias. Se não houver sintomas, podemos tentar alimentos mais sólidos.
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-1">Hoje, 10:45</p>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex space-x-2">
+                  <Input
+                    placeholder="Digite sua mensagem..."
+                    className="flex-1"
+                  />
+                  <Button>
+                    Enviar
+                  </Button>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <Card className="bg-primary/5 border-primary/20">
+                  <CardContent className="p-4">
+                    <h4 className="font-medium text-primary mb-2">Profissional Responsável</h4>
+                    <p className="text-sm text-foreground">Dra. Fernanda Silva</p>
+                    <p className="text-sm text-muted-foreground">CRFa 12345-SP</p>
+                    <p className="text-sm text-muted-foreground">Fonoaudióloga</p>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-medical-amber-light border-medical-amber/20">
+                  <CardContent className="p-4">
+                    <h4 className="font-medium text-medical-amber mb-2">Próxima Consulta</h4>
+                    <p className="text-sm text-foreground">25 de Agosto, 2025</p>
+                    <p className="text-sm text-muted-foreground">14:30 - Teleconsulta</p>
+                  </CardContent>
+                </Card>
+
+                <Button className="w-full bg-medical-green hover:bg-medical-green/90">
+                  Agendar Consulta
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+
+  const ProfessionalDashboard = () => (
+    <div className="min-h-screen bg-background">
+      <header className="bg-card shadow-sm border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-medical-green rounded-lg flex items-center justify-center">
+                <FileText className="h-5 w-5 text-medical-green-foreground" />
+              </div>
+              <h1 className="text-xl font-semibold text-foreground">DisfagiaMonitor Pro</h1>
+            </div>
+            <div className="flex items-center space-x-4">
+              <span className="text-sm text-muted-foreground">Dra. Fernanda Silva - CRFa 12345-SP</span>
+              <Button 
+                onClick={() => setCurrentView('login')}
+                variant="ghost"
+                size="sm"
+              >
+                Sair
+              </Button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <div className="px-4 py-6 sm:px-0">
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold text-foreground mb-2">Dashboard Profissional</h2>
+            <p className="text-muted-foreground">Gerencie seus pacientes e acompanhe a evolução</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center">
+                  <div className="flex-shrink-0">
+                    <User className="h-8 w-8 text-primary" />
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-muted-foreground">Total de Pacientes</p>
+                    <p className="text-2xl font-semibold text-foreground">24</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center">
+                  <div className="flex-shrink-0">
+                    <AlertTriangle className="h-8 w-8 text-medical-red" />
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-muted-foreground">Alto Risco</p>
+                    <p className="text-2xl font-semibold text-foreground">3</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center">
+                  <div className="flex-shrink-0">
+                    <MessageCircle className="h-8 w-8 text-medical-green" />
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-muted-foreground">Mensagens Pendentes</p>
+                    <p className="text-2xl font-semibold text-foreground">7</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center">
+                  <div className="flex-shrink-0">
+                    <Calendar className="h-8 w-8 text-primary" />
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-muted-foreground">Consultas Hoje</p>
+                    <p className="text-2xl font-semibold text-foreground">5</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <Card className="shadow-lg">
+            <CardHeader>
+              <CardTitle>Pacientes Monitorados</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-border">
+                  <thead className="bg-muted/50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                        Paciente
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                        Cuidador
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                        Última Atualização
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                        Nível de Risco
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                        Ações
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-card divide-y divide-border">
+                    {patients.map((patient) => (
+                      <tr key={patient.id} className="hover:bg-muted/30">
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div>
+                            <div className="text-sm font-medium text-foreground">{patient.name}</div>
+                            <div className="text-sm text-muted-foreground">{patient.age} anos</div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
+                          {patient.caregiver}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
+                          {new Date(patient.lastUpdate).toLocaleDateString()}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <Badge 
+                            className={
+                              patient.riskLevel === 'baixo' ? 'bg-medical-green text-medical-green-foreground' :
+                              patient.riskLevel === 'médio' ? 'bg-medical-amber text-medical-amber-foreground' :
+                              'bg-medical-red text-medical-red-foreground'
+                            }
+                          >
+                            {patient.riskLevel}
+                          </Badge>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                          <Button variant="link" size="sm" className="text-primary">Ver Detalhes</Button>
+                          <Button variant="link" size="sm" className="text-medical-green">Mensagem</Button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </main>
+    </div>
+  );
+
+  if (currentView === 'login') {
+    return <LoginScreen />;
+  }
+
+  if (currentUser === 'profissional') {
+    return <ProfessionalDashboard />;
+  }
+
+  return <CaregiverDashboard />;
+};
+
+export default DisfagiaApp;
