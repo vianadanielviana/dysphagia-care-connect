@@ -169,18 +169,6 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onAuthSuccess }) => {
     }
   };
 
-  const handleAdminLogin = async () => {
-    // Apenas preenche os campos com as credenciais do admin
-    setEmail('viana.vianadaniel@outlook.com');
-    setPassword('123qwe.');
-    setUserType('fonoaudiologo');
-    
-    toast({
-      title: "Credenciais preenchidas",
-      description: "Agora clique em 'Entrar' para fazer login como admin",
-    });
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-primary/5 flex items-center justify-center p-4">
       <Card className="w-full max-w-md shadow-xl">
@@ -215,15 +203,6 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onAuthSuccess }) => {
                 >
                   <FileText className="h-4 w-4 mr-2" />
                   Entrar como Fonoaudiólogo (Teste)
-                </Button>
-                <Button 
-                  onClick={() => handleAdminLogin()}
-                  disabled={loading}
-                  className="w-full bg-red-600 hover:bg-red-700 text-white"
-                  type="button"
-                >
-                  <FileText className="h-4 w-4 mr-2" />
-                  Preencher Admin
                 </Button>
               </div>
             </div>

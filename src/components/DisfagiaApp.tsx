@@ -1084,21 +1084,7 @@ const DisfagiaApp = () => {
   return (
     <div>
       {currentView === 'login' && <LoginScreen />}
-      {currentUser === 'admin' && currentView === 'admin' && (
-        <div>
-          <div className="mb-6 flex justify-end">
-            <Button 
-              onClick={() => window.open('/admin/usuarios', '_blank')}
-              variant="outline"
-              className="flex items-center gap-2"
-            >
-              <Users className="h-4 w-4" />
-              Gerenciar Usuários
-            </Button>
-          </div>
-          <AdminPanel />
-        </div>
-      )}
+      {currentUser === 'admin' && currentView === 'admin' && <AdminPanel />}
       {currentUser === 'cuidador' && currentView !== 'login' && <CaregiverDashboard />}
       {currentUser === 'fonoaudiologo' && currentView !== 'login' && <ProfessionalDashboard />}
     </div>
