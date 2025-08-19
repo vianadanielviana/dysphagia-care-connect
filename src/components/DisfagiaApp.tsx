@@ -10,6 +10,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
+import { useToast } from '@/components/ui/use-toast';
 
 const DisfagiaApp = () => {
   const [currentUser, setCurrentUser] = useState<string | null>(null);
@@ -244,6 +245,7 @@ const DisfagiaApp = () => {
   const TriagemForm = () => {
     const [currentQuestion, setCurrentQuestion] = useState(0);
     const [answers, setAnswers] = useState<Record<string, number>>({});
+    const { toast } = useToast();
 
     const questions = [
       {
@@ -310,10 +312,25 @@ const DisfagiaApp = () => {
         // Calcular score
         const totalScore = Object.values(newAnswers).reduce((sum, val) => sum + val, 0);
         let riskLevel = 'baixo';
-        if (totalScore >= 12) riskLevel = 'alto';
-        else if (totalScore >= 6) riskLevel = 'médio';
+        let riskColor = 'text-green-600';
+        
+        if (totalScore >= 12) {
+          riskLevel = 'alto';
+          riskColor = 'text-red-600';
+        } else if (totalScore >= 6) {
+          riskLevel = 'médio';
+          riskColor = 'text-yellow-600';
+        }
 
-        alert(`Triagem concluída! Pontuação: ${totalScore}\nNível de risco: ${riskLevel}`);
+        // Save the result
+        setTriageData({ totalScore, riskLevel, answers: newAnswers, date: new Date().toISOString() });
+
+        toast({
+          title: "Triagem concluída!",
+          description: `Pontuação: ${totalScore} - Nível de risco: ${riskLevel}`,
+          duration: 4000,
+        });
+        
         setCurrentView('dashboard');
       }
     };
@@ -375,6 +392,7 @@ const DisfagiaApp = () => {
       videoFile: null,
       photoFile: null
     });
+    const { toast } = useToast();
 
     const sintomas = [
       'Tosse durante alimentação',
@@ -394,7 +412,23 @@ const DisfagiaApp = () => {
     ];
 
     const handleSubmit = () => {
-      alert('Registro salvo com sucesso!');
+      // Save daily record
+      const newRecord = {
+        date: new Date().toISOString().split('T')[0],
+        sintomas: formData.sintomas.length,
+        consistencia: formData.consistencia,
+        observacoes: formData.observacoes,
+        risco: Math.min(4, Math.floor(formData.sintomas.length / 2))
+      };
+      
+      setDailyRecords(prev => [...prev, newRecord]);
+      
+      toast({
+        title: "Registro salvo!",
+        description: "Registro diário salvo com sucesso.",
+        duration: 3000,
+      });
+      
       setCurrentView('dashboard');
     };
 
