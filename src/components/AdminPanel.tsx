@@ -4,10 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { toast } from "@/hooks/use-toast";
-import { CheckCircle, Users, Calendar } from "lucide-react";
+import { CheckCircle, Users, Calendar, X, Check, UserCheck } from "lucide-react";
 
 export const AdminPanel = () => {
-  const { pendingUsers, approveUser, loading } = useAdminAuth();
+  const { pendingUsers, approveUser, denyUser, loading } = useAdminAuth();
 
   const handleApproveUser = async (userId: string, userName: string) => {
     const result = await approveUser(userId);
@@ -26,6 +26,24 @@ export const AdminPanel = () => {
     }
   };
 
+  const handleDenyUser = async (userId: string, userName: string) => {
+    const result = await denyUser(userId);
+    
+    if (result.success) {
+      toast({
+        title: "Usuário negado",
+        description: `Cadastro de ${userName} foi rejeitado e removido do sistema.`,
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Erro ao negar usuário",
+        description: "Tente novamente em alguns momentos.",
+        variant: "destructive",
+      });
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
@@ -37,12 +55,24 @@ export const AdminPanel = () => {
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-foreground mb-2">
-          Painel Administrativo
-        </h1>
-        <p className="text-muted-foreground">
-          Gerencie aprovações de novos usuários do sistema DisfagiaMonitor
-        </p>
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h1 className="text-3xl font-bold text-foreground mb-2">
+              Painel Administrativo
+            </h1>
+            <p className="text-muted-foreground">
+              Gerencie aprovações de novos usuários do sistema DisfagiaMonitor
+            </p>
+          </div>
+          <Button 
+            onClick={() => window.location.href = '/admin/usuarios'}
+            className="flex items-center gap-2"
+            size="lg"
+          >
+            <UserCheck className="h-5 w-5" />
+            Gerenciar Cadastros
+          </Button>
+        </div>
       </div>
 
       <Card className="mb-6">
@@ -87,13 +117,25 @@ export const AdminPanel = () => {
                       Cadastrado em: {new Date(user.created_at).toLocaleDateString('pt-BR')}
                     </div>
                   </div>
-                  <Button
-                    onClick={() => handleApproveUser(user.id, user.nome)}
-                    className="w-full sm:w-auto"
-                    size="sm"
-                  >
-                    Aprovar
-                  </Button>
+                  <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                    <Button
+                      onClick={() => handleApproveUser(user.id, user.nome)}
+                      className="bg-green-600 hover:bg-green-700 text-white flex-1 sm:flex-none"
+                      size="sm"
+                    >
+                      <Check className="h-4 w-4 mr-2" />
+                      Aprovar
+                    </Button>
+                    <Button
+                      onClick={() => handleDenyUser(user.id, user.nome)}
+                      variant="destructive"
+                      className="flex-1 sm:flex-none"
+                      size="sm"
+                    >
+                      <X className="h-4 w-4 mr-2" />
+                      Negar
+                    </Button>
+                  </div>
                 </div>
               ))}
             </div>

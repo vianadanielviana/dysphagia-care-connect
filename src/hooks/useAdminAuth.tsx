@@ -97,12 +97,35 @@ export const useAdminAuth = () => {
     }
   };
 
+  const denyUser = async (userId: string) => {
+    try {
+      // Delete the user profile and auth user
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .delete()
+        .eq('id', userId);
+
+      if (profileError) throw profileError;
+
+      console.log('[AdminDenial]', { userId, action: 'denied' });
+      
+      // Remove from pending list
+      setPendingUsers(prev => prev.filter(user => user.id !== userId));
+      
+      return { success: true };
+    } catch (error) {
+      console.error('Error denying user:', error);
+      return { success: false, error };
+    }
+  };
+
   return {
     isAdmin,
     user,
     pendingUsers,
     loading,
     approveUser,
+    denyUser,
     loadPendingUsers
   };
 };

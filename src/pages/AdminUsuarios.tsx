@@ -4,11 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { toast } from "@/hooks/use-toast";
-import { CheckCircle, Users, Calendar, ArrowLeft } from "lucide-react";
+import { CheckCircle, Users, Calendar, ArrowLeft, Check, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 export const AdminUsuarios = () => {
-  const { isAdmin, pendingUsers, approveUser, loading } = useAdminAuth();
+  const { isAdmin, pendingUsers, approveUser, denyUser, loading } = useAdminAuth();
   const navigate = useNavigate();
 
   // Redirect if not admin
@@ -29,6 +29,24 @@ export const AdminUsuarios = () => {
     } else {
       toast({
         title: "Erro ao aprovar usuário",
+        description: "Tente novamente em alguns momentos.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDenyUser = async (userId: string, userName: string) => {
+    const result = await denyUser(userId);
+    
+    if (result.success) {
+      toast({
+        title: "Usuário negado",
+        description: `Cadastro de ${userName} foi rejeitado e removido do sistema.`,
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Erro ao negar usuário",
         description: "Tente novamente em alguns momentos.",
         variant: "destructive",
       });
@@ -112,14 +130,25 @@ export const AdminUsuarios = () => {
                       Cadastrado em: {new Date(user.created_at).toLocaleDateString('pt-BR')}
                     </div>
                   </div>
-                  <Button
-                    onClick={() => handleApproveUser(user.id, user.nome)}
-                    className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white"
-                    size="sm"
-                  >
-                    <CheckCircle className="h-4 w-4 mr-2" />
-                    Aprovar
-                  </Button>
+                  <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                    <Button
+                      onClick={() => handleApproveUser(user.id, user.nome)}
+                      className="bg-green-600 hover:bg-green-700 text-white flex-1 sm:flex-none"
+                      size="sm"
+                    >
+                      <Check className="h-4 w-4 mr-2" />
+                      Aprovar
+                    </Button>
+                    <Button
+                      onClick={() => handleDenyUser(user.id, user.nome)}
+                      variant="destructive"
+                      className="flex-1 sm:flex-none"
+                      size="sm"
+                    >
+                      <X className="h-4 w-4 mr-2" />
+                      Negar
+                    </Button>
+                  </div>
                 </div>
               ))}
             </div>
