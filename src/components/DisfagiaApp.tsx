@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, BarChart, Bar, ResponsiveContainer } from 'recharts';
-import { User, Camera, Upload, MessageCircle, AlertTriangle, CheckCircle, Calendar, TrendingUp, FileText, Phone } from 'lucide-react';
+import { User, Camera, Upload, MessageCircle, AlertTriangle, CheckCircle, Calendar, TrendingUp, FileText, Phone, Users } from 'lucide-react';
+import { PacientesList } from '@/components/PacientesList';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -103,7 +104,7 @@ const DisfagiaApp = () => {
       <nav className="bg-card border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex space-x-8">
-            {['dashboard', 'triagem', 'registro', 'historico', 'comunicacao'].map((view) => (
+            {['dashboard', 'triagem', 'registro', 'historico', 'pacientes', 'comunicacao'].map((view) => (
               <Button
                 key={view}
                 onClick={() => setCurrentView(view)}
@@ -118,6 +119,7 @@ const DisfagiaApp = () => {
                 {view === 'triagem' && 'Triagem'}
                 {view === 'registro' && 'Registro Diário'}
                 {view === 'historico' && 'Histórico'}
+                {view === 'pacientes' && 'Pacientes'}
                 {view === 'comunicacao' && 'Comunicação'}
               </Button>
             ))}
@@ -130,6 +132,7 @@ const DisfagiaApp = () => {
         {currentView === 'triagem' && <TriagemForm />}
         {currentView === 'registro' && <DailyRecordForm />}
         {currentView === 'historico' && <HistoryView />}
+        {currentView === 'pacientes' && <PacientesList tipoUsuario="cuidador" />}
         {currentView === 'comunicacao' && <CommunicationView />}
       </main>
     </div>
@@ -829,12 +832,41 @@ const DisfagiaApp = () => {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <div className="px-4 py-6 sm:px-0">
-          <div className="mb-8">
-            <h2 className="text-2xl font-bold text-foreground mb-2">Dashboard Profissional</h2>
-            <p className="text-muted-foreground">Gerencie seus pacientes e acompanhe a evolução</p>
+      <nav className="bg-card border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex space-x-8">
+            {['dashboard', 'pacientes'].map((view) => (
+              <Button
+                key={view}
+                onClick={() => setCurrentView(view)}
+                variant="ghost"
+                className={`rounded-none border-b-2 ${
+                  currentView === view 
+                    ? 'border-primary text-primary' 
+                    : 'border-transparent text-muted-foreground hover:text-foreground hover:border-muted'
+                }`}
+              >
+                {view === 'dashboard' && 'Dashboard'}
+                {view === 'pacientes' && 'Pacientes'}
+              </Button>
+            ))}
           </div>
+        </div>
+      </nav>
+
+      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        {currentView === 'dashboard' && <ProfessionalDashboardContent />}
+        {currentView === 'pacientes' && <PacientesList tipoUsuario="fonoaudiologo" />}
+      </main>
+    </div>
+  );
+
+  const ProfessionalDashboardContent = () => (
+    <div className="px-4 py-6 sm:px-0">
+      <div className="mb-8">
+        <h2 className="text-2xl font-bold text-foreground mb-2">Dashboard Profissional</h2>
+        <p className="text-muted-foreground">Gerencie seus pacientes e acompanhe a evolução</p>
+      </div>
 
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
             <Card>
@@ -958,8 +990,6 @@ const DisfagiaApp = () => {
             </CardContent>
           </Card>
         </div>
-      </main>
-    </div>
   );
 
   if (currentView === 'login') {
