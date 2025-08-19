@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, BarChart, Bar, ResponsiveContainer } from 'recharts';
 import { User, Camera, Upload, MessageCircle, AlertTriangle, CheckCircle, Calendar, TrendingUp, FileText, Phone, Users } from 'lucide-react';
 import { PacientesList } from '@/components/PacientesList';
+import { AuthForm } from '@/components/AuthForm';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -11,7 +13,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 
 interface TriageData {
   totalScore?: number;
@@ -23,6 +25,8 @@ interface TriageData {
 const DisfagiaApp = () => {
   const [currentUser, setCurrentUser] = useState<string | null>(null);
   const [currentView, setCurrentView] = useState('login');
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [triageData, setTriageData] = useState<TriageData>({});
   const [dailyRecords, setDailyRecords] = useState([
     { date: '2025-08-10', risco: 2, sintomas: 1, consistencia: 'normal' },
@@ -40,40 +44,76 @@ const DisfagiaApp = () => {
     { id: 3, name: 'Rosa Lima', age: 82, lastUpdate: '2025-08-15', riskLevel: 'médio', caregiver: 'Home Care Plus' }
   ];
 
+  // Verificar autenticação ao carregar
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+          setIsAuthenticated(true);
+          setCurrentUser(session.user.user_metadata?.tipo_usuario || 'cuidador');
+          setCurrentView('dashboard');
+        }
+      } catch (error) {
+        console.error('Erro ao verificar autenticação:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    checkAuth();
+
+    // Escutar mudanças de autenticação
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (event === 'SIGNED_IN' && session?.user) {
+          setIsAuthenticated(true);
+          setCurrentUser(session.user.user_metadata?.tipo_usuario || 'cuidador');
+          setCurrentView('dashboard');
+        } else if (event === 'SIGNED_OUT') {
+          setIsAuthenticated(false);
+          setCurrentUser(null);
+          setCurrentView('login');
+        }
+      }
+    );
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleAuthSuccess = (userType: 'cuidador' | 'fonoaudiologo') => {
+    setCurrentUser(userType);
+    setCurrentView('dashboard');
+    setIsAuthenticated(true);
+  };
+
+  const handleSignOut = async () => {
+    try {
+      await supabase.auth.signOut();
+    } catch (error) {
+      console.error('Erro ao fazer logout:', error);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-primary/5 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
+            <User className="h-8 w-8 text-primary-foreground" />
+          </div>
+          <p className="text-muted-foreground">Carregando...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return <AuthForm onAuthSuccess={handleAuthSuccess} />;
+  }
+
   const LoginScreen = () => (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-primary/5 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md shadow-xl">
-        <CardContent className="p-8">
-          <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center mx-auto mb-4">
-              <User className="h-8 w-8 text-primary-foreground" />
-            </div>
-            <h1 className="text-2xl font-bold text-foreground mb-2">DisfagiaMonitor</h1>
-            <p className="text-muted-foreground">Cuidado especializado ao seu alcance</p>
-          </div>
-          
-          <div className="space-y-4">
-            <Button 
-              onClick={() => {setCurrentUser('cuidador'); setCurrentView('dashboard')}}
-              className="w-full h-12"
-              size="lg"
-            >
-              <User className="h-5 w-5 mr-2" />
-              Entrar como Cuidador
-            </Button>
-            
-            <Button 
-              onClick={() => {setCurrentUser('profissional'); setCurrentView('dashboard')}}
-              className="w-full h-12 bg-medical-green hover:bg-medical-green/90"
-              size="lg"
-            >
-              <FileText className="h-5 w-5 mr-2" />
-              Entrar como Fonoaudiólogo
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+    <AuthForm onAuthSuccess={handleAuthSuccess} />
   );
 
   const CaregiverDashboard = () => (
@@ -88,9 +128,9 @@ const DisfagiaApp = () => {
               <h1 className="text-xl font-semibold text-foreground">DisfagiaMonitor</h1>
             </div>
             <div className="flex items-center space-x-4">
-              <span className="text-sm text-muted-foreground">Cuidador: Ana Silva</span>
+              <span className="text-sm text-muted-foreground">Cuidador: {currentUser}</span>
               <Button 
-                onClick={() => setCurrentView('login')}
+                onClick={handleSignOut}
                 variant="ghost"
                 size="sm"
               >
@@ -819,9 +859,9 @@ const DisfagiaApp = () => {
               <h1 className="text-xl font-semibold text-foreground">DisfagiaMonitor Pro</h1>
             </div>
             <div className="flex items-center space-x-4">
-              <span className="text-sm text-muted-foreground">Dra. Fernanda Silva - CRFa 12345-SP</span>
+              <span className="text-sm text-muted-foreground">Fonoaudiólogo: {currentUser}</span>
               <Button 
-                onClick={() => setCurrentView('login')}
+                onClick={handleSignOut}
                 variant="ghost"
                 size="sm"
               >
@@ -992,15 +1032,13 @@ const DisfagiaApp = () => {
         </div>
   );
 
-  if (currentView === 'login') {
-    return <LoginScreen />;
-  }
-
-  if (currentUser === 'profissional') {
-    return <ProfessionalDashboard />;
-  }
-
-  return <CaregiverDashboard />;
+  return (
+    <div>
+      {currentView === 'login' && <LoginScreen />}
+      {currentUser === 'cuidador' && currentView !== 'login' && <CaregiverDashboard />}
+      {currentUser === 'fonoaudiologo' && currentView !== 'login' && <ProfessionalDashboard />}
+    </div>
+  );
 };
 
 export default DisfagiaApp;
