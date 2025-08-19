@@ -34,6 +34,28 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onAuthSuccess }) => {
       if (error) throw error;
 
       if (data.user) {
+        // Verificar se o usuário está aprovado
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('is_approved')
+          .eq('id', data.user.id)
+          .single();
+
+        if (profileError || !profile) {
+          await supabase.auth.signOut();
+          throw new Error('Erro ao verificar status da conta.');
+        }
+
+        if (!profile.is_approved) {
+          await supabase.auth.signOut();
+          toast({
+            variant: "destructive",
+            title: "Conta não aprovada",
+            description: "Sua conta aguarda aprovação do administrador.",
+          });
+          return;
+        }
+
         toast({
           title: "Login realizado com sucesso!",
           description: `Bem-vindo(a) de volta!`,
@@ -72,7 +94,7 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onAuthSuccess }) => {
 
       toast({
         title: "Cadastro realizado!",
-        description: "Verifique seu email para confirmar a conta.",
+        description: "Sua conta aguarda aprovação do administrador. Você receberá uma notificação quando for aprovado.",
       });
 
       // Limpar formulário

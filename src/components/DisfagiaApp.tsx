@@ -3,6 +3,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, BarChart
 import { User, Camera, Upload, MessageCircle, AlertTriangle, CheckCircle, Calendar, TrendingUp, FileText, Phone, Users } from 'lucide-react';
 import { PacientesList } from '@/components/PacientesList';
 import { AuthForm } from '@/components/AuthForm';
+import { AdminPanel } from '@/components/AdminPanel';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -51,9 +52,31 @@ const DisfagiaApp = () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
         if (session?.user) {
+          // Check if user is admin
+          if (session.user.email === 'viana.vianadaniel@outlook.com') {
+            setIsAuthenticated(true);
+            setCurrentUser('admin');
+            setUserName('Administrador');
+            setCurrentView('admin');
+            return;
+          }
+
+          // Check if user is approved
+          const { data: profile, error: profileError } = await supabase
+            .from('profiles')
+            .select('is_approved, nome, tipo_usuario')
+            .eq('id', session.user.id)
+            .single();
+
+          if (profileError || !profile || !profile.is_approved) {
+            await supabase.auth.signOut();
+            setCurrentView('login');
+            return;
+          }
+
           setIsAuthenticated(true);
-          setCurrentUser(session.user.user_metadata?.tipo_usuario || 'cuidador');
-          setUserName(session.user.user_metadata?.nome || session.user.email || '');
+          setCurrentUser(profile.tipo_usuario || 'cuidador');
+          setUserName(profile.nome || session.user.email || '');
           setCurrentView('dashboard');
         }
       } catch (error) {
@@ -69,9 +92,31 @@ const DisfagiaApp = () => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (event === 'SIGNED_IN' && session?.user) {
+          // Check if user is admin
+          if (session.user.email === 'viana.vianadaniel@outlook.com') {
+            setIsAuthenticated(true);
+            setCurrentUser('admin');
+            setUserName('Administrador');
+            setCurrentView('admin');
+            return;
+          }
+
+          // Check if user is approved
+          const { data: profile, error: profileError } = await supabase
+            .from('profiles')
+            .select('is_approved, nome, tipo_usuario')
+            .eq('id', session.user.id)
+            .single();
+
+          if (profileError || !profile || !profile.is_approved) {
+            await supabase.auth.signOut();
+            setCurrentView('login');
+            return;
+          }
+
           setIsAuthenticated(true);
-          setCurrentUser(session.user.user_metadata?.tipo_usuario || 'cuidador');
-          setUserName(session.user.user_metadata?.nome || session.user.email || '');
+          setCurrentUser(profile.tipo_usuario || 'cuidador');
+          setUserName(profile.nome || session.user.email || '');
           setCurrentView('dashboard');
         } else if (event === 'SIGNED_OUT') {
           setIsAuthenticated(false);
@@ -1039,6 +1084,7 @@ const DisfagiaApp = () => {
   return (
     <div>
       {currentView === 'login' && <LoginScreen />}
+      {currentUser === 'admin' && currentView === 'admin' && <AdminPanel />}
       {currentUser === 'cuidador' && currentView !== 'login' && <CaregiverDashboard />}
       {currentUser === 'fonoaudiologo' && currentView !== 'login' && <ProfessionalDashboard />}
     </div>
