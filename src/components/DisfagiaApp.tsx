@@ -12,10 +12,17 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/components/ui/use-toast';
 
+interface TriageData {
+  totalScore?: number;
+  riskLevel?: 'baixo' | 'médio' | 'alto';
+  answers?: Record<string, number>;
+  date?: string;
+}
+
 const DisfagiaApp = () => {
   const [currentUser, setCurrentUser] = useState<string | null>(null);
   const [currentView, setCurrentView] = useState('login');
-  const [triageData, setTriageData] = useState({});
+  const [triageData, setTriageData] = useState<TriageData>({});
   const [dailyRecords, setDailyRecords] = useState([
     { date: '2025-08-10', risco: 2, sintomas: 1, consistencia: 'normal' },
     { date: '2025-08-11', risco: 3, sintomas: 2, consistencia: 'modificada' },
@@ -128,119 +135,207 @@ const DisfagiaApp = () => {
     </div>
   );
 
-  const CaregiverDashboardContent = () => (
-    <div className="px-4 py-6 sm:px-0">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <CheckCircle className="h-8 w-8 text-medical-green" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-muted-foreground">Status Atual</p>
-                <p className="text-2xl font-semibold text-foreground">Baixo Risco</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+  const CaregiverDashboardContent = () => {
+    // Calculate current status from triage data
+    const getCurrentStatus = () => {
+      if (!triageData.riskLevel) return { level: 'Não avaliado', color: 'text-muted-foreground', icon: AlertTriangle };
+      
+      const statusMap = {
+        'baixo': { level: 'Baixo Risco', color: 'text-medical-green', icon: CheckCircle },
+        'médio': { level: 'Médio Risco', color: 'text-medical-amber', icon: AlertTriangle },
+        'alto': { level: 'Alto Risco', color: 'text-medical-red', icon: AlertTriangle }
+      };
+      
+      return statusMap[triageData.riskLevel] || statusMap['baixo'];
+    };
 
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <Calendar className="h-8 w-8 text-primary" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-muted-foreground">Última Avaliação</p>
-                <p className="text-2xl font-semibold text-foreground">Hoje</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+    // Calculate trend based on risk evolution
+    const getTrend = () => {
+      if (dailyRecords.length < 2) return { trend: 'Dados insuficientes', color: 'text-muted-foreground' };
+      
+      const recent = dailyRecords.slice(-3);
+      const average = recent.reduce((sum, record) => sum + record.risco, 0) / recent.length;
+      const older = dailyRecords.slice(-7, -3);
+      const olderAverage = older.length > 0 ? older.reduce((sum, record) => sum + record.risco, 0) / older.length : average;
+      
+      if (average < olderAverage) return { trend: 'Melhorando', color: 'text-medical-green' };
+      if (average > olderAverage) return { trend: 'Piorando', color: 'text-medical-red' };
+      return { trend: 'Estável', color: 'text-medical-amber' };
+    };
 
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <TrendingUp className="h-8 w-8 text-medical-green" />
+    // Get last evaluation date
+    const getLastEvaluation = () => {
+      if (!triageData.date) return 'Não realizada';
+      const date = new Date(triageData.date);
+      const today = new Date();
+      const diffTime = Math.abs(today.getTime() - date.getTime());
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      
+      if (diffDays === 1) return 'Hoje';
+      if (diffDays === 2) return 'Ontem';
+      return `${diffDays} dias atrás`;
+    };
+
+    const currentStatus = getCurrentStatus();
+    const currentTrend = getTrend();
+    const lastEvaluation = getLastEvaluation();
+
+    return (
+      <div className="px-4 py-6 sm:px-0">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <currentStatus.icon className={`h-8 w-8 ${currentStatus.color}`} />
+                </div>
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-muted-foreground">Status Atual</p>
+                  <p className={`text-2xl font-semibold ${currentStatus.color}`}>{currentStatus.level}</p>
+                  {triageData.totalScore !== undefined && (
+                    <p className="text-xs text-muted-foreground">Pontuação: {triageData.totalScore}</p>
+                  )}
+                </div>
               </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-muted-foreground">Tendência</p>
-                <p className="text-2xl font-semibold text-foreground">Melhorando</p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <Calendar className="h-8 w-8 text-primary" />
+                </div>
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-muted-foreground">Última Avaliação</p>
+                  <p className="text-2xl font-semibold text-foreground">{lastEvaluation}</p>
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <TrendingUp className={`h-8 w-8 ${currentTrend.color}`} />
+                </div>
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-muted-foreground">Tendência</p>
+                  <p className={`text-2xl font-semibold ${currentTrend.color}`}>{currentTrend.trend}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Evolução do Risco - Últimos 7 dias</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={200}>
+                <LineChart data={dailyRecords.slice(-7)}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="date" tickFormatter={(value) => new Date(value).getDate().toString()} />
+                  <YAxis domain={[0, 5]} />
+                  <Tooltip 
+                    labelFormatter={(value) => new Date(value as string).toLocaleDateString()} 
+                    formatter={(value: number) => [value, "Nível de Risco"]}
+                  />
+                  <Line type="monotone" dataKey="risco" stroke="#ef4444" strokeWidth={2} name="Nível de Risco" />
+                </LineChart>
+              </ResponsiveContainer>
+              {dailyRecords.length === 0 && (
+                <div className="flex items-center justify-center h-48 text-muted-foreground">
+                  <p>Nenhum dado disponível. Faça registros diários para ver a evolução.</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Ações Rápidas</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                <Button 
+                  onClick={() => setCurrentView('registro')}
+                  variant="outline"
+                  className="w-full justify-start h-auto p-4"
+                >
+                  <Calendar className="h-5 w-5 text-primary mr-3" />
+                  <span>Fazer Registro de Hoje</span>
+                </Button>
+                <Button 
+                  onClick={() => setCurrentView('triagem')}
+                  variant="outline"
+                  className="w-full justify-start h-auto p-4"
+                >
+                  <FileText className="h-5 w-5 text-primary mr-3" />
+                  <span>Nova Triagem</span>
+                </Button>
+                <Button 
+                  onClick={() => setCurrentView('comunicacao')}
+                  variant="outline"
+                  className="w-full justify-start h-auto p-4"
+                >
+                  <MessageCircle className="h-5 w-5 text-medical-green mr-3" />
+                  <span>Falar com Fonoaudiólogo</span>
+                </Button>
+                <Button 
+                  variant="outline"
+                  className="w-full justify-start h-auto p-4"
+                >
+                  <Phone className="h-5 w-5 text-medical-red mr-3" />
+                  <span>Emergência: (11) 9999-9999</span>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {triageData.riskLevel && triageData.riskLevel !== 'baixo' && (
+          <Card className={`mt-6 ${triageData.riskLevel === 'alto' ? 'bg-medical-red-light border-medical-red' : 'bg-medical-amber-light border-medical-amber'}`}>
+            <CardContent className="p-4">
+              <div className="flex items-start">
+                <AlertTriangle className={`h-5 w-5 ${triageData.riskLevel === 'alto' ? 'text-medical-red' : 'text-medical-amber'} mt-0.5`} />
+                <div className="ml-3">
+                  <h4 className={`text-sm font-medium ${triageData.riskLevel === 'alto' ? 'text-medical-red' : 'text-medical-amber'}`}>
+                    {triageData.riskLevel === 'alto' ? 'Atenção: Alto Risco' : 'Atenção: Risco Moderado'}
+                  </h4>
+                  <p className={`text-sm ${triageData.riskLevel === 'alto' ? 'text-medical-red' : 'text-medical-amber'} mt-1`}>
+                    {triageData.riskLevel === 'alto' 
+                      ? 'Procure atendimento fonoaudiológico imediatamente. Monitore sinais de aspiração.'
+                      : 'Mantenha alimentação modificada e monitore sinais de disfagia. Próxima reavaliação recomendada em 3 dias.'
+                    }
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {triageData.riskLevel === 'baixo' && (
+          <Card className="mt-6 bg-medical-green-light border-medical-green">
+            <CardContent className="p-4">
+              <div className="flex items-start">
+                <CheckCircle className="h-5 w-5 text-medical-green mt-0.5" />
+                <div className="ml-3">
+                  <h4 className="text-sm font-medium text-medical-green">Situação Controlada</h4>
+                  <p className="text-sm text-medical-green mt-1">
+                    Continue com a alimentação normal e mantenha observação. Próxima reavaliação em 1 semana.
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Evolução do Risco - Últimos 7 dias</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={200}>
-              <LineChart data={dailyRecords}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" tickFormatter={(value) => new Date(value).getDate().toString()} />
-                <YAxis domain={[0, 5]} />
-                <Tooltip labelFormatter={(value) => new Date(value as string).toLocaleDateString()} />
-                <Line type="monotone" dataKey="risco" stroke="#ef4444" strokeWidth={2} name="Nível de Risco" />
-              </LineChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Ações Rápidas</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              <Button 
-                onClick={() => setCurrentView('registro')}
-                variant="outline"
-                className="w-full justify-start h-auto p-4"
-              >
-                <Calendar className="h-5 w-5 text-primary mr-3" />
-                <span>Fazer Registro de Hoje</span>
-              </Button>
-              <Button 
-                onClick={() => setCurrentView('comunicacao')}
-                variant="outline"
-                className="w-full justify-start h-auto p-4"
-              >
-                <MessageCircle className="h-5 w-5 text-medical-green mr-3" />
-                <span>Falar com Fonoaudiólogo</span>
-              </Button>
-              <Button 
-                variant="outline"
-                className="w-full justify-start h-auto p-4"
-              >
-                <Phone className="h-5 w-5 text-medical-red mr-3" />
-                <span>Emergência: (11) 9999-9999</span>
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      <Card className="mt-6 bg-medical-amber-light border-medical-amber">
-        <CardContent className="p-4">
-          <div className="flex items-start">
-            <AlertTriangle className="h-5 w-5 text-medical-amber mt-0.5" />
-            <div className="ml-3">
-              <h4 className="text-sm font-medium text-medical-amber">Orientação do Fonoaudiólogo</h4>
-              <p className="text-sm text-medical-amber mt-1">
-                Continue oferecendo alimentos pastosos. Evite líquidos finos. Próxima reavaliação em 3 dias.
-              </p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
+    );
+  };
 
   const TriagemForm = () => {
     const [currentQuestion, setCurrentQuestion] = useState(0);
@@ -311,15 +406,12 @@ const DisfagiaApp = () => {
       } else {
         // Calcular score
         const totalScore = Object.values(newAnswers).reduce((sum, val) => sum + val, 0);
-        let riskLevel = 'baixo';
-        let riskColor = 'text-green-600';
+        let riskLevel: 'baixo' | 'médio' | 'alto' = 'baixo';
         
         if (totalScore >= 12) {
           riskLevel = 'alto';
-          riskColor = 'text-red-600';
         } else if (totalScore >= 6) {
           riskLevel = 'médio';
-          riskColor = 'text-yellow-600';
         }
 
         // Save the result
