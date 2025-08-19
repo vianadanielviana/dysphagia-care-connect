@@ -170,32 +170,15 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onAuthSuccess }) => {
   };
 
   const handleAdminLogin = async () => {
-    setLoading(true);
+    // Apenas preenche os campos com as credenciais do admin
+    setEmail('viana.vianadaniel@outlook.com');
+    setPassword('123qwe.');
+    setUserType('fonoaudiologo');
     
-    try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: 'viana.vianadaniel@outlook.com',
-        password: '123qwe.'
-      });
-
-      if (error) throw error;
-
-      if (data.user) {
-        toast({
-          title: "Login admin realizado!",
-          description: "Bem-vindo ao painel administrativo",
-        });
-        onAuthSuccess('fonoaudiologo'); // Admin é tratado como fonoaudiólogo no sistema
-      }
-    } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Erro no login admin",
-        description: "Credenciais de administrador inválidas",
-      });
-    } finally {
-      setLoading(false);
-    }
+    toast({
+      title: "Credenciais preenchidas",
+      description: "Agora clique em 'Entrar' para fazer login como admin",
+    });
   };
 
   return (
@@ -237,9 +220,10 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onAuthSuccess }) => {
                   onClick={() => handleAdminLogin()}
                   disabled={loading}
                   className="w-full bg-red-600 hover:bg-red-700 text-white"
+                  type="button"
                 >
                   <FileText className="h-4 w-4 mr-2" />
-                  Admin
+                  Preencher Admin
                 </Button>
               </div>
             </div>
