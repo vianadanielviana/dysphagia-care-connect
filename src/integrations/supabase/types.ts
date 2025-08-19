@@ -182,6 +182,72 @@ export type Database = {
         }
         Relationships: []
       }
+      pacientes: {
+        Row: {
+          cpf: string | null
+          created_at: string
+          data_nascimento: string | null
+          diagnostico: string | null
+          email: string | null
+          endereco: string | null
+          historico_medico: string | null
+          id: string
+          medicamentos_atuais: string | null
+          nome: string
+          observacoes: string | null
+          responsavel_email: string | null
+          responsavel_nome: string | null
+          responsavel_telefone: string | null
+          status: string | null
+          telefone: string | null
+          tipo_usuario: string
+          updated_at: string
+          usuario_cadastro_id: string | null
+        }
+        Insert: {
+          cpf?: string | null
+          created_at?: string
+          data_nascimento?: string | null
+          diagnostico?: string | null
+          email?: string | null
+          endereco?: string | null
+          historico_medico?: string | null
+          id?: string
+          medicamentos_atuais?: string | null
+          nome: string
+          observacoes?: string | null
+          responsavel_email?: string | null
+          responsavel_nome?: string | null
+          responsavel_telefone?: string | null
+          status?: string | null
+          telefone?: string | null
+          tipo_usuario: string
+          updated_at?: string
+          usuario_cadastro_id?: string | null
+        }
+        Update: {
+          cpf?: string | null
+          created_at?: string
+          data_nascimento?: string | null
+          diagnostico?: string | null
+          email?: string | null
+          endereco?: string | null
+          historico_medico?: string | null
+          id?: string
+          medicamentos_atuais?: string | null
+          nome?: string
+          observacoes?: string | null
+          responsavel_email?: string | null
+          responsavel_nome?: string | null
+          responsavel_telefone?: string | null
+          status?: string | null
+          telefone?: string | null
+          tipo_usuario?: string
+          updated_at?: string
+          usuario_cadastro_id?: string | null
+        }
+        Relationships: []
+      }
       table_name: {
         Row: {
           data: Json | null
