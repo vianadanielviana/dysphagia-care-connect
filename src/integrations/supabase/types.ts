@@ -116,30 +116,6 @@ export type Database = {
         }
         Relationships: []
       }
-      Gastos: {
-        Row: {
-          created_at: string
-          id: number
-          Nome: string | null
-          Tipo: Database["public"]["Enums"]["tipo"] | null
-          Valor: number | null
-        }
-        Insert: {
-          created_at?: string
-          id?: number
-          Nome?: string | null
-          Tipo?: Database["public"]["Enums"]["tipo"] | null
-          Valor?: number | null
-        }
-        Update: {
-          created_at?: string
-          id?: number
-          Nome?: string | null
-          Tipo?: Database["public"]["Enums"]["tipo"] | null
-          Valor?: number | null
-        }
-        Relationships: []
-      }
       n8n_chat_carol: {
         Row: {
           id: number
@@ -245,6 +221,36 @@ export type Database = {
           tipo_usuario?: string
           updated_at?: string
           usuario_cadastro_id?: string | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          is_approved: boolean
+          nome: string | null
+          tipo_usuario: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id: string
+          is_approved?: boolean
+          nome?: string | null
+          tipo_usuario: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          is_approved?: boolean
+          nome?: string | null
+          tipo_usuario?: string
+          updated_at?: string
         }
         Relationships: []
       }
