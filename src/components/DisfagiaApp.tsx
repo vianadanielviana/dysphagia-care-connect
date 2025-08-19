@@ -1,10 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, BarChart, Bar, ResponsiveContainer } from 'recharts';
-import { User, Camera, Upload, MessageCircle, AlertTriangle, CheckCircle, Calendar, TrendingUp, FileText, Phone, Users } from 'lucide-react';
-import { PacientesList } from '@/components/PacientesList';
-import { AuthForm } from '@/components/AuthForm';
-import { AdminPanel } from '@/components/AdminPanel';
-import { supabase } from '@/integrations/supabase/client';
+import { User, Camera, Upload, MessageCircle, AlertTriangle, CheckCircle, Calendar, TrendingUp, FileText, Phone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -14,7 +10,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/components/ui/use-toast';
 
 interface TriageData {
   totalScore?: number;
@@ -25,10 +21,7 @@ interface TriageData {
 
 const DisfagiaApp = () => {
   const [currentUser, setCurrentUser] = useState<string | null>(null);
-  const [userName, setUserName] = useState<string>('');
   const [currentView, setCurrentView] = useState('login');
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [loading, setLoading] = useState(true);
   const [triageData, setTriageData] = useState<TriageData>({});
   const [dailyRecords, setDailyRecords] = useState([
     { date: '2025-08-10', risco: 2, sintomas: 1, consistencia: 'normal' },
@@ -46,123 +39,40 @@ const DisfagiaApp = () => {
     { id: 3, name: 'Rosa Lima', age: 82, lastUpdate: '2025-08-15', riskLevel: 'médio', caregiver: 'Home Care Plus' }
   ];
 
-  // Verificar autenticação ao carregar
-  useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session?.user) {
-          // Check if user is admin
-          if (session.user.email === 'viana.vianadaniel@outlook.com') {
-            setIsAuthenticated(true);
-            setCurrentUser('admin');
-            setUserName('Administrador');
-            setCurrentView('admin');
-            return;
-          }
-
-          // Check if user is approved
-          const { data: profile, error: profileError } = await supabase
-            .from('profiles')
-            .select('is_approved, nome, tipo_usuario')
-            .eq('id', session.user.id)
-            .single();
-
-          if (profileError || !profile || !profile.is_approved) {
-            await supabase.auth.signOut();
-            setCurrentView('login');
-            return;
-          }
-
-          setIsAuthenticated(true);
-          setCurrentUser(profile.tipo_usuario || 'cuidador');
-          setUserName(profile.nome || session.user.email || '');
-          setCurrentView('dashboard');
-        }
-      } catch (error) {
-        console.error('Erro ao verificar autenticação:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    checkAuth();
-
-    // Escutar mudanças de autenticação
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (event === 'SIGNED_IN' && session?.user) {
-          // Check if user is admin
-          if (session.user.email === 'viana.vianadaniel@outlook.com') {
-            setIsAuthenticated(true);
-            setCurrentUser('admin');
-            setUserName('Administrador');
-            setCurrentView('admin');
-            return;
-          }
-
-          // Check if user is approved
-          const { data: profile, error: profileError } = await supabase
-            .from('profiles')
-            .select('is_approved, nome, tipo_usuario')
-            .eq('id', session.user.id)
-            .single();
-
-          if (profileError || !profile || !profile.is_approved) {
-            await supabase.auth.signOut();
-            setCurrentView('login');
-            return;
-          }
-
-          setIsAuthenticated(true);
-          setCurrentUser(profile.tipo_usuario || 'cuidador');
-          setUserName(profile.nome || session.user.email || '');
-          setCurrentView('dashboard');
-        } else if (event === 'SIGNED_OUT') {
-          setIsAuthenticated(false);
-          setCurrentUser(null);
-          setUserName('');
-          setCurrentView('login');
-        }
-      }
-    );
-
-    return () => subscription.unsubscribe();
-  }, []);
-
-  const handleAuthSuccess = (userType: 'cuidador' | 'fonoaudiologo') => {
-    setCurrentUser(userType);
-    setCurrentView('dashboard');
-    setIsAuthenticated(true);
-  };
-
-  const handleSignOut = async () => {
-    try {
-      await supabase.auth.signOut();
-    } catch (error) {
-      console.error('Erro ao fazer logout:', error);
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-primary/5 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
-            <User className="h-8 w-8 text-primary-foreground" />
-          </div>
-          <p className="text-muted-foreground">Carregando...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!isAuthenticated) {
-    return <AuthForm onAuthSuccess={handleAuthSuccess} />;
-  }
-
   const LoginScreen = () => (
-    <AuthForm onAuthSuccess={handleAuthSuccess} />
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-primary/5 flex items-center justify-center p-4">
+      <Card className="w-full max-w-md shadow-xl">
+        <CardContent className="p-8">
+          <div className="text-center mb-8">
+            <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center mx-auto mb-4">
+              <User className="h-8 w-8 text-primary-foreground" />
+            </div>
+            <h1 className="text-2xl font-bold text-foreground mb-2">DisfagiaMonitor</h1>
+            <p className="text-muted-foreground">Cuidado especializado ao seu alcance</p>
+          </div>
+          
+          <div className="space-y-4">
+            <Button 
+              onClick={() => {setCurrentUser('cuidador'); setCurrentView('dashboard')}}
+              className="w-full h-12"
+              size="lg"
+            >
+              <User className="h-5 w-5 mr-2" />
+              Entrar como Cuidador
+            </Button>
+            
+            <Button 
+              onClick={() => {setCurrentUser('profissional'); setCurrentView('dashboard')}}
+              className="w-full h-12 bg-medical-green hover:bg-medical-green/90"
+              size="lg"
+            >
+              <FileText className="h-5 w-5 mr-2" />
+              Entrar como Fonoaudiólogo
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 
   const CaregiverDashboard = () => (
@@ -177,9 +87,9 @@ const DisfagiaApp = () => {
               <h1 className="text-xl font-semibold text-foreground">DisfagiaMonitor</h1>
             </div>
             <div className="flex items-center space-x-4">
-              <span className="text-sm text-muted-foreground">{userName}</span>
+              <span className="text-sm text-muted-foreground">Cuidador: Ana Silva</span>
               <Button 
-                onClick={handleSignOut}
+                onClick={() => setCurrentView('login')}
                 variant="ghost"
                 size="sm"
               >
@@ -193,7 +103,7 @@ const DisfagiaApp = () => {
       <nav className="bg-card border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex space-x-8">
-            {['dashboard', 'triagem', 'registro', 'historico', 'pacientes', 'comunicacao'].map((view) => (
+            {['dashboard', 'triagem', 'registro', 'historico', 'comunicacao'].map((view) => (
               <Button
                 key={view}
                 onClick={() => setCurrentView(view)}
@@ -208,7 +118,6 @@ const DisfagiaApp = () => {
                 {view === 'triagem' && 'Triagem'}
                 {view === 'registro' && 'Registro Diário'}
                 {view === 'historico' && 'Histórico'}
-                {view === 'pacientes' && 'Pacientes'}
                 {view === 'comunicacao' && 'Comunicação'}
               </Button>
             ))}
@@ -221,7 +130,6 @@ const DisfagiaApp = () => {
         {currentView === 'triagem' && <TriagemForm />}
         {currentView === 'registro' && <DailyRecordForm />}
         {currentView === 'historico' && <HistoryView />}
-        {currentView === 'pacientes' && <PacientesList tipoUsuario="cuidador" />}
         {currentView === 'comunicacao' && <CommunicationView />}
       </main>
     </div>
@@ -908,9 +816,9 @@ const DisfagiaApp = () => {
               <h1 className="text-xl font-semibold text-foreground">DisfagiaMonitor Pro</h1>
             </div>
             <div className="flex items-center space-x-4">
-              <span className="text-sm text-muted-foreground">{userName}</span>
+              <span className="text-sm text-muted-foreground">Dra. Fernanda Silva - CRFa 12345-SP</span>
               <Button 
-                onClick={handleSignOut}
+                onClick={() => setCurrentView('login')}
                 variant="ghost"
                 size="sm"
               >
@@ -921,41 +829,12 @@ const DisfagiaApp = () => {
         </div>
       </header>
 
-      <nav className="bg-card border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex space-x-8">
-            {['dashboard', 'pacientes'].map((view) => (
-              <Button
-                key={view}
-                onClick={() => setCurrentView(view)}
-                variant="ghost"
-                className={`rounded-none border-b-2 ${
-                  currentView === view 
-                    ? 'border-primary text-primary' 
-                    : 'border-transparent text-muted-foreground hover:text-foreground hover:border-muted'
-                }`}
-              >
-                {view === 'dashboard' && 'Dashboard'}
-                {view === 'pacientes' && 'Pacientes'}
-              </Button>
-            ))}
-          </div>
-        </div>
-      </nav>
-
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        {currentView === 'dashboard' && <ProfessionalDashboardContent />}
-        {currentView === 'pacientes' && <PacientesList tipoUsuario="fonoaudiologo" />}
-      </main>
-    </div>
-  );
-
-  const ProfessionalDashboardContent = () => (
-    <div className="px-4 py-6 sm:px-0">
-      <div className="mb-8">
-        <h2 className="text-2xl font-bold text-foreground mb-2">Dashboard Profissional</h2>
-        <p className="text-muted-foreground">Gerencie seus pacientes e acompanhe a evolução</p>
-      </div>
+        <div className="px-4 py-6 sm:px-0">
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold text-foreground mb-2">Dashboard Profissional</h2>
+            <p className="text-muted-foreground">Gerencie seus pacientes e acompanhe a evolução</p>
+          </div>
 
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
             <Card>
@@ -1079,16 +958,19 @@ const DisfagiaApp = () => {
             </CardContent>
           </Card>
         </div>
-  );
-
-  return (
-    <div>
-      {currentView === 'login' && <LoginScreen />}
-      {currentUser === 'admin' && currentView === 'admin' && <AdminPanel />}
-      {currentUser === 'cuidador' && currentView !== 'login' && <CaregiverDashboard />}
-      {currentUser === 'fonoaudiologo' && currentView !== 'login' && <ProfessionalDashboard />}
+      </main>
     </div>
   );
+
+  if (currentView === 'login') {
+    return <LoginScreen />;
+  }
+
+  if (currentUser === 'profissional') {
+    return <ProfessionalDashboard />;
+  }
+
+  return <CaregiverDashboard />;
 };
 
 export default DisfagiaApp;
