@@ -34,7 +34,20 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onAuthSuccess }) => {
       if (error) throw error;
 
       if (data.user) {
-        // Verificar se o usuário está aprovado
+        // Verificar se é admin
+        const isAdmin = data.user.email === 'viana.vianadaniel@outlook.com';
+        
+        if (isAdmin) {
+          toast({
+            title: "Login de admin realizado!",
+            description: "Redirecionando para painel de administração...",
+          });
+          // Redirecionar para página de admin
+          window.location.href = '/admin/usuarios';
+          return;
+        }
+
+        // Verificar se o usuário está aprovado (apenas para não-admins)
         const { data: profile, error: profileError } = await supabase
           .from('profiles')
           .select('is_approved')
@@ -169,10 +182,10 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onAuthSuccess }) => {
     }
   };
 
-  const handleAdminLogin = async () => {
+  const handleAdminLogin = () => {
     // Apenas preenche os campos com as credenciais do admin
     setEmail('viana.vianadaniel@outlook.com');
-    setPassword('123qwe.');
+    setPassword('123qwe');
     setUserType('fonoaudiologo');
     
     toast({
