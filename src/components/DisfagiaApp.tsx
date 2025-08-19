@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, BarChart, Bar, ResponsiveContainer } from 'recharts';
-import { User, Camera, Upload, MessageCircle, AlertTriangle, CheckCircle, Calendar, TrendingUp, FileText, Phone } from 'lucide-react';
+import { User, Camera, Upload, MessageCircle, AlertTriangle, CheckCircle, Calendar, TrendingUp, FileText, Phone, LogOut, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -11,6 +11,8 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/components/ui/use-toast';
+import { useAuth } from '@/hooks/useAuth';
+import { useNavigate } from 'react-router-dom';
 
 interface TriageData {
   totalScore?: number;
@@ -20,8 +22,9 @@ interface TriageData {
 }
 
 const DisfagiaApp = () => {
-  const [currentUser, setCurrentUser] = useState<string | null>(null);
-  const [currentView, setCurrentView] = useState('login');
+  const { profile, signOut, isAdmin } = useAuth();
+  const navigate = useNavigate();
+  const [currentView, setCurrentView] = useState('dashboard');
   const [triageData, setTriageData] = useState<TriageData>({});
   const [dailyRecords, setDailyRecords] = useState([
     { date: '2025-08-10', risco: 2, sintomas: 1, consistencia: 'normal' },
@@ -39,41 +42,6 @@ const DisfagiaApp = () => {
     { id: 3, name: 'Rosa Lima', age: 82, lastUpdate: '2025-08-15', riskLevel: 'médio', caregiver: 'Home Care Plus' }
   ];
 
-  const LoginScreen = () => (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-primary/5 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md shadow-xl">
-        <CardContent className="p-8">
-          <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center mx-auto mb-4">
-              <User className="h-8 w-8 text-primary-foreground" />
-            </div>
-            <h1 className="text-2xl font-bold text-foreground mb-2">DisfagiaMonitor</h1>
-            <p className="text-muted-foreground">Cuidado especializado ao seu alcance</p>
-          </div>
-          
-          <div className="space-y-4">
-            <Button 
-              onClick={() => {setCurrentUser('cuidador'); setCurrentView('dashboard')}}
-              className="w-full h-12"
-              size="lg"
-            >
-              <User className="h-5 w-5 mr-2" />
-              Entrar como Cuidador
-            </Button>
-            
-            <Button 
-              onClick={() => {setCurrentUser('profissional'); setCurrentView('dashboard')}}
-              className="w-full h-12 bg-medical-green hover:bg-medical-green/90"
-              size="lg"
-            >
-              <FileText className="h-5 w-5 mr-2" />
-              Entrar como Fonoaudiólogo
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
 
   const CaregiverDashboard = () => (
     <div className="min-h-screen bg-background">
@@ -87,12 +55,25 @@ const DisfagiaApp = () => {
               <h1 className="text-xl font-semibold text-foreground">DisfagiaMonitor</h1>
             </div>
             <div className="flex items-center space-x-4">
-              <span className="text-sm text-muted-foreground">Cuidador: Ana Silva</span>
+              <span className="text-sm text-muted-foreground">
+                {profile?.tipo_usuario === 'fonoaudiologo' ? 'Fonoaudiólogo' : 'Cuidador'}: {profile?.nome}
+              </span>
+              {isAdmin && (
+                <Button 
+                  onClick={() => navigate('/admin/usuarios')}
+                  variant="ghost"
+                  size="sm"
+                >
+                  <Settings className="h-4 w-4 mr-2" />
+                  Admin
+                </Button>
+              )}
               <Button 
-                onClick={() => setCurrentView('login')}
+                onClick={signOut}
                 variant="ghost"
                 size="sm"
               >
+                <LogOut className="h-4 w-4 mr-2" />
                 Sair
               </Button>
             </div>
@@ -962,11 +943,7 @@ const DisfagiaApp = () => {
     </div>
   );
 
-  if (currentView === 'login') {
-    return <LoginScreen />;
-  }
-
-  if (currentUser === 'profissional') {
+  if (profile?.tipo_usuario === 'fonoaudiologo') {
     return <ProfessionalDashboard />;
   }
 
