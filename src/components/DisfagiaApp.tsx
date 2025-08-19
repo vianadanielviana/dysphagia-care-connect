@@ -24,6 +24,7 @@ interface TriageData {
 
 const DisfagiaApp = () => {
   const [currentUser, setCurrentUser] = useState<string | null>(null);
+  const [userName, setUserName] = useState<string>('');
   const [currentView, setCurrentView] = useState('login');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -52,6 +53,7 @@ const DisfagiaApp = () => {
         if (session?.user) {
           setIsAuthenticated(true);
           setCurrentUser(session.user.user_metadata?.tipo_usuario || 'cuidador');
+          setUserName(session.user.user_metadata?.nome || session.user.email || '');
           setCurrentView('dashboard');
         }
       } catch (error) {
@@ -69,10 +71,12 @@ const DisfagiaApp = () => {
         if (event === 'SIGNED_IN' && session?.user) {
           setIsAuthenticated(true);
           setCurrentUser(session.user.user_metadata?.tipo_usuario || 'cuidador');
+          setUserName(session.user.user_metadata?.nome || session.user.email || '');
           setCurrentView('dashboard');
         } else if (event === 'SIGNED_OUT') {
           setIsAuthenticated(false);
           setCurrentUser(null);
+          setUserName('');
           setCurrentView('login');
         }
       }
@@ -128,7 +132,7 @@ const DisfagiaApp = () => {
               <h1 className="text-xl font-semibold text-foreground">DisfagiaMonitor</h1>
             </div>
             <div className="flex items-center space-x-4">
-              <span className="text-sm text-muted-foreground">Cuidador: {currentUser}</span>
+              <span className="text-sm text-muted-foreground">{userName}</span>
               <Button 
                 onClick={handleSignOut}
                 variant="ghost"
@@ -859,7 +863,7 @@ const DisfagiaApp = () => {
               <h1 className="text-xl font-semibold text-foreground">DisfagiaMonitor Pro</h1>
             </div>
             <div className="flex items-center space-x-4">
-              <span className="text-sm text-muted-foreground">Fonoaudiólogo: {currentUser}</span>
+              <span className="text-sm text-muted-foreground">{userName}</span>
               <Button 
                 onClick={handleSignOut}
                 variant="ghost"
