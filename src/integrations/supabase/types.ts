@@ -254,6 +254,7 @@ export type Database = {
           telefone: number | null
           temperatura: string | null
           updated_at: string
+          user_id: string | null
         }
         Insert: {
           data?: Json | null
@@ -266,6 +267,7 @@ export type Database = {
           telefone?: number | null
           temperatura?: string | null
           updated_at?: string
+          user_id?: string | null
         }
         Update: {
           data?: Json | null
@@ -278,6 +280,7 @@ export type Database = {
           telefone?: number | null
           temperatura?: string | null
           updated_at?: string
+          user_id?: string | null
         }
         Relationships: []
       }
