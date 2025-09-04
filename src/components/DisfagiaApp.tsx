@@ -17,7 +17,7 @@ import { supabase } from '@/integrations/supabase/client';
 
 interface TriageData {
   totalScore?: number;
-  riskLevel?: 'baixo' | 'médio' | 'alto';
+  riskLevel?: 'baixo' | 'medio' | 'alto';
   answers?: Record<string, number>;
   date?: string;
   patient?: any;
@@ -134,53 +134,147 @@ const DisfagiaApp = () => {
   );
 
   const CaregiverDashboardContent = () => {
-    // Calculate current status from triage data
+    const [triageHistory, setTriageHistory] = useState([]);
+    const [loadingTriageHistory, setLoadingTriageHistory] = useState(true);
+    const { toast } = useToast();
+
+    useEffect(() => {
+      if (selectedPatient) {
+        fetchTriageHistory();
+      }
+    }, [selectedPatient]);
+
+    const fetchTriageHistory = async () => {
+      if (!selectedPatient) return;
+      
+      try {
+        setLoadingTriageHistory(true);
+        const { data, error } = await supabase
+          .from('triage_assessments')
+          .select(`
+            *,
+            triage_answers(*)
+          `)
+          .eq('patient_id', selectedPatient.id)
+          .order('completed_at', { ascending: false });
+
+        if (error) throw error;
+
+        // Format data for charts
+        const formattedData = data?.map(assessment => ({
+          date: new Date(assessment.completed_at).toLocaleDateString('pt-BR'),
+          risco: assessment.risk_level === 'baixo' ? 1 : assessment.risk_level === 'medio' ? 2 : 3,
+          pontuacao: assessment.total_score,
+          riskLevel: assessment.risk_level
+        })) || [];
+
+        setTriageHistory(formattedData);
+      } catch (error) {
+        console.error('Erro ao buscar histórico de triagens:', error);
+      } finally {
+        setLoadingTriageHistory(false);
+      }
+    };
+
+    // Calculate current status from latest triage or triageData
     const getCurrentStatus = () => {
-      if (!triageData.riskLevel) return { level: 'Não avaliado', color: 'text-muted-foreground', icon: AlertTriangle };
+      const latestTriage = triageHistory[0];
+      const currentRisk = latestTriage?.riskLevel || triageData.riskLevel;
+      
+      if (!currentRisk) return { level: 'Não avaliado', color: 'text-muted-foreground', icon: AlertTriangle };
       
       const statusMap = {
         'baixo': { level: 'Baixo Risco', color: 'text-medical-green', icon: CheckCircle },
-        'médio': { level: 'Médio Risco', color: 'text-medical-amber', icon: AlertTriangle },
+        'medio': { level: 'Médio Risco', color: 'text-medical-amber', icon: AlertTriangle },
         'alto': { level: 'Alto Risco', color: 'text-medical-red', icon: AlertTriangle }
       };
       
       return statusMap[triageData.riskLevel] || statusMap['baixo'];
     };
 
-    // Calculate trend based on risk evolution
-    const getTrend = () => {
-      if (dailyRecords.length < 2) return { trend: 'Dados insuficientes', color: 'text-muted-foreground' };
-      
-      const recent = dailyRecords.slice(-3);
-      const average = recent.reduce((sum, record) => sum + record.risco, 0) / recent.length;
-      const older = dailyRecords.slice(-7, -3);
-      const olderAverage = older.length > 0 ? older.reduce((sum, record) => sum + record.risco, 0) / older.length : average;
-      
-      if (average < olderAverage) return { trend: 'Melhorando', color: 'text-medical-green' };
-      if (average > olderAverage) return { trend: 'Piorando', color: 'text-medical-red' };
-      return { trend: 'Estável', color: 'text-medical-amber' };
+    // Get the latest evaluation date
+    const getLastEvaluation = () => {
+      const latestTriage = triageHistory[0];
+      if (latestTriage) {
+        return latestTriage.date;
+      }
+      if (triageData.date) {
+        return new Date(triageData.date).toLocaleDateString('pt-BR');
+      }
+      return 'Nunca';
     };
 
-    // Get last evaluation date
-    const getLastEvaluation = () => {
-      if (!triageData.date) return 'Não realizada';
-      const date = new Date(triageData.date);
-      const today = new Date();
-      const diffTime = Math.abs(today.getTime() - date.getTime());
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    // Calculate risk trend
+    const getRiskTrend = () => {
+      if (triageHistory.length < 2) return 'stable';
       
-      if (diffDays === 1) return 'Hoje';
-      if (diffDays === 2) return 'Ontem';
-      return `${diffDays} dias atrás`;
+      const latest = triageHistory[0]?.risco || 0;
+      const previous = triageHistory[1]?.risco || 0;
+      
+      if (latest > previous) return 'up';
+      if (latest < previous) return 'down';
+      return 'stable';
+    };
+
+    // Get chart data
+    const getChartData = () => {
+      if (loadingTriageHistory) return [];
+      
+      if (triageHistory.length > 0) {
+        return triageHistory.slice(0, 7).reverse(); // Show last 7 triages
+      }
+      
+      // Fallback to sample data if no triages yet
+      return dailyRecords.slice(-7);
     };
 
     const currentStatus = getCurrentStatus();
-    const currentTrend = getTrend();
-    const lastEvaluation = getLastEvaluation();
 
     return (
       <div className="px-4 py-6 sm:px-0">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          {/* Paciente Selecionado */}
+          <Card className="shadow-sm">
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center justify-between">
+                <span>Paciente Selecionado</span>
+                <Button 
+                  onClick={() => setCurrentView('patient-selection')} 
+                  variant="outline" 
+                  size="sm"
+                >
+                  Trocar
+                </Button>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {selectedPatient ? (
+                <div className="space-y-2">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
+                      <User className="h-4 w-4 text-primary" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-foreground">{selectedPatient.nome}</p>
+                      {selectedPatient.data_nascimento && (
+                        <p className="text-sm text-muted-foreground">
+                          {new Date().getFullYear() - new Date(selectedPatient.data_nascimento).getFullYear()} anos
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-4">
+                  <p className="text-muted-foreground mb-3">Nenhum paciente selecionado</p>
+                  <Button onClick={() => setCurrentView('patient-selection')} size="sm">
+                    Selecionar Paciente
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
           <Card>
             <CardContent className="p-6">
               <div className="flex items-center">
@@ -206,48 +300,46 @@ const DisfagiaApp = () => {
                 </div>
                 <div className="ml-4">
                   <p className="text-sm font-medium text-muted-foreground">Última Avaliação</p>
-                  <p className="text-2xl font-semibold text-foreground">{lastEvaluation}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <TrendingUp className={`h-8 w-8 ${currentTrend.color}`} />
-                </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-muted-foreground">Tendência</p>
-                  <p className={`text-2xl font-semibold ${currentTrend.color}`}>{currentTrend.trend}</p>
+                  <p className="text-2xl font-semibold text-foreground">{getLastEvaluation()}</p>
                 </div>
               </div>
             </CardContent>
           </Card>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           <Card>
             <CardHeader>
-              <CardTitle>Evolução do Risco - Últimos 7 dias</CardTitle>
+              <CardTitle className="text-base">Evolução do Risco (Últimas Triagens)</CardTitle>
             </CardHeader>
             <CardContent>
-              <ResponsiveContainer width="100%" height={200}>
-                <LineChart data={dailyRecords.slice(-7)}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="date" tickFormatter={(value) => new Date(value).getDate().toString()} />
-                  <YAxis domain={[0, 5]} />
-                  <Tooltip 
-                    labelFormatter={(value) => new Date(value as string).toLocaleDateString()} 
-                    formatter={(value: number) => [value, "Nível de Risco"]}
-                  />
-                  <Line type="monotone" dataKey="risco" stroke="#ef4444" strokeWidth={2} name="Nível de Risco" />
-                </LineChart>
-              </ResponsiveContainer>
-              {dailyRecords.length === 0 && (
-                <div className="flex items-center justify-center h-48 text-muted-foreground">
-                  <p>Nenhum dado disponível. Faça registros diários para ver a evolução.</p>
+              {loadingTriageHistory ? (
+                <div className="h-32 flex items-center justify-center">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+                </div>
+              ) : getChartData().length > 0 ? (
+                <ResponsiveContainer width="100%" height={120}>
+                  <LineChart data={getChartData()}>
+                    <XAxis dataKey="date" tick={{ fontSize: 10 }} />
+                    <YAxis domain={[0, 4]} tick={{ fontSize: 10 }} />
+                    <Tooltip 
+                      formatter={(value: any) => {
+                        const riskLabels: Record<number, string> = { 1: 'Baixo', 2: 'Médio', 3: 'Alto' };
+                        return [riskLabels[value] || value, 'Risco'];
+                      }}
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="risco" 
+                      stroke="hsl(var(--primary))" 
+                      strokeWidth={2} 
+                      dot={{ fill: "hsl(var(--primary))", strokeWidth: 2 }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="h-32 flex items-center justify-center text-muted-foreground">
+                  <p className="text-sm">Nenhuma triagem realizada ainda</p>
                 </div>
               )}
             </CardContent>
@@ -258,81 +350,97 @@ const DisfagiaApp = () => {
               <CardTitle>Ações Rápidas</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3">
+              <div className="grid grid-cols-2 gap-3">
                 <Button 
-                  onClick={() => setCurrentView('registro')}
+                  onClick={() => {
+                    if (!selectedPatient) {
+                      toast({
+                        title: "Atenção",
+                        description: "Selecione um paciente primeiro",
+                        variant: "destructive",
+                      });
+                      return;
+                    }
+                    setCurrentView('registro');
+                  }}
                   variant="outline"
-                  className="w-full justify-start h-auto p-4"
+                  className="h-auto py-4 flex flex-col items-center space-y-2"
                 >
-                  <Calendar className="h-5 w-5 text-primary mr-3" />
-                  <span>Fazer Registro de Hoje</span>
+                  <Calendar className="h-6 w-6 text-primary" />
+                  <span className="text-sm">Registro Diário</span>
                 </Button>
+                
                 <Button 
-                  onClick={() => setCurrentView('triagem')}
+                  onClick={() => {
+                    if (!selectedPatient) {
+                      toast({
+                        title: "Atenção", 
+                        description: "Selecione um paciente primeiro",
+                        variant: "destructive",
+                      });
+                      return;
+                    }
+                    setCurrentView('patient-selection');
+                  }}
                   variant="outline"
-                  className="w-full justify-start h-auto p-4"
+                  className="h-auto py-4 flex flex-col items-center space-y-2"
                 >
-                  <FileText className="h-5 w-5 text-primary mr-3" />
-                  <span>Nova Triagem</span>
+                  <FileText className="h-6 w-6 text-primary" />
+                  <span className="text-sm">Nova Triagem</span>
                 </Button>
+                
                 <Button 
                   onClick={() => navigate('/pacientes')}
                   variant="outline"
-                  className="w-full justify-start h-auto p-4"
+                  className="h-auto py-4 flex flex-col items-center space-y-2"
                 >
-                  <User className="h-5 w-5 text-primary mr-3" />
-                  <span>Gerenciar Pacientes</span>
+                  <User className="h-6 w-6 text-primary" />
+                  <span className="text-sm">Pacientes</span>
                 </Button>
+                
                 <Button 
                   onClick={() => setCurrentView('comunicacao')}
                   variant="outline"
-                  className="w-full justify-start h-auto p-4"
+                  className="h-auto py-4 flex flex-col items-center space-y-2"
                 >
-                  <MessageCircle className="h-5 w-5 text-medical-green mr-3" />
-                  <span>Falar com Fonoaudiólogo</span>
-                </Button>
-                <Button 
-                  variant="outline"
-                  className="w-full justify-start h-auto p-4"
-                >
-                  <Phone className="h-5 w-5 text-medical-red mr-3" />
-                  <span>Emergência: (11) 9999-9999</span>
+                  <MessageCircle className="h-6 w-6 text-primary" />
+                  <span className="text-sm">Comunicação</span>
                 </Button>
               </div>
             </CardContent>
           </Card>
         </div>
 
-        {triageData.riskLevel && triageData.riskLevel !== 'baixo' && (
-          <Card className={`mt-6 ${triageData.riskLevel === 'alto' ? 'bg-medical-red-light border-medical-red' : 'bg-medical-amber-light border-medical-amber'}`}>
-            <CardContent className="p-4">
-              <div className="flex items-start">
-                <AlertTriangle className={`h-5 w-5 ${triageData.riskLevel === 'alto' ? 'text-medical-red' : 'text-medical-amber'} mt-0.5`} />
-                <div className="ml-3">
-                  <h4 className={`text-sm font-medium ${triageData.riskLevel === 'alto' ? 'text-medical-red' : 'text-medical-amber'}`}>
-                    {triageData.riskLevel === 'alto' ? 'Atenção: Alto Risco' : 'Atenção: Risco Moderado'}
-                  </h4>
-                  <p className={`text-sm ${triageData.riskLevel === 'alto' ? 'text-medical-red' : 'text-medical-amber'} mt-1`}>
-                    {triageData.riskLevel === 'alto' 
-                      ? 'Procure atendimento fonoaudiológico imediatamente. Monitore sinais de aspiração.'
-                      : 'Mantenha alimentação modificada e monitore sinais de disfagia. Próxima reavaliação recomendada em 3 dias.'
-                    }
+        {/* Alert for selected patient status */}
+        {selectedPatient && getCurrentStatus().level !== 'Não avaliado' && (
+          <Card className={`border-l-4 ${
+            currentStatus.level === 'Alto Risco' ? 'border-l-red-500 bg-red-50' :
+            currentStatus.level === 'Médio Risco' ? 'border-l-yellow-500 bg-yellow-50' :
+            'border-l-green-500 bg-green-50'
+          }`}>
+            <CardContent className="pt-4">
+              <div className="flex items-center space-x-2">
+                <currentStatus.icon className={`h-5 w-5 ${currentStatus.color}`} />
+                <div>
+                  <p className="font-medium">Status atual de {selectedPatient.nome}: {currentStatus.level}</p>
+                  <p className="text-sm text-muted-foreground">
+                    Última avaliação: {getLastEvaluation()}
                   </p>
                 </div>
               </div>
             </CardContent>
           </Card>
         )}
-
-        {triageData.riskLevel === 'baixo' && (
-          <Card className="mt-6 bg-medical-green-light border-medical-green">
-            <CardContent className="p-4">
-              <div className="flex items-start">
-                <CheckCircle className="h-5 w-5 text-medical-green mt-0.5" />
-                <div className="ml-3">
-                  <h4 className="text-sm font-medium text-medical-green">Situação Controlada</h4>
-                  <p className="text-sm text-medical-green mt-1">
-                    Continue com a alimentação normal e mantenha observação. Próxima reavaliação em 1 semana.
+        
+        {!selectedPatient && (
+          <Card className="border-l-4 border-l-blue-500 bg-blue-50">
+            <CardContent className="pt-4">
+              <div className="flex items-center space-x-2">
+                <AlertTriangle className="h-5 w-5 text-blue-600" />
+                <div>
+                  <p className="font-medium">Selecione um paciente</p>
+                  <p className="text-sm text-muted-foreground">
+                    Escolha um paciente para ver seu status e realizar avaliações
                   </p>
                 </div>
               </div>
@@ -541,7 +649,7 @@ const DisfagiaApp = () => {
       }
     ];
 
-    const handleAnswer = (value: number) => {
+    const handleAnswer = async (value: number) => {
       const newAnswers = { ...answers, [questions[currentQuestion].id]: value };
       setAnswers(newAnswers);
 
@@ -550,22 +658,72 @@ const DisfagiaApp = () => {
       } else {
         // Calcular score
         const totalScore = Object.values(newAnswers).reduce((sum, val) => sum + val, 0);
-        let riskLevel: 'baixo' | 'médio' | 'alto' = 'baixo';
+        let riskLevel: 'baixo' | 'medio' | 'alto' = 'baixo';
         
         if (totalScore >= 12) {
           riskLevel = 'alto';
         } else if (totalScore >= 6) {
-          riskLevel = 'médio';
+          riskLevel = 'medio';
         }
 
-        // Save the result
-        setTriageData({ totalScore, riskLevel, answers: newAnswers, date: new Date().toISOString(), patient: selectedPatient });
+        // Save the result to database
+        try {
+          // Create triage assessment
+          const { data: assessment, error: assessmentError } = await supabase
+            .from('triage_assessments')
+            .insert({
+              patient_id: selectedPatient.id,
+              caregiver_id: profile?.id,
+              total_score: totalScore,
+              risk_level: riskLevel
+            })
+            .select()
+            .single();
 
-        toast({
-          title: "Triagem concluída!",
-          description: `Paciente: ${selectedPatient.nome} - Pontuação: ${totalScore} - Nível de risco: ${riskLevel}`,
-          duration: 4000,
-        });
+          if (assessmentError) throw assessmentError;
+
+          // Save answers
+          const answersToInsert = Object.entries(newAnswers).map(([question_id, answer_value]) => ({
+            assessment_id: assessment.id,
+            question_id,
+            answer_value
+          }));
+
+          const { error: answersError } = await supabase
+            .from('triage_answers')
+            .insert(answersToInsert);
+
+          if (answersError) throw answersError;
+
+          // Update patient's current risk level if patients table exists
+          try {
+            const { error: patientError } = await supabase
+              .from('patients')
+              .update({ current_risk_level: riskLevel })
+              .eq('id', selectedPatient.id);
+            
+            // Ignore error if patients table doesn't exist or patient not found
+            if (patientError) console.warn('Could not update patient risk level:', patientError);
+          } catch (err) {
+            console.warn('Patients table may not exist:', err);
+          }
+
+          setTriageData({ totalScore, riskLevel, answers: newAnswers, date: new Date().toISOString(), patient: selectedPatient });
+
+          toast({
+            title: "Triagem concluída e salva!",
+            description: `Paciente: ${selectedPatient.nome} - Pontuação: ${totalScore} - Nível de risco: ${riskLevel}`,
+            duration: 4000,
+          });
+        } catch (error) {
+          console.error('Erro ao salvar triagem:', error);
+          toast({
+            title: "Erro",
+            description: "Erro ao salvar triagem no banco de dados",
+            variant: "destructive",
+          });
+          return;
+        }
         
         setCurrentView('dashboard');
       }
