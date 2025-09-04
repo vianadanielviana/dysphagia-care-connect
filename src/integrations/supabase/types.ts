@@ -21,6 +21,7 @@ export type Database = {
           mensagem: string | null
           pausa_forcada: string | null
           timeout: string | null
+          user_id: string | null
         }
         Insert: {
           created_at?: string
@@ -28,6 +29,7 @@ export type Database = {
           mensagem?: string | null
           pausa_forcada?: string | null
           timeout?: string | null
+          user_id?: string | null
         }
         Update: {
           created_at?: string
@@ -35,6 +37,7 @@ export type Database = {
           mensagem?: string | null
           pausa_forcada?: string | null
           timeout?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -101,6 +104,195 @@ export type Database = {
         }
         Relationships: []
       }
+      communications: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_read: boolean | null
+          message: string
+          patient_id: string | null
+          receiver_id: string | null
+          sender_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          message: string
+          patient_id?: string | null
+          receiver_id?: string | null
+          sender_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          message?: string
+          patient_id?: string | null
+          receiver_id?: string | null
+          sender_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "communications_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "communications_receiver_id_fkey"
+            columns: ["receiver_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "communications_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contatos: {
+        Row: {
+          ativo: boolean | null
+          categoria: string | null
+          created_at: string | null
+          dias_para_followup: number | null
+          email: string | null
+          erro_envio: string | null
+          id: number
+          mensagem_followup: string | null
+          nome: string
+          status: string | null
+          status_envio: string | null
+          telefone: string | null
+          tentativas_followup: number | null
+          ultima_mensagem_enviada: string | null
+          ultimo_contato: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          ativo?: boolean | null
+          categoria?: string | null
+          created_at?: string | null
+          dias_para_followup?: number | null
+          email?: string | null
+          erro_envio?: string | null
+          id?: number
+          mensagem_followup?: string | null
+          nome: string
+          status?: string | null
+          status_envio?: string | null
+          telefone?: string | null
+          tentativas_followup?: number | null
+          ultima_mensagem_enviada?: string | null
+          ultimo_contato?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          ativo?: boolean | null
+          categoria?: string | null
+          created_at?: string | null
+          dias_para_followup?: number | null
+          email?: string | null
+          erro_envio?: string | null
+          id?: number
+          mensagem_followup?: string | null
+          nome?: string
+          status?: string | null
+          status_envio?: string | null
+          telefone?: string | null
+          tentativas_followup?: number | null
+          ultima_mensagem_enviada?: string | null
+          ultimo_contato?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      daily_record_symptoms: {
+        Row: {
+          created_at: string | null
+          daily_record_id: string | null
+          id: string
+          symptom_name: string
+        }
+        Insert: {
+          created_at?: string | null
+          daily_record_id?: string | null
+          id?: string
+          symptom_name: string
+        }
+        Update: {
+          created_at?: string | null
+          daily_record_id?: string | null
+          id?: string
+          symptom_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "daily_record_symptoms_daily_record_id_fkey"
+            columns: ["daily_record_id"]
+            isOneToOne: false
+            referencedRelation: "daily_records"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      daily_records: {
+        Row: {
+          caregiver_id: string | null
+          created_at: string | null
+          food_consistency: Database["public"]["Enums"]["food_consistency"]
+          id: string
+          observations: string | null
+          patient_id: string | null
+          record_date: string
+          risk_score: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          caregiver_id?: string | null
+          created_at?: string | null
+          food_consistency: Database["public"]["Enums"]["food_consistency"]
+          id?: string
+          observations?: string | null
+          patient_id?: string | null
+          record_date: string
+          risk_score?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          caregiver_id?: string | null
+          created_at?: string | null
+          food_consistency?: Database["public"]["Enums"]["food_consistency"]
+          id?: string
+          observations?: string | null
+          patient_id?: string | null
+          record_date?: string
+          risk_score?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "daily_records_caregiver_id_fkey"
+            columns: ["caregiver_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "daily_records_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       documents: {
         Row: {
           content: string | null
@@ -121,6 +313,91 @@ export type Database = {
           metadata?: Json | null
         }
         Relationships: []
+      }
+      followup_logs: {
+        Row: {
+          categoria: string | null
+          contact_id: number | null
+          created_at: string | null
+          erro: string | null
+          id: number
+          mensagem_enviada: string | null
+          nome: string | null
+          resposta_api: string | null
+          status: string | null
+          telefone: string | null
+        }
+        Insert: {
+          categoria?: string | null
+          contact_id?: number | null
+          created_at?: string | null
+          erro?: string | null
+          id?: number
+          mensagem_enviada?: string | null
+          nome?: string | null
+          resposta_api?: string | null
+          status?: string | null
+          telefone?: string | null
+        }
+        Update: {
+          categoria?: string | null
+          contact_id?: number | null
+          created_at?: string | null
+          erro?: string | null
+          id?: number
+          mensagem_enviada?: string | null
+          nome?: string | null
+          resposta_api?: string | null
+          status?: string | null
+          telefone?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "followup_logs_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contatos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      media_files: {
+        Row: {
+          created_at: string | null
+          daily_record_id: string | null
+          file_name: string
+          file_size: number | null
+          file_type: string
+          file_url: string
+          id: string
+        }
+        Insert: {
+          created_at?: string | null
+          daily_record_id?: string | null
+          file_name: string
+          file_size?: number | null
+          file_type: string
+          file_url: string
+          id?: string
+        }
+        Update: {
+          created_at?: string | null
+          daily_record_id?: string | null
+          file_name?: string
+          file_size?: number | null
+          file_type?: string
+          file_url?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "media_files_daily_record_id_fkey"
+            columns: ["daily_record_id"]
+            isOneToOne: false
+            referencedRelation: "daily_records"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       n8n_chat_histories: {
         Row: {
@@ -212,6 +489,54 @@ export type Database = {
         }
         Relationships: []
       }
+      patients: {
+        Row: {
+          age: number
+          caregiver_id: string | null
+          created_at: string | null
+          current_risk_level: Database["public"]["Enums"]["risk_level"] | null
+          id: string
+          name: string
+          professional_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          age: number
+          caregiver_id?: string | null
+          created_at?: string | null
+          current_risk_level?: Database["public"]["Enums"]["risk_level"] | null
+          id?: string
+          name: string
+          professional_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          age?: number
+          caregiver_id?: string | null
+          created_at?: string | null
+          current_risk_level?: Database["public"]["Enums"]["risk_level"] | null
+          id?: string
+          name?: string
+          professional_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "patients_caregiver_id_fkey"
+            columns: ["caregiver_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "patients_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
@@ -239,6 +564,39 @@ export type Database = {
           nome?: string | null
           tipo_usuario?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      reminder_log: {
+        Row: {
+          appointment_id: string
+          channel: string | null
+          id: number
+          message_id: string | null
+          recipient: string | null
+          reminder_type: string
+          sent_at: string
+          status: string | null
+        }
+        Insert: {
+          appointment_id: string
+          channel?: string | null
+          id?: number
+          message_id?: string | null
+          recipient?: string | null
+          reminder_type: string
+          sent_at?: string
+          status?: string | null
+        }
+        Update: {
+          appointment_id?: string
+          channel?: string | null
+          id?: number
+          message_id?: string | null
+          recipient?: string | null
+          reminder_type?: string
+          sent_at?: string
+          status?: string | null
         }
         Relationships: []
       }
@@ -281,6 +639,113 @@ export type Database = {
           temperatura?: string | null
           updated_at?: string
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      triage_answers: {
+        Row: {
+          answer_value: number
+          assessment_id: string | null
+          created_at: string | null
+          id: string
+          question_id: string
+        }
+        Insert: {
+          answer_value: number
+          assessment_id?: string | null
+          created_at?: string | null
+          id?: string
+          question_id: string
+        }
+        Update: {
+          answer_value?: number
+          assessment_id?: string | null
+          created_at?: string | null
+          id?: string
+          question_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "triage_answers_assessment_id_fkey"
+            columns: ["assessment_id"]
+            isOneToOne: false
+            referencedRelation: "triage_assessments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      triage_assessments: {
+        Row: {
+          caregiver_id: string | null
+          completed_at: string | null
+          id: string
+          patient_id: string | null
+          risk_level: Database["public"]["Enums"]["risk_level"]
+          total_score: number
+        }
+        Insert: {
+          caregiver_id?: string | null
+          completed_at?: string | null
+          id?: string
+          patient_id?: string | null
+          risk_level: Database["public"]["Enums"]["risk_level"]
+          total_score?: number
+        }
+        Update: {
+          caregiver_id?: string | null
+          completed_at?: string | null
+          id?: string
+          patient_id?: string | null
+          risk_level?: Database["public"]["Enums"]["risk_level"]
+          total_score?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "triage_assessments_caregiver_id_fkey"
+            columns: ["caregiver_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "triage_assessments_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      users: {
+        Row: {
+          created_at: string | null
+          email: string
+          id: string
+          name: string
+          phone: string | null
+          registration_number: string | null
+          updated_at: string | null
+          user_type: Database["public"]["Enums"]["user_type"]
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          id?: string
+          name: string
+          phone?: string | null
+          registration_number?: string | null
+          updated_at?: string | null
+          user_type: Database["public"]["Enums"]["user_type"]
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          id?: string
+          name?: string
+          phone?: string | null
+          registration_number?: string | null
+          updated_at?: string | null
+          user_type?: Database["public"]["Enums"]["user_type"]
         }
         Relationships: []
       }
@@ -476,6 +941,12 @@ export type Database = {
       }
     }
     Enums: {
+      food_consistency:
+        | "normal"
+        | "pastosa"
+        | "liquida_modificada"
+        | "liquida_fina"
+      risk_level: "baixo" | "medio" | "alto"
       tipo:
         | "Mercado"
         | "Cartão"
@@ -484,6 +955,7 @@ export type Database = {
         | "Dinheiro"
         | "Congresso"
         | "Passagem Aérea"
+      user_type: "cuidador" | "profissional"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -611,6 +1083,13 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      food_consistency: [
+        "normal",
+        "pastosa",
+        "liquida_modificada",
+        "liquida_fina",
+      ],
+      risk_level: ["baixo", "medio", "alto"],
       tipo: [
         "Mercado",
         "Cartão",
@@ -620,6 +1099,7 @@ export const Constants = {
         "Congresso",
         "Passagem Aérea",
       ],
+      user_type: ["cuidador", "profissional"],
     },
   },
 } as const
