@@ -30,6 +30,11 @@ const DisfagiaApp = () => {
   const [currentView, setCurrentView] = useState('dashboard');
   const [triageData, setTriageData] = useState<TriageData>({});
   const [selectedPatient, setSelectedPatient] = useState<any>(null);
+  
+  // Determine if user is professional based on profile type
+  const isProfessional = profile?.tipo_usuario === 'fonoaudiologo';
+  
+  console.log('Profile type:', profile?.tipo_usuario, 'Is professional:', isProfessional);
   const [dailyRecords, setDailyRecords] = useState([
     { date: '2025-08-10', risco: 2, sintomas: 1, consistencia: 'normal' },
     { date: '2025-08-11', risco: 3, sintomas: 2, consistencia: 'modificada' },
@@ -1500,15 +1505,17 @@ const DisfagiaApp = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-medical-green rounded-lg flex items-center justify-center">
-                <FileText className="h-5 w-5 text-medical-green-foreground" />
+              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+                <FileText className="h-5 w-5 text-primary-foreground" />
               </div>
               <h1 className="text-xl font-semibold text-foreground">DisfagiaMonitor Pro</h1>
             </div>
             <div className="flex items-center space-x-4">
-              <span className="text-sm text-muted-foreground">Dra. Fernanda Silva - CRFa 12345-SP</span>
+              <span className="text-sm text-muted-foreground">
+                {profile?.nome} - CRFa {profile?.email?.split('@')[0] || '12345-SP'}
+              </span>
               <Button 
-                onClick={() => setCurrentView('login')}
+                onClick={signOut}
                 variant="ghost"
                 size="sm"
               >
