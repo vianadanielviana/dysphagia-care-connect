@@ -1,1 +1,4 @@
 project_id = "lodpbrcaxnktfbdbsfyz"
+
+[functions.pacientes]
+verify_jwt = true

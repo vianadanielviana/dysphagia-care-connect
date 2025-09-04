@@ -102,6 +102,13 @@ const DisfagiaApp = () => {
                 {view === 'comunicacao' && 'Comunicação'}
               </Button>
             ))}
+            <Button
+              onClick={() => navigate('/pacientes')}
+              variant="ghost"
+              className="rounded-none border-b-2 border-transparent text-muted-foreground hover:text-foreground hover:border-muted"
+            >
+              Pacientes
+            </Button>
           </div>
         </div>
       </nav>
@@ -257,6 +264,14 @@ const DisfagiaApp = () => {
                 >
                   <FileText className="h-5 w-5 text-primary mr-3" />
                   <span>Nova Triagem</span>
+                </Button>
+                <Button 
+                  onClick={() => navigate('/pacientes')}
+                  variant="outline"
+                  className="w-full justify-start h-auto p-4"
+                >
+                  <User className="h-5 w-5 text-primary mr-3" />
+                  <span>Gerenciar Pacientes</span>
                 </Button>
                 <Button 
                   onClick={() => setCurrentView('comunicacao')}
