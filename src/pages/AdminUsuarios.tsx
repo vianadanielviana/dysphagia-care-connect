@@ -145,7 +145,7 @@ export default function AdminUsuarios() {
                         </div>
                         <Button
                           onClick={() => aprovarUsuario(user.id)}
-                          className="bg-medical-green hover:bg-medical-green/90 text-medical-green-foreground"
+                          className="bg-medical-green hover:bg-medical-green/90 text-white"
                         >
                           Aprovar
                         </Button>
