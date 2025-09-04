@@ -173,10 +173,14 @@ const AuthForm = () => {
                       <FormLabel>Nome Completo</FormLabel>
                       <FormControl>
                         <Input
-                          placeholder="Seu nome completo"
+                          placeholder="Digite seu nome completo"
                           autoComplete="name"
-                          {...field}
                           disabled={loading}
+                          value={field.value || ''}
+                          onChange={field.onChange}
+                          onBlur={field.onBlur}
+                          name={field.name}
+                          ref={field.ref}
                         />
                       </FormControl>
                       <FormMessage />
@@ -193,10 +197,14 @@ const AuthForm = () => {
                       <FormControl>
                         <Input
                           type="email"
-                          placeholder="seu@email.com"
+                          placeholder="Digite seu email"
                           autoComplete="email"
-                          {...field}
                           disabled={loading}
+                          value={field.value || ''}
+                          onChange={field.onChange}
+                          onBlur={field.onBlur}
+                          name={field.name}
+                          ref={field.ref}
                         />
                       </FormControl>
                       <FormMessage />
@@ -213,8 +221,9 @@ const AuthForm = () => {
                       <FormControl>
                         <RadioGroup
                           onValueChange={field.onChange}
-                          defaultValue={field.value}
+                          value={field.value}
                           className="grid grid-cols-1 gap-4"
+                          disabled={loading}
                         >
                           <div className="flex items-center space-x-2">
                             <RadioGroupItem value="cuidador" id="cuidador" />
@@ -247,7 +256,13 @@ const AuthForm = () => {
                         <Input
                           type="password"
                           placeholder="Mínimo 6 caracteres"
-                          {...field}
+                          autoComplete="new-password"
+                          disabled={loading}
+                          value={field.value || ''}
+                          onChange={field.onChange}
+                          onBlur={field.onBlur}
+                          name={field.name}
+                          ref={field.ref}
                         />
                       </FormControl>
                       <FormMessage />
@@ -264,8 +279,14 @@ const AuthForm = () => {
                       <FormControl>
                         <Input
                           type="password"
-                          placeholder="Confirme sua senha"
-                          {...field}
+                          placeholder="Digite a senha novamente"
+                          autoComplete="new-password"
+                          disabled={loading}
+                          value={field.value || ''}
+                          onChange={field.onChange}
+                          onBlur={field.onBlur}
+                          name={field.name}
+                          ref={field.ref}
                         />
                       </FormControl>
                       <FormMessage />
