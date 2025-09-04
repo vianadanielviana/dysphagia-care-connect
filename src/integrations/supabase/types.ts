@@ -529,6 +529,7 @@ export type Database = {
       }
       pacientes: {
         Row: {
+          caregiver_id: string | null
           cpf: string | null
           created_at: string
           data_nascimento: string | null
@@ -540,6 +541,7 @@ export type Database = {
           medicamentos_atuais: string | null
           nome: string
           observacoes: string | null
+          professional_id: string | null
           responsavel_email: string | null
           responsavel_nome: string | null
           responsavel_telefone: string | null
@@ -550,6 +552,7 @@ export type Database = {
           usuario_cadastro_id: string | null
         }
         Insert: {
+          caregiver_id?: string | null
           cpf?: string | null
           created_at?: string
           data_nascimento?: string | null
@@ -561,6 +564,7 @@ export type Database = {
           medicamentos_atuais?: string | null
           nome: string
           observacoes?: string | null
+          professional_id?: string | null
           responsavel_email?: string | null
           responsavel_nome?: string | null
           responsavel_telefone?: string | null
@@ -571,6 +575,7 @@ export type Database = {
           usuario_cadastro_id?: string | null
         }
         Update: {
+          caregiver_id?: string | null
           cpf?: string | null
           created_at?: string
           data_nascimento?: string | null
@@ -582,6 +587,7 @@ export type Database = {
           medicamentos_atuais?: string | null
           nome?: string
           observacoes?: string | null
+          professional_id?: string | null
           responsavel_email?: string | null
           responsavel_nome?: string | null
           responsavel_telefone?: string | null
@@ -592,6 +598,53 @@ export type Database = {
           usuario_cadastro_id?: string | null
         }
         Relationships: []
+      }
+      patient_access_log: {
+        Row: {
+          accessed_at: string | null
+          accessed_fields: string[] | null
+          action: string
+          id: string
+          ip_address: unknown | null
+          metadata: Json | null
+          patient_id: string | null
+          user_agent: string | null
+          user_id: string | null
+          user_type: string | null
+        }
+        Insert: {
+          accessed_at?: string | null
+          accessed_fields?: string[] | null
+          action: string
+          id?: string
+          ip_address?: unknown | null
+          metadata?: Json | null
+          patient_id?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+          user_type?: string | null
+        }
+        Update: {
+          accessed_at?: string | null
+          accessed_fields?: string[] | null
+          action?: string
+          id?: string
+          ip_address?: unknown | null
+          metadata?: Json | null
+          patient_id?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+          user_type?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_patient_access_log_patient"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "pacientes"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       patients: {
         Row: {
