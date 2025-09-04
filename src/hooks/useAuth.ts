@@ -102,8 +102,6 @@ export function useAuth() {
         // Continue even if this fails
       }
 
-      console.log('Tentando fazer login com:', email);
-
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -113,35 +111,21 @@ export function useAuth() {
 
       // Check if user is approved (except admin)
       if (data.user) {
-        console.log('Verificando aprovação do usuário:', data.user.id);
-        
-        const { data: profileData, error: profileError } = await supabase
+        const { data: profileData } = await supabase
           .from('profiles')
-          .select('is_approved, tipo_usuario, nome')
+          .select('is_approved, tipo_usuario')
           .eq('id', data.user.id)
           .single();
 
-        console.log('Dados do perfil:', profileData);
-        console.log('Erro do perfil:', profileError);
-
-        if (profileError) {
-          console.error('Erro ao buscar perfil:', profileError);
-          await supabase.auth.signOut();
-          throw new Error('Erro ao verificar status da conta. Contate o administrador.');
-        }
-
         if (profileData && !profileData.is_approved && email !== 'viana.vianadaniel@outlook.com') {
-          console.log('Usuário não aprovado, fazendo logout');
           await supabase.auth.signOut();
-          throw new Error(`Sua conta ainda não foi aprovada. Usuário: ${profileData.nome} (${profileData.tipo_usuario}). Aguarde a aprovação de um administrador.`);
+          throw new Error('Sua conta ainda não foi aprovada. Aguarde a aprovação de um administrador.');
         }
 
-        console.log('Login aprovado para:', profileData?.nome);
         toast.success('Login realizado com sucesso!');
         return { user: data.user, session: data.session };
       }
     } catch (error: any) {
-      console.error('Erro no signIn:', error);
       toast.error(error.message || 'Erro ao fazer login');
       throw error;
     }
