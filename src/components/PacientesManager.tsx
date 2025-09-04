@@ -120,17 +120,15 @@ const PacientesManager = () => {
 
       let response;
       if (editingPaciente) {
-        // Update existing patient - make direct fetch call since supabase.functions.invoke doesn't support PUT with path params properly
+        // Update existing patient - make direct fetch call
         const { data: { session } } = await supabase.auth.getSession();
-        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-        const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
         
-        const fetchResponse = await fetch(`${supabaseUrl}/functions/v1/pacientes/${editingPaciente.id}`, {
+        const fetchResponse = await fetch(`https://lodpbrcaxnktfbdbsfyz.supabase.co/functions/v1/pacientes/${editingPaciente.id}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${session?.access_token}`,
-            'apikey': supabaseKey,
+            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxvZHBicmNheG5rdGZiZGJzZnl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc4MjUzNzMsImV4cCI6MjA2MzQwMTM3M30._n8XW_NNSRNZ9NDoj7IWD8zGywG2UVpql85oKHW0Ta4',
           },
           body: JSON.stringify(cleanedData)
         });
@@ -209,16 +207,14 @@ const PacientesManager = () => {
     if (!confirm('Tem certeza que deseja excluir este paciente?')) return;
 
     try {
-      // Make direct fetch call for DELETE since supabase.functions.invoke doesn't support DELETE with path params properly
+      // Make direct fetch call for DELETE
       const { data: { session } } = await supabase.auth.getSession();
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
       
-      const fetchResponse = await fetch(`${supabaseUrl}/functions/v1/pacientes/${id}`, {
+      const fetchResponse = await fetch(`https://lodpbrcaxnktfbdbsfyz.supabase.co/functions/v1/pacientes/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${session?.access_token}`,
-          'apikey': supabaseKey,
+          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxvZHBicmNheG5rdGZiZGJzZnl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc4MjUzNzMsImV4cCI6MjA2MzQwMTM3M30._n8XW_NNSRNZ9NDoj7IWD8zGywG2UVpql85oKHW0Ta4',
         }
       });
       
