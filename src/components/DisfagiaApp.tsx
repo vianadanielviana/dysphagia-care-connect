@@ -372,17 +372,7 @@ const DisfagiaApp = () => {
                 </Button>
                 
                 <Button 
-                  onClick={() => {
-                    if (!selectedPatient) {
-                      toast({
-                        title: "Atenção", 
-                        description: "Selecione um paciente primeiro",
-                        variant: "destructive",
-                      });
-                      return;
-                    }
-                    setCurrentView('patient-selection');
-                  }}
+                  onClick={() => setCurrentView('patient-selection')}
                   variant="outline"
                   className="h-auto py-4 flex flex-col items-center space-y-2"
                 >
@@ -944,6 +934,12 @@ const DisfagiaApp = () => {
     });
     const { toast } = useToast();
 
+    // Verificar se um paciente foi selecionado
+    if (!selectedPatient) {
+      setCurrentView('patient-selection-view');
+      return null;
+    }
+
     const sintomas = [
       'Tosse durante alimentação',
       'Engasgo',
@@ -987,7 +983,14 @@ const DisfagiaApp = () => {
         <div className="max-w-2xl mx-auto">
           <Card className="shadow-lg">
             <CardHeader>
-              <CardTitle className="text-2xl">Registro Diário</CardTitle>
+              <div className="flex justify-between items-start">
+                <div>
+                  <CardTitle className="text-2xl">Registro Diário</CardTitle>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Paciente: <span className="font-medium">{selectedPatient.nome}</span>
+                  </p>
+                </div>
+              </div>
             </CardHeader>
             <CardContent className="space-y-6">
               <div>
@@ -1071,6 +1074,17 @@ const DisfagiaApp = () => {
                   className="flex-1"
                 >
                   Salvar Registro
+                </Button>
+                <Button
+                  onClick={() => {
+                    setSelectedPatient(null);
+                    setCurrentView('patient-selection-view');
+                  }}
+                  variant="outline"
+                  className="mr-2"
+                >
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  Trocar Paciente
                 </Button>
                 <Button
                   onClick={() => setCurrentView('dashboard')}
