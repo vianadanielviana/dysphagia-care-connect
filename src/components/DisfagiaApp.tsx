@@ -33,8 +33,6 @@ const DisfagiaApp = () => {
   
   // Determine if user is professional based on profile type
   const isProfessional = profile?.tipo_usuario === 'fonoaudiologo';
-  
-  console.log('Profile type:', profile?.tipo_usuario, 'Is professional:', isProfessional);
   const [dailyRecords, setDailyRecords] = useState([
     { date: '2025-08-10', risco: 2, sintomas: 1, consistencia: 'normal' },
     { date: '2025-08-11', risco: 3, sintomas: 2, consistencia: 'modificada' },
