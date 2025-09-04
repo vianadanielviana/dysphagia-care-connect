@@ -293,6 +293,42 @@ export type Database = {
           },
         ]
       }
+      document_access_log: {
+        Row: {
+          accessed_at: string | null
+          action: string
+          document_id: number
+          id: string
+          ip_address: unknown | null
+          metadata: Json | null
+          user_agent: string | null
+          user_id: string
+          user_type: string | null
+        }
+        Insert: {
+          accessed_at?: string | null
+          action: string
+          document_id: number
+          id?: string
+          ip_address?: unknown | null
+          metadata?: Json | null
+          user_agent?: string | null
+          user_id: string
+          user_type?: string | null
+        }
+        Update: {
+          accessed_at?: string | null
+          action?: string
+          document_id?: number
+          id?: string
+          ip_address?: unknown | null
+          metadata?: Json | null
+          user_agent?: string | null
+          user_id?: string
+          user_type?: string | null
+        }
+        Relationships: []
+      }
       documents: {
         Row: {
           content: string | null
