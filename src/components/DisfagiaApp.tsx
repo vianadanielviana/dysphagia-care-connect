@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, BarChart, Bar, ResponsiveContainer } from 'recharts';
-import { User, Camera, Upload, MessageCircle, AlertTriangle, CheckCircle, Calendar, TrendingUp, FileText, Phone, LogOut, Settings } from 'lucide-react';
+import { User, Camera, Upload, MessageCircle, AlertTriangle, CheckCircle, Calendar, TrendingUp, FileText, Phone, LogOut, Settings, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -13,12 +13,14 @@ import { Input } from '@/components/ui/input';
 import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
 
 interface TriageData {
   totalScore?: number;
   riskLevel?: 'baixo' | 'médio' | 'alto';
   answers?: Record<string, number>;
   date?: string;
+  patient?: any;
 }
 
 const DisfagiaApp = () => {
@@ -26,6 +28,7 @@ const DisfagiaApp = () => {
   const navigate = useNavigate();
   const [currentView, setCurrentView] = useState('dashboard');
   const [triageData, setTriageData] = useState<TriageData>({});
+  const [selectedPatient, setSelectedPatient] = useState<any>(null);
   const [dailyRecords, setDailyRecords] = useState([
     { date: '2025-08-10', risco: 2, sintomas: 1, consistencia: 'normal' },
     { date: '2025-08-11', risco: 3, sintomas: 2, consistencia: 'modificada' },
@@ -87,7 +90,13 @@ const DisfagiaApp = () => {
             {['dashboard', 'triagem', 'registro', 'historico', 'comunicacao'].map((view) => (
               <Button
                 key={view}
-                onClick={() => setCurrentView(view)}
+                onClick={() => {
+                  if (view === 'triagem') {
+                    setCurrentView('patient-selection');
+                  } else {
+                    setCurrentView(view);
+                  }
+                }}
                 variant="ghost"
                 className={`rounded-none border-b-2 ${
                   currentView === view 
@@ -115,6 +124,7 @@ const DisfagiaApp = () => {
 
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         {currentView === 'dashboard' && <CaregiverDashboardContent />}
+        {currentView === 'patient-selection' && <PatientSelection />}
         {currentView === 'triagem' && <TriagemForm />}
         {currentView === 'registro' && <DailyRecordForm />}
         {currentView === 'historico' && <HistoryView />}
@@ -333,10 +343,148 @@ const DisfagiaApp = () => {
     );
   };
 
+  const PatientSelection = () => {
+    const [patients, setPatients] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const { toast } = useToast();
+
+    useEffect(() => {
+      fetchPatients();
+    }, []);
+
+    const fetchPatients = async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke('pacientes', {
+          method: 'GET'
+        });
+
+        if (error) throw error;
+        setPatients(data || []);
+      } catch (error) {
+        console.error('Erro ao carregar pacientes:', error);
+        toast({
+          title: "Erro",
+          description: "Erro ao carregar lista de pacientes",
+          variant: "destructive",
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    const handleSelectPatient = (patient: any) => {
+      setSelectedPatient(patient);
+      setCurrentView('triagem');
+    };
+
+    if (loading) {
+      return (
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-muted-foreground">Carregando pacientes...</p>
+          </div>
+        </div>
+      );
+    }
+
+    if (patients.length === 0) {
+      return (
+        <div className="px-4 py-6 sm:px-0">
+          <div className="max-w-2xl mx-auto text-center">
+            <Card className="shadow-lg">
+              <CardContent className="p-8">
+                <User className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+                <h2 className="text-xl font-semibold text-foreground mb-2">Nenhum paciente cadastrado</h2>
+                <p className="text-muted-foreground mb-6">
+                  Para realizar uma triagem, você precisa cadastrar pelo menos um paciente.
+                </p>
+                <div className="space-x-4">
+                  <Button onClick={() => navigate('/pacientes')}>
+                    Cadastrar Paciente
+                  </Button>
+                  <Button 
+                    onClick={() => setCurrentView('dashboard')}
+                    variant="outline"
+                  >
+                    <ArrowLeft className="h-4 w-4 mr-2" />
+                    Voltar
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="px-4 py-6 sm:px-0">
+        <div className="max-w-4xl mx-auto">
+          <div className="mb-6">
+            <Button 
+              onClick={() => setCurrentView('dashboard')}
+              variant="ghost"
+              className="mb-4"
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Voltar ao Dashboard
+            </Button>
+            <h1 className="text-3xl font-bold text-foreground">Selecionar Paciente para Triagem</h1>
+            <p className="text-muted-foreground">Escolha qual paciente deseja realizar a triagem de disfagia</p>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {patients.map((patient: any) => (
+              <Card key={patient.id} className="cursor-pointer hover:shadow-lg transition-shadow">
+                <CardContent className="p-6">
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
+                        <User className="h-6 w-6 text-primary" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-foreground">{patient.nome}</h3>
+                        {patient.data_nascimento && (
+                          <p className="text-sm text-muted-foreground">
+                            {new Date().getFullYear() - new Date(patient.data_nascimento).getFullYear()} anos
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {patient.diagnostico && (
+                    <div className="mb-4">
+                      <p className="text-sm font-medium text-foreground mb-1">Diagnóstico:</p>
+                      <p className="text-sm text-muted-foreground line-clamp-2">{patient.diagnostico}</p>
+                    </div>
+                  )}
+
+                  <Button 
+                    onClick={() => handleSelectPatient(patient)}
+                    className="w-full"
+                  >
+                    Iniciar Triagem
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const TriagemForm = () => {
     const [currentQuestion, setCurrentQuestion] = useState(0);
     const [answers, setAnswers] = useState<Record<string, number>>({});
     const { toast } = useToast();
+
+    if (!selectedPatient) {
+      setCurrentView('patient-selection');
+      return null;
+    }
 
     const questions = [
       {
@@ -411,11 +559,11 @@ const DisfagiaApp = () => {
         }
 
         // Save the result
-        setTriageData({ totalScore, riskLevel, answers: newAnswers, date: new Date().toISOString() });
+        setTriageData({ totalScore, riskLevel, answers: newAnswers, date: new Date().toISOString(), patient: selectedPatient });
 
         toast({
           title: "Triagem concluída!",
-          description: `Pontuação: ${totalScore} - Nível de risco: ${riskLevel}`,
+          description: `Paciente: ${selectedPatient.nome} - Pontuação: ${totalScore} - Nível de risco: ${riskLevel}`,
           duration: 4000,
         });
         
@@ -426,17 +574,22 @@ const DisfagiaApp = () => {
     return (
       <div className="px-4 py-6 sm:px-0">
         <div className="max-w-2xl mx-auto">
-          <Card className="shadow-lg">
-            <CardContent className="p-8">
-              <div className="mb-6">
-                <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-2xl font-bold text-foreground">Triagem de Disfagia</h2>
-                  <span className="text-sm text-muted-foreground">
-                    Pergunta {currentQuestion + 1} de {questions.length}
-                  </span>
+            <Card className="shadow-lg">
+              <CardContent className="p-8">
+                <div className="mb-6">
+                  <div className="flex justify-between items-center mb-4">
+                    <div>
+                      <h2 className="text-2xl font-bold text-foreground">Triagem de Disfagia</h2>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        Paciente: <span className="font-medium">{selectedPatient.nome}</span>
+                      </p>
+                    </div>
+                    <span className="text-sm text-muted-foreground">
+                      Pergunta {currentQuestion + 1} de {questions.length}
+                    </span>
+                  </div>
+                  <Progress value={((currentQuestion + 1) / questions.length) * 100} className="h-2" />
                 </div>
-                <Progress value={((currentQuestion + 1) / questions.length) * 100} className="h-2" />
-              </div>
 
               <div className="mb-8">
                 <h3 className="text-lg font-medium text-foreground mb-6">
@@ -461,10 +614,21 @@ const DisfagiaApp = () => {
                 <Button
                   onClick={() => setCurrentQuestion(currentQuestion - 1)}
                   variant="ghost"
+                  className="mr-4"
                 >
                   ← Pergunta anterior
                 </Button>
               )}
+              <Button
+                onClick={() => {
+                  setSelectedPatient(null);
+                  setCurrentView('patient-selection');
+                }}
+                variant="outline"
+              >
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Trocar Paciente
+              </Button>
             </CardContent>
           </Card>
         </div>
