@@ -1001,6 +1001,11 @@ export type Database = {
         | "pastosa"
         | "liquida_modificada"
         | "liquida_fina"
+      food_consistency_type:
+        | "liquida_fina"
+        | "liquida_modificada"
+        | "pastosa"
+        | "normal"
       risk_level: "baixo" | "medio" | "alto"
       tipo:
         | "Mercado"
@@ -1143,6 +1148,12 @@ export const Constants = {
         "pastosa",
         "liquida_modificada",
         "liquida_fina",
+      ],
+      food_consistency_type: [
+        "liquida_fina",
+        "liquida_modificada",
+        "pastosa",
+        "normal",
       ],
       risk_level: ["baixo", "medio", "alto"],
       tipo: [
