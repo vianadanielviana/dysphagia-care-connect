@@ -134,14 +134,22 @@ serve(async (req) => {
         })
 
       case 'PUT':
-        if (!pacienteId || pacienteId === 'pacientes') {
+        // Handle updates - check if ID is in URL path or in body
+        let updateId = (pacienteId && pacienteId !== 'pacientes') ? pacienteId : null;
+        
+        const updatedData = await req.json()
+        
+        // If no ID in URL, check if it's in the body
+        if (!updateId && updatedData.id) {
+          updateId = updatedData.id;
+        }
+
+        if (!updateId) {
           return new Response(JSON.stringify({ error: 'ID do paciente é obrigatório' }), {
             status: 400,
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           })
         }
-
-        const updatedData = await req.json()
         
         // Clean the data - convert empty strings to null for database
         const cleanedData = {
@@ -160,12 +168,13 @@ serve(async (req) => {
           responsavel_telefone: updatedData.responsavel_telefone?.trim() || null,
         }
 
+        console.log('Updating patient with ID:', updateId)
         console.log('Updating patient data:', cleanedData)
         
         const { data: updatedPaciente, error: updateError } = await supabaseClient
           .from('pacientes')
           .update(cleanedData)
-          .eq('id', pacienteId)
+          .eq('id', updateId)
           .select()
           .single()
 
@@ -183,17 +192,30 @@ serve(async (req) => {
         })
 
       case 'DELETE':
-        if (!pacienteId || pacienteId === 'pacientes') {
+        // Handle delete - check if ID is in URL path or in body
+        let deleteId = (pacienteId && pacienteId !== 'pacientes') ? pacienteId : null;
+        
+        // If no ID in URL, check if it's in the body
+        if (!deleteId) {
+          const deleteData = await req.json();
+          if (deleteData.id) {
+            deleteId = deleteData.id;
+          }
+        }
+
+        if (!deleteId) {
           return new Response(JSON.stringify({ error: 'ID do paciente é obrigatório' }), {
             status: 400,
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           })
         }
 
+        console.log('Deleting patient with ID:', deleteId)
+
         const { error: deleteError } = await supabaseClient
           .from('pacientes')
           .delete()
-          .eq('id', pacienteId)
+          .eq('id', deleteId)
 
         if (deleteError) {
           console.log('Error deleting patient:', deleteError)
@@ -203,7 +225,7 @@ serve(async (req) => {
           })
         }
 
-        console.log('Patient deleted successfully:', pacienteId)
+        console.log('Patient deleted successfully:', deleteId)
         return new Response(JSON.stringify({ message: 'Paciente excluído com sucesso' }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         })

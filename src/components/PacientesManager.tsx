@@ -120,25 +120,14 @@ const PacientesManager = () => {
 
       let response;
       if (editingPaciente) {
-        // Update existing patient - make direct fetch call
-        const { data: { session } } = await supabase.auth.getSession();
-        
-        const fetchResponse = await fetch(`https://lodpbrcaxnktfbdbsfyz.supabase.co/functions/v1/pacientes/${editingPaciente.id}`, {
+        // Update existing patient using functions.invoke with different approach
+        response = await supabase.functions.invoke('pacientes', {
           method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${session?.access_token}`,
-            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxvZHBicmNheG5rdGZiZGJzZnl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc4MjUzNzMsImV4cCI6MjA2MzQwMTM3M30._n8XW_NNSRNZ9NDoj7IWD8zGywG2UVpql85oKHW0Ta4',
-          },
-          body: JSON.stringify(cleanedData)
+          body: {
+            id: editingPaciente.id,
+            ...cleanedData
+          }
         });
-        
-        if (!fetchResponse.ok) {
-          throw new Error(`HTTP error! status: ${fetchResponse.status}`);
-        }
-        
-        const responseData = await fetchResponse.json();
-        response = { data: responseData, error: null };
       } else {
         // Create new patient
         response = await supabase.functions.invoke('pacientes', {
@@ -207,20 +196,12 @@ const PacientesManager = () => {
     if (!confirm('Tem certeza que deseja excluir este paciente?')) return;
 
     try {
-      // Make direct fetch call for DELETE
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      const fetchResponse = await fetch(`https://lodpbrcaxnktfbdbsfyz.supabase.co/functions/v1/pacientes/${id}`, {
+      const { error } = await supabase.functions.invoke('pacientes', {
         method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${session?.access_token}`,
-          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxvZHBicmNheG5rdGZiZGJzZnl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc4MjUzNzMsImV4cCI6MjA2MzQwMTM3M30._n8XW_NNSRNZ9NDoj7IWD8zGywG2UVpql85oKHW0Ta4',
-        }
+        body: { id }
       });
-      
-      if (!fetchResponse.ok) {
-        throw new Error(`HTTP error! status: ${fetchResponse.status}`);
-      }
+
+      if (error) throw error;
 
       setPacientes(prev => prev.filter(p => p.id !== id));
       toast({
