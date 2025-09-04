@@ -174,7 +174,9 @@ const AuthForm = () => {
                       <FormControl>
                         <Input
                           placeholder="Seu nome completo"
+                          autoComplete="name"
                           {...field}
+                          disabled={loading}
                         />
                       </FormControl>
                       <FormMessage />
@@ -192,7 +194,9 @@ const AuthForm = () => {
                         <Input
                           type="email"
                           placeholder="seu@email.com"
+                          autoComplete="email"
                           {...field}
+                          disabled={loading}
                         />
                       </FormControl>
                       <FormMessage />
