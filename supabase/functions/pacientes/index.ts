@@ -43,12 +43,11 @@ serve(async (req) => {
     switch (method) {
       case 'GET':
         if (pacienteId && pacienteId !== 'pacientes') {
-          // Get single patient
+          // Get single patient (RLS policies will control access)
           const { data: paciente, error } = await supabaseClient
             .from('pacientes')
             .select('*')
             .eq('id', pacienteId)
-            .eq('usuario_cadastro_id', user.id)
             .single()
 
           if (error) {
@@ -63,11 +62,10 @@ serve(async (req) => {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           })
         } else {
-          // Get all patients for user
+          // Get all patients (RLS policies will control access)
           const { data: pacientes, error } = await supabaseClient
             .from('pacientes')
             .select('*')
-            .eq('usuario_cadastro_id', user.id)
             .order('created_at', { ascending: false })
 
           if (error) {
@@ -168,7 +166,6 @@ serve(async (req) => {
           .from('pacientes')
           .update(cleanedData)
           .eq('id', pacienteId)
-          .eq('usuario_cadastro_id', user.id)
           .select()
           .single()
 
@@ -197,7 +194,6 @@ serve(async (req) => {
           .from('pacientes')
           .delete()
           .eq('id', pacienteId)
-          .eq('usuario_cadastro_id', user.id)
 
         if (deleteError) {
           console.log('Error deleting patient:', deleteError)
