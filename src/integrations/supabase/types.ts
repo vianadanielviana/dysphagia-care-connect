@@ -288,7 +288,7 @@ export type Database = {
             foreignKeyName: "daily_records_patient_id_fkey"
             columns: ["patient_id"]
             isOneToOne: false
-            referencedRelation: "patients"
+            referencedRelation: "pacientes"
             referencedColumns: ["id"]
           },
         ]
