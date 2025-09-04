@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import AuthForm from './AuthForm';
 import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { AlertTriangle, User } from 'lucide-react';
 
 interface ProtectedRouteProps {
@@ -10,7 +11,21 @@ interface ProtectedRouteProps {
 }
 
 export default function ProtectedRoute({ children, requireAdmin = false }: ProtectedRouteProps) {
-  const { isAuthenticated, isApproved, isAdmin, loading, profile } = useAuth();
+  const { isAuthenticated, isApproved, isAdmin, loading, profile, signOut } = useAuth();
+
+  // Debug logs
+  console.log('ProtectedRoute - isAuthenticated:', isAuthenticated);
+  console.log('ProtectedRoute - isApproved:', isApproved);
+  console.log('ProtectedRoute - isAdmin:', isAdmin);
+  console.log('ProtectedRoute - profile:', profile);
+
+  useEffect(() => {
+    // Se o usuário está autenticado mas não foi aprovado e não é admin, fazer logout
+    if (isAuthenticated && profile && !isApproved && !isAdmin) {
+      console.log('Usuário não aprovado detectado, fazendo logout automático');
+      signOut();
+    }
+  }, [isAuthenticated, isApproved, isAdmin, profile, signOut]);
 
   if (loading) {
     return (
@@ -61,9 +76,12 @@ export default function ProtectedRoute({ children, requireAdmin = false }: Prote
             <p className="text-muted-foreground mb-4">
               Sua conta foi criada com sucesso! Um administrador irá revisar e aprovar seu acesso em breve.
             </p>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-muted-foreground mb-4">
               Usuário: {profile?.nome} ({profile?.tipo_usuario})
             </p>
+            <Button onClick={signOut} variant="outline" size="sm">
+              Sair
+            </Button>
           </CardContent>
         </Card>
       </div>
