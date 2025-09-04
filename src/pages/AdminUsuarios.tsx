@@ -136,11 +136,20 @@ export default function AdminUsuarios() {
           </CardHeader>
           <CardContent>
             {usuarios.length === 0 ? (
-              <div className="text-center py-8">
+              <div className="text-center py-8 space-y-4">
                 <p className="text-muted-foreground">Nenhum usuário pendente para aprovação.</p>
+                <div className="text-sm text-muted-foreground bg-muted p-4 rounded-md">
+                  <p className="font-medium mb-2">ℹ️ Como funciona:</p>
+                  <p>• Novos usuários aparecerão aqui após se cadastrarem</p>
+                  <p>• Apenas usuários com is_approved = false são exibidos</p>
+                  <p>• Após aprovação, eles ganham acesso ao sistema</p>
+                </div>
               </div>
             ) : (
               <div className="space-y-4">
+                <p className="text-sm text-muted-foreground mb-4">
+                  📋 {usuarios.length} usuário(s) aguardando aprovação
+                </p>
                 {usuarios.map((user) => (
                   <Card key={user.id} className="border-2">
                     <CardContent className="p-4">
