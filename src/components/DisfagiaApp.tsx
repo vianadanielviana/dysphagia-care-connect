@@ -1652,10 +1652,6 @@ const DisfagiaApp = () => {
     </div>
   );
 
-  if (profile?.tipo_usuario === 'fonoaudiologo') {
-    return <ProfessionalDashboard />;
-  }
-
   return <CaregiverDashboard />;
 };
 
