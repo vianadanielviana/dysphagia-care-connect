@@ -930,6 +930,28 @@ const DisfagiaApp = () => {
     });
     const { toast } = useToast();
 
+    // Verificar se um paciente foi selecionado
+    if (!selectedPatient) {
+      return (
+        <div className="px-4 py-6 sm:px-0">
+          <div className="max-w-2xl mx-auto text-center">
+            <Card className="shadow-lg">
+              <CardContent className="p-8">
+                <User className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+                <h2 className="text-xl font-semibold text-foreground mb-2">Nenhum paciente selecionado</h2>
+                <p className="text-muted-foreground mb-6">
+                  Para realizar um registro diário, você precisa selecionar um paciente.
+                </p>
+                <Button onClick={() => setCurrentView('patient-selection-view')}>
+                  Selecionar Paciente
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      );
+    }
+
     const sintomas = [
       'Tosse durante alimentação',
       'Engasgo',
