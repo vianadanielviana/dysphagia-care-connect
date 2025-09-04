@@ -120,11 +120,27 @@ const PacientesManager = () => {
 
       let response;
       if (editingPaciente) {
-        // Update existing patient
-        response = await supabase.functions.invoke(`pacientes/${editingPaciente.id}`, {
+        // Update existing patient - make direct fetch call since supabase.functions.invoke doesn't support PUT with path params properly
+        const { data: { session } } = await supabase.auth.getSession();
+        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+        const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+        
+        const fetchResponse = await fetch(`${supabaseUrl}/functions/v1/pacientes/${editingPaciente.id}`, {
           method: 'PUT',
-          body: cleanedData
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session?.access_token}`,
+            'apikey': supabaseKey,
+          },
+          body: JSON.stringify(cleanedData)
         });
+        
+        if (!fetchResponse.ok) {
+          throw new Error(`HTTP error! status: ${fetchResponse.status}`);
+        }
+        
+        const responseData = await fetchResponse.json();
+        response = { data: responseData, error: null };
       } else {
         // Create new patient
         response = await supabase.functions.invoke('pacientes', {
@@ -193,11 +209,22 @@ const PacientesManager = () => {
     if (!confirm('Tem certeza que deseja excluir este paciente?')) return;
 
     try {
-      const { error } = await supabase.functions.invoke(`pacientes/${id}`, {
-        method: 'DELETE'
+      // Make direct fetch call for DELETE since supabase.functions.invoke doesn't support DELETE with path params properly
+      const { data: { session } } = await supabase.auth.getSession();
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+      
+      const fetchResponse = await fetch(`${supabaseUrl}/functions/v1/pacientes/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${session?.access_token}`,
+          'apikey': supabaseKey,
+        }
       });
-
-      if (error) throw error;
+      
+      if (!fetchResponse.ok) {
+        throw new Error(`HTTP error! status: ${fetchResponse.status}`);
+      }
 
       setPacientes(prev => prev.filter(p => p.id !== id));
       toast({
