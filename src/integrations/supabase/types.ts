@@ -671,6 +671,39 @@ export type Database = {
         }
         Relationships: []
       }
+      team_message_access_log: {
+        Row: {
+          accessed_at: string | null
+          action: string
+          id: string
+          ip_address: unknown | null
+          message_id: string | null
+          user_agent: string | null
+          user_id: string
+          user_type: string | null
+        }
+        Insert: {
+          accessed_at?: string | null
+          action: string
+          id?: string
+          ip_address?: unknown | null
+          message_id?: string | null
+          user_agent?: string | null
+          user_id: string
+          user_type?: string | null
+        }
+        Update: {
+          accessed_at?: string | null
+          action?: string
+          id?: string
+          ip_address?: unknown | null
+          message_id?: string | null
+          user_agent?: string | null
+          user_id?: string
+          user_type?: string | null
+        }
+        Relationships: []
+      }
       team_messages: {
         Row: {
           content: string
