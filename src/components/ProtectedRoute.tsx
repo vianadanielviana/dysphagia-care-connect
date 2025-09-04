@@ -19,7 +19,14 @@ export default function ProtectedRoute({ children, requireAdmin = false }: Prote
   console.log('ProtectedRoute - isAdmin:', isAdmin);
   console.log('ProtectedRoute - profile:', profile);
 
-  // Se está carregando, mostrar loading
+  useEffect(() => {
+    // Se o usuário está autenticado mas não foi aprovado e não é admin, fazer logout
+    if (isAuthenticated && profile && !isApproved && !isAdmin) {
+      console.log('Usuário não aprovado detectado, fazendo logout automático');
+      signOut();
+    }
+  }, [isAuthenticated, isApproved, isAdmin, profile, signOut]);
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-primary/5 flex items-center justify-center p-4">
@@ -35,12 +42,10 @@ export default function ProtectedRoute({ children, requireAdmin = false }: Prote
     );
   }
 
-  // Se não está autenticado, mostrar form de login
   if (!isAuthenticated) {
     return <AuthForm />;
   }
 
-  // Se requer admin e não é admin
   if (requireAdmin && !isAdmin) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-primary/5 flex items-center justify-center p-4">
@@ -59,32 +64,7 @@ export default function ProtectedRoute({ children, requireAdmin = false }: Prote
     );
   }
 
-  // Se é admin, sempre pode acessar (prioridade máxima)
-  if (isAdmin) {
-    console.log('Admin detectado no ProtectedRoute, acesso liberado');
-    return <>{children}</>;
-  }
-
-  // Se está autenticado mas perfil ainda não carregou, aguardar um pouco mais
-  if (isAuthenticated && !profile) {
-    console.log('Aguardando carregamento do perfil...');
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-primary/5 flex items-center justify-center p-4">
-        <Card className="w-full max-w-md shadow-xl">
-          <CardContent className="p-8 text-center">
-            <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
-              <User className="h-8 w-8 text-primary-foreground" />
-            </div>
-            <p className="text-muted-foreground">Carregando perfil...</p>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  // Se não foi aprovado, mostrar tela de espera
-  if (isAuthenticated && profile && !isApproved) {
-    console.log('Usuário não aprovado no ProtectedRoute, mostrando tela de espera');
+  if (!isApproved && !isAdmin) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-primary/5 flex items-center justify-center p-4">
         <Card className="w-full max-w-md shadow-xl">
@@ -108,7 +88,5 @@ export default function ProtectedRoute({ children, requireAdmin = false }: Prote
     );
   }
 
-  // Se chegou até aqui, o usuário está aprovado e pode acessar
-  console.log('Usuário aprovado no ProtectedRoute, acesso liberado');
   return <>{children}</>;
 }
