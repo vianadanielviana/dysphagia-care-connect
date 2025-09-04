@@ -355,11 +355,7 @@ const DisfagiaApp = () => {
                 <Button 
                   onClick={() => {
                     if (!selectedPatient) {
-                      toast({
-                        title: "Atenção",
-                        description: "Selecione um paciente primeiro",
-                        variant: "destructive",
-                      });
+                      setCurrentView('patient-selection-view');
                       return;
                     }
                     setCurrentView('registro');
@@ -473,10 +469,10 @@ const DisfagiaApp = () => {
 
     const handleSelectPatient = (patient: any) => {
       setSelectedPatient(patient);
-      setCurrentView('dashboard');
+      setCurrentView('registro');
       toast({
         title: "Paciente selecionado",
-        description: `${patient.nome} selecionado para visualização da evolução`,
+        description: `${patient.nome} selecionado para registro diário`,
         duration: 3000,
       });
     };
@@ -933,12 +929,6 @@ const DisfagiaApp = () => {
       photoFile: null
     });
     const { toast } = useToast();
-
-    // Verificar se um paciente foi selecionado
-    if (!selectedPatient) {
-      setCurrentView('patient-selection-view');
-      return null;
-    }
 
     const sintomas = [
       'Tosse durante alimentação',
