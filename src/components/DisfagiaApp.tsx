@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import TeamChat from './TeamChat';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, BarChart, Bar, ResponsiveContainer } from 'recharts';
 import { User, Camera, Upload, MessageCircle, AlertTriangle, CheckCircle, Calendar, TrendingUp, FileText, Phone, LogOut, Settings, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -1491,103 +1492,7 @@ const DisfagiaApp = () => {
     );
   };
 
-  const CommunicationView = () => (
-    <div className="px-4 py-6 sm:px-0">
-      <div className="max-w-4xl mx-auto">
-        <Card className="shadow-lg">
-          <CardHeader>
-            <CardTitle className="text-2xl">Comunicação com Profissional</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="lg:col-span-2">
-                <div className="border rounded-lg h-96 p-4 mb-4 overflow-y-auto bg-muted/30">
-                  <div className="space-y-4">
-                    <div className="flex items-start space-x-3">
-                      <div className="w-8 h-8 bg-medical-green rounded-full flex items-center justify-center">
-                        <User className="h-4 w-4 text-medical-green-foreground" />
-                      </div>
-                      <Card className="flex-1">
-                        <CardContent className="p-3">
-                          <p className="text-sm font-medium text-foreground">Dra. Fernanda (Fonoaudióloga)</p>
-                          <p className="text-sm text-muted-foreground mt-1">
-                            Olá Ana! Vi que o João teve alguns episódios de tosse ontem. Como ele está hoje?
-                          </p>
-                          <p className="text-xs text-muted-foreground mt-1">Hoje, 09:30</p>
-                        </CardContent>
-                      </Card>
-                    </div>
-
-                    <div className="flex items-start space-x-3 justify-end">
-                      <Card className="bg-primary text-primary-foreground max-w-xs">
-                        <CardContent className="p-3">
-                          <p className="text-sm">
-                            Bom dia, Doutora! Hoje ele está melhor. Ofereci a papinha pastosa como orientado e não houve tosse.
-                          </p>
-                          <p className="text-xs text-primary-foreground/70 mt-1">Hoje, 10:15</p>
-                        </CardContent>
-                      </Card>
-                      <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
-                        <User className="h-4 w-4 text-primary-foreground" />
-                      </div>
-                    </div>
-
-                    <div className="flex items-start space-x-3">
-                      <div className="w-8 h-8 bg-medical-green rounded-full flex items-center justify-center">
-                        <User className="h-4 w-4 text-medical-green-foreground" />
-                      </div>
-                      <Card className="flex-1">
-                        <CardContent className="p-3">
-                          <p className="text-sm font-medium text-foreground">Dra. Fernanda</p>
-                          <p className="text-sm text-muted-foreground mt-1">
-                            Ótimo! Continue com a consistência pastosa por mais 3 dias. Se não houver sintomas, podemos tentar alimentos mais sólidos.
-                          </p>
-                          <p className="text-xs text-muted-foreground mt-1">Hoje, 10:45</p>
-                        </CardContent>
-                      </Card>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex space-x-2">
-                  <Input
-                    placeholder="Digite sua mensagem..."
-                    className="flex-1"
-                  />
-                  <Button>
-                    Enviar
-                  </Button>
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <Card className="bg-primary/5 border-primary/20">
-                  <CardContent className="p-4">
-                    <h4 className="font-medium text-primary mb-2">Profissional Responsável</h4>
-                    <p className="text-sm text-foreground">Dra. Fernanda Silva</p>
-                    <p className="text-sm text-muted-foreground">CRFa 12345-SP</p>
-                    <p className="text-sm text-muted-foreground">Fonoaudióloga</p>
-                  </CardContent>
-                </Card>
-
-                <Card className="bg-medical-amber-light border-medical-amber/20">
-                  <CardContent className="p-4">
-                    <h4 className="font-medium text-medical-amber mb-2">Próxima Consulta</h4>
-                    <p className="text-sm text-foreground">25 de Agosto, 2025</p>
-                    <p className="text-sm text-muted-foreground">14:30 - Teleconsulta</p>
-                  </CardContent>
-                </Card>
-
-                <Button className="w-full bg-medical-green hover:bg-medical-green/90">
-                  Agendar Consulta
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
-  );
+  const CommunicationView = () => <TeamChat />;
 
   const ProfessionalDashboard = () => (
     <div className="min-h-screen bg-background">
