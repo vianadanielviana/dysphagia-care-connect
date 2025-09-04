@@ -188,8 +188,6 @@ export function useAuth() {
     signOut,
     isAuthenticated: !!user,
     isApproved: profile?.is_approved ?? false,
-    isAdmin: user?.email === 'viana.vianadaniel@outlook.com',
-    isProfessional: profile?.tipo_usuario === 'fonoaudiologo',
-    isCuidador: profile?.tipo_usuario === 'cuidador'
+    isAdmin: user?.email === 'viana.vianadaniel@outlook.com'
   };
 }
