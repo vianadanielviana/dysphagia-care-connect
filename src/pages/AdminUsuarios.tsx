@@ -28,31 +28,17 @@ export default function AdminUsuarios() {
 
   const fetchPendingUsers = async () => {
     try {
-      console.log('Buscando usuários pendentes...');
-      
-      // Buscar usuários pendentes
       const { data, error } = await supabase
         .from('profiles')
-        .select('id, email, nome, tipo_usuario, created_at, is_approved')
+        .select('id, email, nome, tipo_usuario, created_at')
         .eq('is_approved', false);
 
       if (error) {
         toast.error('Erro ao buscar usuários pendentes.');
         console.error('Error fetching users:', error);
       } else {
-        console.log('Usuários pendentes encontrados:', data);
         setUsuarios(data || []);
       }
-
-      // Debug: Buscar todos os usuários para verificar
-      const { data: allUsers, error: allError } = await supabase
-        .from('profiles')
-        .select('id, email, nome, tipo_usuario, is_approved, created_at');
-      
-      if (!allError) {
-        console.log('Todos os usuários:', allUsers);
-      }
-      
     } catch (error) {
       toast.error('Erro ao buscar usuários pendentes.');
       console.error('Error:', error);
@@ -136,20 +122,11 @@ export default function AdminUsuarios() {
           </CardHeader>
           <CardContent>
             {usuarios.length === 0 ? (
-              <div className="text-center py-8 space-y-4">
+              <div className="text-center py-8">
                 <p className="text-muted-foreground">Nenhum usuário pendente para aprovação.</p>
-                <div className="text-sm text-muted-foreground bg-muted p-4 rounded-md">
-                  <p className="font-medium mb-2">ℹ️ Como funciona:</p>
-                  <p>• Novos usuários aparecerão aqui após se cadastrarem</p>
-                  <p>• Apenas usuários com is_approved = false são exibidos</p>
-                  <p>• Após aprovação, eles ganham acesso ao sistema</p>
-                </div>
               </div>
             ) : (
               <div className="space-y-4">
-                <p className="text-sm text-muted-foreground mb-4">
-                  📋 {usuarios.length} usuário(s) aguardando aprovação
-                </p>
                 {usuarios.map((user) => (
                   <Card key={user.id} className="border-2">
                     <CardContent className="p-4">

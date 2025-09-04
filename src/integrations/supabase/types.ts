@@ -869,36 +869,7 @@ export type Database = {
       }
     }
     Views: {
-      chat_memory_n8n: {
-        Row: {
-          additional_kwargs: Json | null
-          created_at: string | null
-          id: string | null
-          message: string | null
-          session_id: string | null
-          type: string | null
-          updated_at: string | null
-        }
-        Insert: {
-          additional_kwargs?: Json | null
-          created_at?: string | null
-          id?: string | null
-          message?: string | null
-          session_id?: string | null
-          type?: string | null
-          updated_at?: string | null
-        }
-        Update: {
-          additional_kwargs?: Json | null
-          created_at?: string | null
-          id?: string | null
-          message?: string | null
-          session_id?: string | null
-          type?: string | null
-          updated_at?: string | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
       binary_quantize: {
