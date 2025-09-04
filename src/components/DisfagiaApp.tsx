@@ -999,7 +999,7 @@ const DisfagiaApp = () => {
                 <div>
                   <CardTitle className="text-2xl">Registro Diário</CardTitle>
                   <p className="text-sm text-muted-foreground mt-1">
-                    Paciente: <span className="font-medium">{selectedPatient.nome}</span>
+                    Paciente: <span className="font-medium">{selectedPatient?.nome || 'Nenhum paciente selecionado'}</span>
                   </p>
                 </div>
               </div>
