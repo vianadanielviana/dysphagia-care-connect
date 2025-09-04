@@ -704,7 +704,7 @@ export type Database = {
             foreignKeyName: "triage_assessments_caregiver_id_fkey"
             columns: ["caregiver_id"]
             isOneToOne: false
-            referencedRelation: "users"
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
           {
