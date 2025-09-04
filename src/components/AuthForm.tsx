@@ -169,80 +169,135 @@ const AuthForm = () => {
               </form>
             </Form>
           ) : (
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="simple-nome">Nome Completo</Label>
-                <Input
-                  id="simple-nome"
-                  placeholder="Digite seu nome completo"
-                  onChange={(e) => console.log('Nome changed:', e.target.value)}
+            <Form {...signUpForm}>
+              <form onSubmit={signUpForm.handleSubmit(handleSignUp)} className="space-y-4">
+                <FormField
+                  control={signUpForm.control}
+                  name="nome"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Nome Completo</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Digite seu nome completo"
+                          autoComplete="name"
+                          disabled={loading}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-              </div>
-              
-              <div>
-                <Label htmlFor="simple-email">Email</Label>
-                <Input
-                  id="simple-email"
-                  type="email"
-                  placeholder="Digite seu email"
-                  onChange={(e) => console.log('Email changed:', e.target.value)}
-                />
-              </div>
-              
-              <div>
-                <Label>Tipo de Usuário</Label>
-                <RadioGroup
-                  defaultValue="cuidador"
-                  onValueChange={(value) => console.log('Tipo changed:', value)}
-                  className="grid grid-cols-1 gap-4"
-                >
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="cuidador" id="simple-cuidador" />
-                    <Label htmlFor="simple-cuidador" className="flex items-center space-x-2 cursor-pointer">
-                      <Heart className="h-4 w-4 text-medical-red" />
-                      <span>Cuidador/Familiar</span>
-                    </Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="fonoaudiologo" id="simple-fonoaudiologo" />
-                    <Label htmlFor="simple-fonoaudiologo" className="flex items-center space-x-2 cursor-pointer">
-                      <Stethoscope className="h-4 w-4 text-primary" />
-                      <span>Fonoaudiólogo</span>
-                    </Label>
-                  </div>
-                </RadioGroup>
-              </div>
-              
-              <div>
-                <Label htmlFor="simple-password">Senha</Label>
-                <Input
-                  id="simple-password"
-                  type="password"
-                  placeholder="Mínimo 6 caracteres"
-                  onChange={(e) => console.log('Password changed:', e.target.value)}
-                />
-              </div>
-              
-              <div>
-                <Label htmlFor="simple-confirm">Confirmar Senha</Label>
-                <Input
-                  id="simple-confirm"
-                  type="password"
-                  placeholder="Digite a senha novamente"
-                  onChange={(e) => console.log('Confirm password changed:', e.target.value)}
-                />
-              </div>
 
-              <Button 
-                type="button" 
-                className="w-full" 
-                disabled={loading}
-                onClick={() => console.log('Criar conta clicked')}
-              >
-                {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Criar Conta (Teste)
-              </Button>
-            </div>
+                <FormField
+                  control={signUpForm.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="email"
+                          placeholder="Digite seu email"
+                          autoComplete="email"
+                          disabled={loading}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={signUpForm.control}
+                  name="tipo_usuario"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Tipo de Usuário</FormLabel>
+                      <FormControl>
+                        <RadioGroup
+                          onValueChange={field.onChange}
+                          value={field.value}
+                          className="grid grid-cols-1 gap-4"
+                          disabled={loading}
+                        >
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="cuidador" id="cuidador" />
+                            <Label htmlFor="cuidador" className="flex items-center space-x-2 cursor-pointer">
+                              <Heart className="h-4 w-4 text-medical-red" />
+                              <span>Cuidador/Familiar</span>
+                            </Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="fonoaudiologo" id="fonoaudiologo" />
+                            <Label htmlFor="fonoaudiologo" className="flex items-center space-x-2 cursor-pointer">
+                              <Stethoscope className="h-4 w-4 text-primary" />
+                              <span>Fonoaudiólogo</span>
+                            </Label>
+                          </div>
+                        </RadioGroup>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={signUpForm.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Senha</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="password"
+                          placeholder="Mínimo 6 caracteres"
+                          autoComplete="new-password"
+                          disabled={loading}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={signUpForm.control}
+                  name="confirmPassword"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Confirmar Senha</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="password"
+                          placeholder="Digite a senha novamente"
+                          autoComplete="new-password"
+                          disabled={loading}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <div className="text-sm text-muted-foreground">
+                  Erros de validação: {JSON.stringify(signUpForm.formState.errors)}
+                </div>
+                
+                <Button 
+                  type="submit" 
+                  className="w-full" 
+                  disabled={loading || !signUpForm.formState.isValid}
+                >
+                  {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  Criar Conta
+                </Button>
+              </form>
+            </Form>
           )}
         </CardContent>
 
