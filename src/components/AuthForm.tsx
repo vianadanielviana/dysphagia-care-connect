@@ -28,6 +28,7 @@ const AuthForm = () => {
       email: '',
       password: '',
     },
+    mode: 'onSubmit',
   });
 
   const signUpForm = useForm<SignUpFormData>({
@@ -39,7 +40,7 @@ const AuthForm = () => {
       confirmPassword: '',
       tipo_usuario: 'cuidador',
     },
-    mode: 'onChange',
+    mode: 'onSubmit',
   });
 
   console.log('SignUp form values:', signUpForm.watch());
@@ -285,13 +286,13 @@ const AuthForm = () => {
                 />
 
                 <div className="text-sm text-muted-foreground">
-                  Erros de validação: {JSON.stringify(signUpForm.formState.errors)}
+                  Formulário válido: {signUpForm.formState.isValid ? 'Sim' : 'Não'}
                 </div>
                 
                 <Button 
                   type="submit" 
                   className="w-full" 
-                  disabled={loading || !signUpForm.formState.isValid}
+                  disabled={loading}
                 >
                   {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   Criar Conta
