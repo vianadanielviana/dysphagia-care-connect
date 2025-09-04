@@ -946,83 +946,283 @@ const DisfagiaApp = () => {
     );
   };
 
-  const HistoryView = () => (
-    <div className="px-4 py-6 sm:px-0">
-      <Card className="shadow-lg mb-6">
-        <CardHeader>
-          <CardTitle className="text-2xl">Histórico de Evolução</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div>
-              <h3 className="text-lg font-medium text-foreground mb-4">Nível de Risco ao Longo do Tempo</h3>
-              <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={dailyRecords}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="date" tickFormatter={(value) => new Date(value).toLocaleDateString()} />
-                  <YAxis domain={[0, 5]} />
-                  <Tooltip labelFormatter={(value) => new Date(value as string).toLocaleDateString()} />
-                  <Legend />
-                  <Line type="monotone" dataKey="risco" stroke="#ef4444" strokeWidth={2} name="Nível de Risco" />
-                  <Line type="monotone" dataKey="sintomas" stroke="#f59e0b" strokeWidth={2} name="Sintomas" />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
+  const HistoryView = () => {
+    const [availablePatients, setAvailablePatients] = useState([]);
+    const [selectedHistoryPatient, setSelectedHistoryPatient] = useState(null);
+    const [patientHistoryData, setPatientHistoryData] = useState([]);
+    const [triageHistory, setTriageHistory] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const { toast } = useToast();
 
-            <div>
-              <h3 className="text-lg font-medium text-foreground mb-4">Consistência dos Alimentos</h3>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={dailyRecords}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="date" tickFormatter={(value) => new Date(value).getDate().toString()} />
-                  <YAxis />
-                  <Tooltip labelFormatter={(value) => new Date(value as string).toLocaleDateString()} />
-                  <Bar dataKey="sintomas" fill="hsl(var(--primary))" name="Quantidade de Sintomas" />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
+    useEffect(() => {
+      fetchAvailablePatients();
+    }, []);
+
+    useEffect(() => {
+      if (selectedHistoryPatient) {
+        fetchPatientHistory(selectedHistoryPatient.id);
+      }
+    }, [selectedHistoryPatient]);
+
+    const fetchAvailablePatients = async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke('pacientes', {
+          method: 'GET'
+        });
+
+        if (error) throw error;
+        setAvailablePatients(data || []);
+        if (data && data.length > 0) {
+          setSelectedHistoryPatient(data[0]);
+        }
+      } catch (error) {
+        console.error('Erro ao carregar pacientes:', error);
+        toast({
+          title: "Erro",
+          description: "Erro ao carregar lista de pacientes",
+          variant: "destructive",
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    const fetchPatientHistory = async (patientId: string) => {
+      try {
+        // Buscar registros diários
+        const { data: dailyData, error: dailyError } = await supabase
+          .from('daily_records')
+          .select('*')
+          .eq('patient_id', patientId)
+          .order('record_date', { ascending: true });
+
+        if (dailyError) throw dailyError;
+
+        // Buscar avaliações de triagem
+        const { data: triageData, error: triageError } = await supabase
+          .from('triage_assessments')
+          .select('*')
+          .eq('patient_id', patientId)
+          .order('completed_at', { ascending: true });
+
+        if (triageError) throw triageError;
+
+        // Processar dados para os gráficos
+        const processedDailyData = (dailyData || []).map(record => ({
+          date: record.record_date,
+          risco: record.risk_score,
+          consistencia: record.food_consistency,
+          observacoes: record.observations
+        }));
+
+        const processedTriageData = (triageData || []).map(assessment => ({
+          date: new Date(assessment.completed_at).toISOString().split('T')[0],
+          risco: assessment.total_score,
+          nivel: assessment.risk_level
+        }));
+
+        setPatientHistoryData(processedDailyData);
+        setTriageHistory(processedTriageData);
+      } catch (error) {
+        console.error('Erro ao carregar histórico do paciente:', error);
+        toast({
+          title: "Erro",
+          description: "Erro ao carregar histórico do paciente",
+          variant: "destructive",
+        });
+      }
+    };
+
+    if (loading) {
+      return (
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-muted-foreground">Carregando histórico...</p>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      );
+    }
 
-      <Card className="shadow-lg">
-        <CardHeader>
-          <CardTitle>Registros Recentes</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {dailyRecords.slice(-5).reverse().map((record, index) => (
-              <Card key={index} className="border">
-                <CardContent className="p-4">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <p className="font-medium text-foreground">{new Date(record.date).toLocaleDateString()}</p>
-                      <p className="text-sm text-muted-foreground">Consistência: {record.consistencia}</p>
-                      <p className="text-sm text-muted-foreground">Sintomas observados: {record.sintomas}</p>
+    return (
+      <div className="px-4 py-6 sm:px-0">
+        {/* Seleção de Paciente */}
+        <Card className="shadow-lg mb-6">
+          <CardHeader>
+            <CardTitle className="text-2xl">Selecionar Paciente</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {availablePatients.map((patient) => (
+                <Card 
+                  key={patient.id} 
+                  className={`cursor-pointer transition-all ${
+                    selectedHistoryPatient?.id === patient.id 
+                      ? 'ring-2 ring-primary border-primary' 
+                      : 'hover:shadow-md'
+                  }`}
+                  onClick={() => setSelectedHistoryPatient(patient)}
+                >
+                  <CardContent className="p-4">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+                        <User className="h-5 w-5 text-primary" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-foreground">{patient.nome}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {patient.data_nascimento ? 
+                            `${Math.floor((new Date().getTime() - new Date(patient.data_nascimento).getTime()) / (1000 * 60 * 60 * 24 * 365))} anos` 
+                            : 'Idade não informada'
+                          }
+                        </p>
+                      </div>
                     </div>
-                    <Badge 
-                      variant={
-                        record.risco <= 1 ? "default" :
-                        record.risco <= 3 ? "secondary" : "destructive"
-                      }
-                      className={
-                        record.risco <= 1 ? 'bg-medical-green text-medical-green-foreground' :
-                        record.risco <= 3 ? 'bg-medical-amber text-medical-amber-foreground' :
-                        'bg-medical-red text-medical-red-foreground'
-                      }
-                    >
-                      {record.risco <= 1 ? 'Baixo Risco' :
-                       record.risco <= 3 ? 'Médio Risco' : 'Alto Risco'}
-                    </Badge>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {selectedHistoryPatient && (
+          <>
+            {/* Histórico do Paciente Selecionado */}
+            <Card className="shadow-lg mb-6">
+              <CardHeader>
+                <CardTitle className="text-2xl">
+                  Histórico de Evolução - {selectedHistoryPatient.nome}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {patientHistoryData.length > 0 || triageHistory.length > 0 ? (
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div>
+                      <h3 className="text-lg font-medium text-foreground mb-4">Avaliações de Triagem</h3>
+                      <ResponsiveContainer width="100%" height={300}>
+                        <LineChart data={triageHistory}>
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis 
+                            dataKey="date" 
+                            tickFormatter={(value) => new Date(value).toLocaleDateString()} 
+                          />
+                          <YAxis domain={[0, 'dataMax + 5']} />
+                          <Tooltip 
+                            labelFormatter={(value) => new Date(value as string).toLocaleDateString()}
+                            formatter={(value, name) => [
+                              `${value} pontos`, 
+                              name === 'risco' ? 'Pontuação Total' : name
+                            ]}
+                          />
+                          <Legend />
+                          <Line 
+                            type="monotone" 
+                            dataKey="risco" 
+                            stroke="#ef4444" 
+                            strokeWidth={2} 
+                            name="Pontuação de Risco" 
+                          />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </div>
+
+                    <div>
+                      <h3 className="text-lg font-medium text-foreground mb-4">Registros Diários</h3>
+                      <ResponsiveContainer width="100%" height={300}>
+                        <BarChart data={patientHistoryData}>
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis 
+                            dataKey="date" 
+                            tickFormatter={(value) => new Date(value).getDate().toString()} 
+                          />
+                          <YAxis />
+                          <Tooltip 
+                            labelFormatter={(value) => new Date(value as string).toLocaleDateString()}
+                            formatter={(value, name) => [
+                              `${value} pontos`, 
+                              name === 'risco' ? 'Pontuação de Risco' : name
+                            ]}
+                          />
+                          <Bar 
+                            dataKey="risco" 
+                            fill="hsl(var(--primary))" 
+                            name="Pontuação de Risco" 
+                          />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
                   </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
+                ) : (
+                  <div className="text-center py-12">
+                    <p className="text-muted-foreground text-lg">
+                      Nenhum dado histórico encontrado para {selectedHistoryPatient.nome}
+                    </p>
+                    <p className="text-muted-foreground text-sm mt-2">
+                      Realize avaliações de triagem e registros diários para visualizar o histórico.
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Registros Recentes */}
+            <Card className="shadow-lg">
+              <CardHeader>
+                <CardTitle>Registros Recentes - {selectedHistoryPatient.nome}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {patientHistoryData.length > 0 ? (
+                  <div className="space-y-4">
+                    {patientHistoryData.slice(-5).reverse().map((record, index) => (
+                      <Card key={index} className="border">
+                        <CardContent className="p-4">
+                          <div className="flex justify-between items-start">
+                            <div className="flex-1">
+                              <p className="font-medium text-foreground">
+                                {new Date(record.date).toLocaleDateString()}
+                              </p>
+                              <p className="text-sm text-muted-foreground">
+                                Consistência: {record.consistencia || 'Não informado'}
+                              </p>
+                              {record.observacoes && (
+                                <p className="text-sm text-muted-foreground mt-1">
+                                  Observações: {record.observacoes}
+                                </p>
+                              )}
+                            </div>
+                            <Badge 
+                              variant={
+                                record.risco <= 5 ? "default" :
+                                record.risco <= 10 ? "secondary" : "destructive"
+                              }
+                              className={
+                                record.risco <= 5 ? 'bg-medical-green text-medical-green-foreground' :
+                                record.risco <= 10 ? 'bg-medical-amber text-medical-amber-foreground' :
+                                'bg-medical-red text-medical-red-foreground'
+                              }
+                            >
+                              {record.risco <= 5 ? 'Baixo Risco' :
+                               record.risco <= 10 ? 'Médio Risco' : 'Alto Risco'}
+                            </Badge>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <p className="text-muted-foreground">
+                      Nenhum registro encontrado para {selectedHistoryPatient.nome}
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </>
+        )}
+      </div>
+    );
+  };
 
   const CommunicationView = () => (
     <div className="px-4 py-6 sm:px-0">
