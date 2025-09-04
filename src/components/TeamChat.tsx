@@ -93,18 +93,34 @@ const TeamChat: React.FC = () => {
   // Enviar mensagem
   const sendMessage = async () => {
     if (!newMessage.trim() || !profile?.id || !profile?.nome) {
+      toast({
+        title: "Erro",
+        description: "Dados do perfil não encontrados. Faça login novamente.",
+        variant: "destructive",
+      });
       return;
     }
 
     setSending(true);
     try {
+      // Garantir que o sender_type seja um valor válido
+      const validSenderTypes = ['admin', 'fisioterapeuta', 'fonoaudiologo', 'nutricionista', 'enfermeiro', 'medico', 'cuidador'];
+      const senderType = validSenderTypes.includes(profile.tipo_usuario) ? profile.tipo_usuario : 'cuidador';
+
+      console.log('Enviando mensagem:', {
+        sender_id: profile.id,
+        sender_name: profile.nome,
+        sender_type: senderType,
+        content: newMessage.trim()
+      });
+
       const { error } = await supabase
         .from('team_messages')
         .insert([
           {
             sender_id: profile.id,
             sender_name: profile.nome,
-            sender_type: profile.tipo_usuario || 'cuidador',
+            sender_type: senderType,
             content: newMessage.trim(),
             message_type: 'text'
           }
@@ -121,7 +137,7 @@ const TeamChat: React.FC = () => {
       console.error('Erro ao enviar mensagem:', error);
       toast({
         title: "Erro",
-        description: "Erro ao enviar mensagem",
+        description: `Erro ao enviar mensagem: ${error.message || 'Erro desconhecido'}`,
         variant: "destructive",
       });
     } finally {
