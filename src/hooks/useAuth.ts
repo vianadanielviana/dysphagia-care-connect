@@ -102,84 +102,30 @@ export function useAuth() {
         // Continue even if this fails
       }
 
-      console.log('Tentando fazer login com:', email);
-
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
-      // Se login funcionou normalmente, verificar aprovação
-      if (!error && data.user) {
-        console.log('Login realizado, verificando aprovação do usuário:', data.user.id);
-        
-        // Admin sempre pode entrar
-        if (email === 'viana.vianadaniel@outlook.com') {
-          console.log('Admin detectado, login aprovado automaticamente');
-          toast.success('Login realizado com sucesso!');
-          return { user: data.user, session: data.session };
-        }
-        
-        const { data: profileData, error: profileError } = await supabase
+      if (error) throw error;
+
+      // Check if user is approved (except admin)
+      if (data.user) {
+        const { data: profileData } = await supabase
           .from('profiles')
-          .select('is_approved, tipo_usuario, nome')
+          .select('is_approved, tipo_usuario')
           .eq('id', data.user.id)
           .single();
 
-        console.log('Dados do perfil:', profileData);
-
-        if (profileError || !profileData) {
-          console.error('Erro ao buscar perfil ou perfil não encontrado');
+        if (profileData && !profileData.is_approved && email !== 'viana.vianadaniel@outlook.com') {
           await supabase.auth.signOut();
-          throw new Error('Perfil de usuário não encontrado. Contate o administrador.');
+          throw new Error('Sua conta ainda não foi aprovada. Aguarde a aprovação de um administrador.');
         }
 
-        // Verifica se foi aprovado
-        if (profileData.is_approved === true) {
-          console.log('Usuário aprovado, login liberado para:', profileData.nome);
-          toast.success('Login realizado com sucesso!');
-          return { user: data.user, session: data.session };
-        } else {
-          console.log('Usuário NÃO aprovado, bloqueando login');
-          await supabase.auth.signOut();
-          throw new Error(`Sua conta ainda não foi aprovada. Usuário: ${profileData.nome} (${profileData.tipo_usuario}). Aguarde a aprovação de um administrador.`);
-        }
+        toast.success('Login realizado com sucesso!');
+        return { user: data.user, session: data.session };
       }
-
-      // Se houve erro, verificar se é email não confirmado
-      if (error && (error.message?.includes('Email not confirmed') || error.message?.includes('email_not_confirmed'))) {
-        console.log('Email não confirmado, mas verificando se usuário está aprovado para permitir acesso...');
-        
-        // Buscar o usuário na tabela profiles pelo email
-        const { data: profileData, error: profileError } = await supabase
-          .from('profiles')
-          .select('id, nome, tipo_usuario, is_approved, email')
-          .eq('email', email)
-          .single();
-
-        if (profileError || !profileData) {
-          throw new Error('Usuário não encontrado. Certifique-se de que sua conta foi criada ou contate o administrador.');
-        }
-
-        // Se é admin ou usuário aprovado, explicar que o email precisa ser confirmado ou desabilitado
-        if (email === 'viana.vianadaniel@outlook.com') {
-          throw new Error('Administrador: Configure o Supabase para desabilitar confirmação de email em Authentication > Settings. Email não confirmado está bloqueando o acesso.');
-        }
-
-        if (profileData.is_approved) {
-          throw new Error(`Sua conta foi aprovada (${profileData.nome}), mas o email precisa ser confirmado. O administrador precisa desabilitar a confirmação de email no Supabase ou você precisa confirmar o email.`);
-        } else {
-          throw new Error(`Sua conta ainda não foi aprovada. Usuário: ${profileData.nome} (${profileData.tipo_usuario}). Aguarde a aprovação de um administrador.`);
-        }
-      }
-
-      // Outros erros
-      if (error) {
-        throw error;
-      }
-
     } catch (error: any) {
-      console.error('Erro no signIn:', error);
       toast.error(error.message || 'Erro ao fazer login');
       throw error;
     }
