@@ -38,13 +38,17 @@ export const signInSchema = z.object({
 
 export const pacienteSchema = z.object({
   nome: nomeSchema,
-  cpf: z.string().optional().refine(val => !val || /^\d{3}\.\d{3}\.\d{3}-\d{2}$/.test(val), {
+  cpf: z.string().optional().refine(val => !val || val.length === 0 || /^\d{3}\.\d{3}\.\d{3}-\d{2}$/.test(val), {
     message: 'CPF deve estar no formato xxx.xxx.xxx-xx'
   }),
-  email: z.string().optional().refine(val => !val || z.string().email().safeParse(val).success, {
+  email: z.string().optional().refine(val => !val || val.length === 0 || z.string().email().safeParse(val).success, {
     message: 'Email inválido'
   }),
-  telefone: z.string().optional().refine(val => !val || /^\(\d{2}\)\s\d{4,5}-\d{4}$/.test(val), {
+  telefone: z.string().optional().refine(val => {
+    if (!val || val.length === 0) return true;
+    // Accept both formats: (xx) xxxxx-xxxx or xxxxxxxxxxx
+    return /^\(\d{2}\)\s\d{4,5}-\d{4}$/.test(val) || /^\d{10,11}$/.test(val);
+  }, {
     message: 'Telefone deve estar no formato (xx) xxxxx-xxxx'
   }),
   data_nascimento: z.string().optional(),
@@ -54,13 +58,20 @@ export const pacienteSchema = z.object({
   historico_medico: z.string().max(1000, 'Histórico médico deve ter no máximo 1000 caracteres').optional(),
   medicamentos_atuais: z.string().max(500, 'Medicamentos atuais deve ter no máximo 500 caracteres').optional(),
   observacoes: z.string().max(500, 'Observações deve ter no máximo 500 caracteres').optional(),
-  responsavel_nome: z.string().optional().refine(val => !val || (val.length >= 2 && /^[a-zA-ZÀ-ÿ\s]+$/.test(val)), {
+  responsavel_nome: z.string().optional().refine(val => {
+    if (!val || val.length === 0) return true;
+    return val.length >= 2 && /^[a-zA-ZÀ-ÿ\s]+$/.test(val);
+  }, {
     message: 'Nome deve conter apenas letras e espaços e ter pelo menos 2 caracteres'
   }),
-  responsavel_email: z.string().optional().refine(val => !val || z.string().email().safeParse(val).success, {
+  responsavel_email: z.string().optional().refine(val => !val || val.length === 0 || z.string().email().safeParse(val).success, {
     message: 'Email inválido'
   }),
-  responsavel_telefone: z.string().optional().refine(val => !val || /^\(\d{2}\)\s\d{4,5}-\d{4}$/.test(val), {
+  responsavel_telefone: z.string().optional().refine(val => {
+    if (!val || val.length === 0) return true;
+    // Accept both formats: (xx) xxxxx-xxxx or xxxxxxxxxxx
+    return /^\(\d{2}\)\s\d{4,5}-\d{4}$/.test(val) || /^\d{10,11}$/.test(val);
+  }, {
     message: 'Telefone deve estar no formato (xx) xxxxx-xxxx'
   })
 });

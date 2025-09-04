@@ -14,6 +14,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { pacienteSchema, PacienteFormData } from '@/lib/schemas';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import InputMask from 'react-input-mask';
 
 interface Paciente {
   id: string;
@@ -89,7 +90,9 @@ const PacientesManager = () => {
 
   const onSubmit = async (data: PacienteFormData) => {
     try {
-      // Filter out empty strings and convert to null for optional fields
+      console.log('Form data received:', data);
+
+      // Convert and clean data for submission
       const cleanedData = {
         ...data,
         cpf: data.cpf?.trim() || null,
@@ -106,32 +109,45 @@ const PacientesManager = () => {
         responsavel_telefone: data.responsavel_telefone?.trim() || null,
       };
 
-      console.log('Sending patient data:', cleanedData);
+      // Remove empty strings completely
+      Object.keys(cleanedData).forEach(key => {
+        if (cleanedData[key as keyof typeof cleanedData] === '') {
+          cleanedData[key as keyof typeof cleanedData] = null;
+        }
+      });
 
+      console.log('Sending cleaned data:', cleanedData);
+
+      let response;
       if (editingPaciente) {
         // Update existing patient
-        const { data: updatedPaciente, error } = await supabase.functions.invoke(`pacientes/${editingPaciente.id}`, {
+        response = await supabase.functions.invoke(`pacientes/${editingPaciente.id}`, {
           method: 'PUT',
           body: cleanedData
         });
+      } else {
+        // Create new patient
+        response = await supabase.functions.invoke('pacientes', {
+          method: 'POST',
+          body: cleanedData
+        });
+      }
 
-        if (error) throw error;
+      console.log('API Response:', response);
 
-        setPacientes(prev => prev.map(p => p.id === editingPaciente.id ? updatedPaciente : p));
+      if (response.error) {
+        console.error('API Error:', response.error);
+        throw new Error(response.error.message || 'Erro na API');
+      }
+
+      if (editingPaciente) {
+        setPacientes(prev => prev.map(p => p.id === editingPaciente.id ? response.data : p));
         toast({
           title: "Sucesso",
           description: "Paciente atualizado com sucesso",
         });
       } else {
-        // Create new patient
-        const { data: newPaciente, error } = await supabase.functions.invoke('pacientes', {
-          method: 'POST',
-          body: cleanedData
-        });
-
-        if (error) throw error;
-
-        setPacientes(prev => [newPaciente, ...prev]);
+        setPacientes(prev => [response.data, ...prev]);
         toast({
           title: "Sucesso",
           description: "Paciente cadastrado com sucesso",
@@ -139,11 +155,14 @@ const PacientesManager = () => {
       }
 
       handleCloseDialog();
-    } catch (error) {
-      console.error('Erro ao salvar paciente:', error);
+    } catch (error: any) {
+      console.error('Complete error object:', error);
+      console.error('Error message:', error.message);
+      console.error('Error stack:', error.stack);
+      
       toast({
         title: "Erro",
-        description: "Erro ao salvar paciente. Verifique os dados e tente novamente.",
+        description: error.message || "Erro ao salvar paciente. Verifique os dados e tente novamente.",
         variant: "destructive",
       });
     }
@@ -270,19 +289,25 @@ const PacientesManager = () => {
                     )}
                   />
 
-                  <FormField
-                    control={form.control}
-                    name="cpf"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>CPF</FormLabel>
-                        <FormControl>
-                          <Input placeholder="000.000.000-00" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                    <FormField
+                      control={form.control}
+                      name="cpf"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>CPF</FormLabel>
+                          <FormControl>
+                            <InputMask
+                              mask="999.999.999-99"
+                              value={field.value}
+                              onChange={field.onChange}
+                            >
+                              {(inputProps: any) => <Input placeholder="000.000.000-00" {...inputProps} />}
+                            </InputMask>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
                   <FormField
                     control={form.control}
@@ -305,7 +330,13 @@ const PacientesManager = () => {
                       <FormItem>
                         <FormLabel>Telefone</FormLabel>
                         <FormControl>
-                          <Input placeholder="(00) 00000-0000" {...field} />
+                          <InputMask
+                            mask="(99) 99999-9999"
+                            value={field.value}
+                            onChange={field.onChange}
+                          >
+                            {(inputProps: any) => <Input placeholder="(00) 00000-0000" {...inputProps} />}
+                          </InputMask>
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -426,7 +457,13 @@ const PacientesManager = () => {
                         <FormItem>
                           <FormLabel>Telefone do Responsável</FormLabel>
                           <FormControl>
-                            <Input placeholder="(00) 00000-0000" {...field} />
+                            <InputMask
+                              mask="(99) 99999-9999"
+                              value={field.value}
+                              onChange={field.onChange}
+                            >
+                              {(inputProps: any) => <Input placeholder="(00) 00000-0000" {...inputProps} />}
+                            </InputMask>
                           </FormControl>
                           <FormMessage />
                         </FormItem>
