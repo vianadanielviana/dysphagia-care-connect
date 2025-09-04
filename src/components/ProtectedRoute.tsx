@@ -19,14 +19,6 @@ export default function ProtectedRoute({ children, requireAdmin = false }: Prote
   console.log('ProtectedRoute - isAdmin:', isAdmin);
   console.log('ProtectedRoute - profile:', profile);
 
-  useEffect(() => {
-    // Se o usuário está autenticado mas não foi aprovado e não é admin, fazer logout
-    if (isAuthenticated && profile && !isApproved && !isAdmin) {
-      console.log('Usuário não aprovado detectado, fazendo logout automático');
-      signOut();
-    }
-  }, [isAuthenticated, isApproved, isAdmin, profile, signOut]);
-
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-primary/5 flex items-center justify-center p-4">
@@ -64,7 +56,15 @@ export default function ProtectedRoute({ children, requireAdmin = false }: Prote
     );
   }
 
-  if (!isApproved && !isAdmin) {
+  // Se é admin, sempre pode acessar
+  if (isAdmin) {
+    console.log('Admin detectado no ProtectedRoute, acesso liberado');
+    return <>{children}</>;
+  }
+
+  // Se não é aprovado, mostrar tela de espera
+  if (!isApproved) {
+    console.log('Usuário não aprovado no ProtectedRoute, mostrando tela de espera');
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-primary/5 flex items-center justify-center p-4">
         <Card className="w-full max-w-md shadow-xl">
@@ -88,5 +88,7 @@ export default function ProtectedRoute({ children, requireAdmin = false }: Prote
     );
   }
 
+  // Se chegou até aqui, o usuário está aprovado
+  console.log('Usuário aprovado no ProtectedRoute, acesso liberado');
   return <>{children}</>;
 }

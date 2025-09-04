@@ -111,9 +111,16 @@ export function useAuth() {
 
       if (error) throw error;
 
-      // Check if user is approved (except admin)
+      // Check if user is approved (admin sempre passa)
       if (data.user) {
         console.log('Verificando aprovação do usuário:', data.user.id);
+        
+        // Admin sempre pode entrar
+        if (email === 'viana.vianadaniel@outlook.com') {
+          console.log('Admin detectado, login aprovado automaticamente');
+          toast.success('Login realizado com sucesso!');
+          return { user: data.user, session: data.session };
+        }
         
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
@@ -130,15 +137,22 @@ export function useAuth() {
           throw new Error('Erro ao verificar status da conta. Contate o administrador.');
         }
 
-        if (profileData && !profileData.is_approved && email !== 'viana.vianadaniel@outlook.com') {
-          console.log('Usuário não aprovado, fazendo logout');
+        if (!profileData) {
+          console.error('Perfil não encontrado');
+          await supabase.auth.signOut();
+          throw new Error('Perfil de usuário não encontrado. Contate o administrador.');
+        }
+
+        // Verifica se foi aprovado
+        if (profileData.is_approved === true) {
+          console.log('Usuário aprovado, login liberado para:', profileData.nome);
+          toast.success('Login realizado com sucesso!');
+          return { user: data.user, session: data.session };
+        } else {
+          console.log('Usuário NÃO aprovado, bloqueando login');
           await supabase.auth.signOut();
           throw new Error(`Sua conta ainda não foi aprovada. Usuário: ${profileData.nome} (${profileData.tipo_usuario}). Aguarde a aprovação de um administrador.`);
         }
-
-        console.log('Login aprovado para:', profileData?.nome);
-        toast.success('Login realizado com sucesso!');
-        return { user: data.user, session: data.session };
       }
     } catch (error: any) {
       console.error('Erro no signIn:', error);
