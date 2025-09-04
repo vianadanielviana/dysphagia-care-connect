@@ -40,15 +40,56 @@ const DisfagiaApp = () => {
     { date: '2025-08-16', risco: 2, sintomas: 1, consistencia: 'normal' }
   ]);
 
+  // Debug para verificar se há problemas de renderização
+  console.log('DisfagiaApp renderizando - currentView:', currentView);
+  console.log('Profile:', profile);
+
   const patients = [
     { id: 1, name: 'Maria Silva', age: 78, lastUpdate: '2025-08-16', riskLevel: 'baixo', caregiver: 'Ana Silva (filha)' },
     { id: 2, name: 'João Santos', age: 65, lastUpdate: '2025-08-16', riskLevel: 'alto', caregiver: 'Carlos Santos (filho)' },
     { id: 3, name: 'Rosa Lima', age: 82, lastUpdate: '2025-08-15', riskLevel: 'médio', caregiver: 'Home Care Plus' }
   ];
 
+  // Handler para cliques com debug
+  const handleViewChange = (view: string) => {
+    console.log('Mudando view para:', view);
+    if (view === 'triagem') {
+      setCurrentView('patient-selection');
+    } else if (view === 'registro') {
+      setCurrentView('patient-selection-registro');
+    } else {
+      setCurrentView(view);
+    }
+  };
+
+  const handleSignOut = () => {
+    console.log('Fazendo logout...');
+    signOut();
+  };
+
+  const handleNavigate = (path: string) => {
+    console.log('Navegando para:', path);
+    navigate(path);
+  };
+
 
   const CaregiverDashboard = () => (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background" style={{ position: 'relative', zIndex: 1 }}>
+      {/* Debug overlay temporário */}
+      <div 
+        onClick={() => console.log('Clique detectado no overlay de debug')}
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          background: 'transparent',
+          zIndex: -1,
+          pointerEvents: 'none'
+        }}
+      />
+      
       <header className="bg-card shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
@@ -56,7 +97,7 @@ const DisfagiaApp = () => {
               <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
                 <User className="h-5 w-5 text-primary-foreground" />
               </div>
-              <h1 className="text-xl font-semibold text-foreground">DisfagiaMonitor</h1>
+              <h1 className="text-xl font-semibold text-foreground">DisfagiaMonitor Pro</h1>
             </div>
             <div className="flex items-center space-x-4">
               <span className="text-sm text-muted-foreground">
@@ -64,7 +105,10 @@ const DisfagiaApp = () => {
               </span>
               {isAdmin && (
                 <Button 
-                  onClick={() => navigate('/admin/usuarios')}
+                  onClick={() => {
+                    console.log('Clique detectado no botão Admin');
+                    handleNavigate('/admin/usuarios');
+                  }}
                   variant="ghost"
                   size="sm"
                 >
@@ -73,7 +117,10 @@ const DisfagiaApp = () => {
                 </Button>
               )}
               <Button 
-                onClick={signOut}
+                onClick={() => {
+                  console.log('Clique detectado no botão Sair');
+                  handleSignOut();
+                }}
                 variant="ghost"
                 size="sm"
               >
@@ -92,13 +139,8 @@ const DisfagiaApp = () => {
               <Button
                 key={view}
                 onClick={() => {
-                  if (view === 'triagem') {
-                    setCurrentView('patient-selection');
-                  } else if (view === 'registro') {
-                    setCurrentView('patient-selection-registro');
-                  } else {
-                    setCurrentView(view);
-                  }
+                  console.log(`Clique detectado no botão: ${view}`);
+                  handleViewChange(view);
                 }}
                 variant="ghost"
                 className={`rounded-none border-b-2 ${
@@ -115,7 +157,10 @@ const DisfagiaApp = () => {
               </Button>
             ))}
             <Button
-              onClick={() => navigate('/pacientes')}
+              onClick={() => {
+                console.log('Clique detectado no botão Pacientes');
+                handleNavigate('/pacientes');
+              }}
               variant="ghost"
               className="rounded-none border-b-2 border-transparent text-muted-foreground hover:text-foreground hover:border-muted"
             >
@@ -1651,6 +1696,10 @@ const DisfagiaApp = () => {
       </main>
     </div>
   );
+
+  if (profile?.tipo_usuario === 'fonoaudiologo') {
+    return <ProfessionalDashboard />;
+  }
 
   return <CaregiverDashboard />;
 };

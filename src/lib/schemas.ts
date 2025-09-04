@@ -4,11 +4,15 @@ import { z } from 'zod';
 export const emailSchema = z.string().email('Email inválido').min(1, 'Email é obrigatório');
 
 export const passwordSchema = z.string()
-  .min(6, 'Senha deve ter pelo menos 6 caracteres');
+  .min(8, 'Senha deve ter pelo menos 8 caracteres')
+  .regex(/[A-Z]/, 'Senha deve conter pelo menos uma letra maiúscula')
+  .regex(/[a-z]/, 'Senha deve conter pelo menos uma letra minúscula')
+  .regex(/[0-9]/, 'Senha deve conter pelo menos um número');
 
 export const nomeSchema = z.string()
   .min(2, 'Nome deve ter pelo menos 2 caracteres')
-  .max(100, 'Nome deve ter no máximo 100 caracteres');
+  .max(100, 'Nome deve ter no máximo 100 caracteres')
+  .regex(/^[a-zA-ZÀ-ÿ\s]+$/, 'Nome deve conter apenas letras e espaços');
 
 export const cpfSchema = z.string()
   .regex(/^\d{3}\.\d{3}\.\d{3}-\d{2}$/, 'CPF deve estar no formato xxx.xxx.xxx-xx');

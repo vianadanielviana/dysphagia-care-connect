@@ -1,7 +1,7 @@
-import DisfagiaApp from '@/components/DisfagiaApp';
+import SimpleDashboard from '@/components/SimpleDashboard';
 
 const Index = () => {
-  return <DisfagiaApp />;
+  return <SimpleDashboard />;
 };
 
 export default Index;

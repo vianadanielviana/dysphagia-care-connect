@@ -120,19 +120,11 @@ const PacientesManager = () => {
 
       let response;
       if (editingPaciente) {
-        // Update existing patient directly with Supabase client (RLS will handle permissions)
-        const { data: updatedPaciente, error: updateError } = await supabase
-          .from('pacientes')
-          .update(cleanedData)
-          .eq('id', editingPaciente.id)
-          .select()
-          .single();
-
-        if (updateError) {
-          throw updateError;
-        }
-
-        response = { data: updatedPaciente, error: null };
+        // Update existing patient
+        response = await supabase.functions.invoke(`pacientes/${editingPaciente.id}`, {
+          method: 'PUT',
+          body: cleanedData
+        });
       } else {
         // Create new patient
         response = await supabase.functions.invoke('pacientes', {
@@ -201,9 +193,8 @@ const PacientesManager = () => {
     if (!confirm('Tem certeza que deseja excluir este paciente?')) return;
 
     try {
-      const { error } = await supabase.functions.invoke('pacientes', {
-        method: 'DELETE',
-        body: { id }
+      const { error } = await supabase.functions.invoke(`pacientes/${id}`, {
+        method: 'DELETE'
       });
 
       if (error) throw error;

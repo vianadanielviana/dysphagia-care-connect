@@ -1,335 +1,263 @@
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { signInSchema, signUpSchema, SignInFormData, SignUpFormData } from '@/lib/schemas';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { User, UserPlus, LogIn } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { signInSchema, signUpSchema, type SignInFormData, type SignUpFormData } from '@/lib/schemas';
 import { useNavigate } from 'react-router-dom';
-import { useToast } from '@/components/ui/use-toast';
-import { Loader2, User, Stethoscope, Heart } from 'lucide-react';
 
-const AuthForm = () => {
+export default function AuthForm() {
   const [isSignUp, setIsSignUp] = useState(false);
   const [loading, setLoading] = useState(false);
   const { signIn, signUp, isAdmin } = useAuth();
   const navigate = useNavigate();
-  const { toast } = useToast();
-
-  console.log('AuthForm rendered, isSignUp:', isSignUp, 'loading:', loading);
 
   const signInForm = useForm<SignInFormData>({
     resolver: zodResolver(signInSchema),
     defaultValues: {
       email: '',
-      password: '',
-    },
-    mode: 'onSubmit',
+      password: ''
+    }
   });
 
   const signUpForm = useForm<SignUpFormData>({
     resolver: zodResolver(signUpSchema),
     defaultValues: {
-      nome: '',
       email: '',
       password: '',
       confirmPassword: '',
-      tipo_usuario: 'cuidador',
-    },
-    mode: 'onSubmit',
+      nome: '',
+      tipo_usuario: 'cuidador'
+    }
   });
-
-  console.log('SignUp form values:', signUpForm.watch());
 
   const handleSignIn = async (data: SignInFormData) => {
     setLoading(true);
     try {
       await signIn(data.email, data.password);
-      navigate('/dashboard');
-    } catch (error: any) {
-      console.error('Sign in error:', error);
-      toast({
-        title: "Erro no Login",
-        description: error.message || "Erro ao fazer login",
-        variant: "destructive",
-      });
+      
+      // Redirect admin to user management
+      if (data.email === 'viana.vianadaniel@outlook.com') {
+        navigate('/admin/usuarios');
+      } else {
+        navigate('/dashboard');
+      }
+    } catch (error) {
+      // Error handling is done in the hook
     } finally {
       setLoading(false);
     }
   };
 
   const handleSignUp = async (data: SignUpFormData) => {
-    console.log('Handle SignUp called with data:', data);
     setLoading(true);
     try {
       await signUp(data.email, data.password, data.nome, data.tipo_usuario);
-      toast({
-        title: "Cadastro Realizado",
-        description: "Conta criada com sucesso! Aguarde aprovação de um administrador.",
-      });
       setIsSignUp(false);
-    } catch (error: any) {
-      console.error('Sign up error:', error);
-      toast({
-        title: "Erro no Cadastro",
-        description: error.message || "Erro ao criar conta",
-        variant: "destructive",
-      });
+      signUpForm.reset();
+    } catch (error) {
+      // Error handling is done in the hook
     } finally {
       setLoading(false);
     }
   };
 
-  const handleTestAdmin = async () => {
-    setLoading(true);
-    try {
-      await signIn('viana.vianadaniel@outlook.com', 'admin123');
-      navigate('/dashboard');
-    } catch (error: any) {
-      console.error('Test admin error:', error);
-      toast({
-        title: "Erro",
-        description: "Credenciais de teste não disponíveis",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
+  const fillAdminCredentials = () => {
+    signInForm.setValue('email', 'viana.vianadaniel@outlook.com');
+    signInForm.setValue('password', '123qwe');
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-4">
-      <Card className="w-full max-w-md">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-primary/5 flex items-center justify-center p-4">
+      <Card className="w-full max-w-md shadow-xl">
         <CardHeader className="text-center">
-          <div className="w-12 h-12 bg-primary rounded-lg flex items-center justify-center mx-auto mb-4">
-            <Stethoscope className="h-6 w-6 text-primary-foreground" />
+          <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center mx-auto mb-4">
+            <User className="h-8 w-8 text-primary-foreground" />
           </div>
-          <CardTitle className="text-2xl font-bold">
-            {isSignUp ? 'Criar Conta' : 'DisfagiaMonitor'}
+          <CardTitle className="text-2xl font-bold text-foreground mb-2">
+            DisfagiaMonitor
           </CardTitle>
-          <CardDescription>
-            {isSignUp 
-              ? 'Preencha os dados para criar sua conta'
-              : 'Faça login para acessar a plataforma'
-            }
-          </CardDescription>
+          <p className="text-muted-foreground">
+            {isSignUp ? 'Criar nova conta' : 'Cuidado especializado ao seu alcance'}
+          </p>
         </CardHeader>
-
-        <CardContent>
+        
+        <CardContent className="p-8">
           {!isSignUp ? (
-            <Form {...signInForm}>
-              <form onSubmit={signInForm.handleSubmit(handleSignIn)} className="space-y-4">
-                <FormField
-                  control={signInForm.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="email"
-                          placeholder="seu@email.com"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+            <form onSubmit={signInForm.handleSubmit(handleSignIn)} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  {...signInForm.register('email')}
+                  className={signInForm.formState.errors.email ? 'border-destructive' : ''}
                 />
+                {signInForm.formState.errors.email && (
+                  <p className="text-sm text-destructive">
+                    {signInForm.formState.errors.email.message}
+                  </p>
+                )}
+              </div>
 
-                <FormField
-                  control={signInForm.control}
-                  name="password"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Senha</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="password"
-                          placeholder="Sua senha"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+              <div className="space-y-2">
+                <Label htmlFor="password">Senha</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  {...signInForm.register('password')}
+                  className={signInForm.formState.errors.password ? 'border-destructive' : ''}
                 />
+                {signInForm.formState.errors.password && (
+                  <p className="text-sm text-destructive">
+                    {signInForm.formState.errors.password.message}
+                  </p>
+                )}
+              </div>
 
-                <Button 
-                  type="submit" 
-                  className="w-full" 
-                  disabled={loading}
+              <Button 
+                type="submit" 
+                className="w-full h-12" 
+                size="lg"
+                disabled={loading}
+              >
+                <LogIn className="h-5 w-5 mr-2" />
+                {loading ? 'Entrando...' : 'Entrar'}
+              </Button>
+
+              <Button
+                type="button"
+                onClick={fillAdminCredentials}
+                className="w-full h-12 bg-medical-amber hover:bg-medical-amber/90"
+                size="lg"
+              >
+                <User className="h-5 w-5 mr-2" />
+                Acesso Admin (Teste)
+              </Button>
+
+              <div className="text-center">
+                <Button
+                  type="button"
+                  variant="link"
+                  onClick={() => setIsSignUp(true)}
+                  className="text-primary"
                 >
-                  {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Entrar
+                  Não tem conta? Cadastre-se
                 </Button>
-              </form>
-            </Form>
+              </div>
+            </form>
           ) : (
-            <Form {...signUpForm}>
-              <form onSubmit={signUpForm.handleSubmit(handleSignUp)} className="space-y-4">
-                <FormField
-                  control={signUpForm.control}
-                  name="nome"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Nome Completo</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="Digite seu nome completo"
-                          autoComplete="name"
-                          disabled={loading}
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+            <form onSubmit={signUpForm.handleSubmit(handleSignUp)} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="signup-nome">Nome completo</Label>
+                <Input
+                  id="signup-nome"
+                  {...signUpForm.register('nome')}
+                  className={signUpForm.formState.errors.nome ? 'border-destructive' : ''}
                 />
+                {signUpForm.formState.errors.nome && (
+                  <p className="text-sm text-destructive">
+                    {signUpForm.formState.errors.nome.message}
+                  </p>
+                )}
+              </div>
 
-                <FormField
-                  control={signUpForm.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="email"
-                          placeholder="Digite seu email"
-                          autoComplete="email"
-                          disabled={loading}
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+              <div className="space-y-2">
+                <Label htmlFor="signup-email">Email</Label>
+                <Input
+                  id="signup-email"
+                  type="email"
+                  {...signUpForm.register('email')}
+                  className={signUpForm.formState.errors.email ? 'border-destructive' : ''}
                 />
+                {signUpForm.formState.errors.email && (
+                  <p className="text-sm text-destructive">
+                    {signUpForm.formState.errors.email.message}
+                  </p>
+                )}
+              </div>
 
-                <FormField
-                  control={signUpForm.control}
-                  name="tipo_usuario"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Tipo de Usuário</FormLabel>
-                      <FormControl>
-                        <RadioGroup
-                          onValueChange={field.onChange}
-                          value={field.value}
-                          className="grid grid-cols-1 gap-4"
-                          disabled={loading}
-                        >
-                          <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="cuidador" id="cuidador" />
-                            <Label htmlFor="cuidador" className="flex items-center space-x-2 cursor-pointer">
-                              <Heart className="h-4 w-4 text-medical-red" />
-                              <span>Cuidador/Familiar</span>
-                            </Label>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="fonoaudiologo" id="fonoaudiologo" />
-                            <Label htmlFor="fonoaudiologo" className="flex items-center space-x-2 cursor-pointer">
-                              <Stethoscope className="h-4 w-4 text-primary" />
-                              <span>Fonoaudiólogo</span>
-                            </Label>
-                          </div>
-                        </RadioGroup>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={signUpForm.control}
-                  name="password"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Senha</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="password"
-                          placeholder="Mínimo 6 caracteres"
-                          autoComplete="new-password"
-                          disabled={loading}
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={signUpForm.control}
-                  name="confirmPassword"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Confirmar Senha</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="password"
-                          placeholder="Digite a senha novamente"
-                          autoComplete="new-password"
-                          disabled={loading}
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <div className="text-sm text-muted-foreground">
-                  Formulário válido: {signUpForm.formState.isValid ? 'Sim' : 'Não'}
-                </div>
-                
-                <Button 
-                  type="submit" 
-                  className="w-full" 
-                  disabled={loading}
+              <div className="space-y-2">
+                <Label>Tipo de usuário</Label>
+                <RadioGroup
+                  value={signUpForm.watch('tipo_usuario')}
+                  onValueChange={(value) => signUpForm.setValue('tipo_usuario', value as 'cuidador' | 'fonoaudiologo')}
                 >
-                  {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Criar Conta
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="cuidador" id="cuidador" />
+                    <Label htmlFor="cuidador">Cuidador</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="fonoaudiologo" id="fonoaudiologo" />
+                    <Label htmlFor="fonoaudiologo">Fonoaudiólogo</Label>
+                  </div>
+                </RadioGroup>
+                {signUpForm.formState.errors.tipo_usuario && (
+                  <p className="text-sm text-destructive">
+                    {signUpForm.formState.errors.tipo_usuario.message}
+                  </p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="signup-password">Senha</Label>
+                <Input
+                  id="signup-password"
+                  type="password"
+                  {...signUpForm.register('password')}
+                  className={signUpForm.formState.errors.password ? 'border-destructive' : ''}
+                />
+                {signUpForm.formState.errors.password && (
+                  <p className="text-sm text-destructive">
+                    {signUpForm.formState.errors.password.message}
+                  </p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="signup-confirm-password">Confirmar senha</Label>
+                <Input
+                  id="signup-confirm-password"
+                  type="password"
+                  {...signUpForm.register('confirmPassword')}
+                  className={signUpForm.formState.errors.confirmPassword ? 'border-destructive' : ''}
+                />
+                {signUpForm.formState.errors.confirmPassword && (
+                  <p className="text-sm text-destructive">
+                    {signUpForm.formState.errors.confirmPassword.message}
+                  </p>
+                )}
+              </div>
+
+              <Button 
+                type="submit" 
+                className="w-full h-12" 
+                size="lg"
+                disabled={loading}
+              >
+                <UserPlus className="h-5 w-5 mr-2" />
+                {loading ? 'Criando conta...' : 'Criar conta'}
+              </Button>
+
+              <div className="text-center">
+                <Button
+                  type="button"
+                  variant="link"
+                  onClick={() => setIsSignUp(false)}
+                  className="text-primary"
+                >
+                  Já tem conta? Faça login
                 </Button>
-              </form>
-            </Form>
+              </div>
+            </form>
           )}
         </CardContent>
-
-        <CardFooter className="flex flex-col space-y-2">
-          <Button
-            variant="ghost"
-            onClick={() => setIsSignUp(!isSignUp)}
-            disabled={loading}
-            className="w-full"
-          >
-            {isSignUp 
-              ? 'Já tem conta? Faça login'
-              : 'Não tem conta? Cadastre-se'
-            }
-          </Button>
-
-          {!isSignUp && (
-            <Button
-              variant="outline"
-              onClick={handleTestAdmin}
-              disabled={loading}
-              size="sm"
-              className="w-full"
-            >
-              Testar como Administrador
-            </Button>
-          )}
-        </CardFooter>
       </Card>
     </div>
   );
-};
-
-export default AuthForm;
+}
