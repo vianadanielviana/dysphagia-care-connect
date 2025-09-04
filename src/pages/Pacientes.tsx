@@ -6,7 +6,7 @@ import { LogOut, Settings } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const Pacientes = () => {
-  const { profile, signOut, isAdmin } = useAuth();
+  const { profile, signOut, isAdmin, isProfessional } = useAuth();
   const navigate = useNavigate();
 
   return (
@@ -27,14 +27,14 @@ const Pacientes = () => {
               <span className="text-sm text-muted-foreground">
                 {profile?.tipo_usuario === 'fonoaudiologo' ? 'Fonoaudiólogo' : 'Cuidador'}: {profile?.nome}
               </span>
-              {isAdmin && (
+              {(isAdmin || isProfessional) && (
                 <Button 
                   onClick={() => navigate('/admin/usuarios')}
                   variant="ghost"
                   size="sm"
                 >
                   <Settings className="h-4 w-4 mr-2" />
-                  Admin
+                  {isAdmin ? 'Admin' : 'Gerenciar'}
                 </Button>
               )}
               <Button 

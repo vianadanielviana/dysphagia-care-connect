@@ -25,14 +25,11 @@ interface TriageData {
 }
 
 const DisfagiaApp = () => {
-  const { profile, signOut, isAdmin } = useAuth();
+  const { profile, signOut, isAdmin, isProfessional } = useAuth();
   const navigate = useNavigate();
   const [currentView, setCurrentView] = useState('dashboard');
   const [triageData, setTriageData] = useState<TriageData>({});
   const [selectedPatient, setSelectedPatient] = useState<any>(null);
-  
-  // Determine if user is professional based on profile type
-  const isProfessional = profile?.tipo_usuario === 'fonoaudiologo';
   const [dailyRecords, setDailyRecords] = useState([
     { date: '2025-08-10', risco: 2, sintomas: 1, consistencia: 'normal' },
     { date: '2025-08-11', risco: 3, sintomas: 2, consistencia: 'modificada' },
@@ -65,14 +62,14 @@ const DisfagiaApp = () => {
               <span className="text-sm text-muted-foreground">
                 {profile?.tipo_usuario === 'fonoaudiologo' ? 'Fonoaudiólogo' : 'Cuidador'}: {profile?.nome}
               </span>
-              {isAdmin && (
+              {(isAdmin || isProfessional) && (
                 <Button 
                   onClick={() => navigate('/admin/usuarios')}
                   variant="ghost"
                   size="sm"
                 >
                   <Settings className="h-4 w-4 mr-2" />
-                  Admin
+                  {isAdmin ? 'Admin' : 'Gerenciar'}
                 </Button>
               )}
               <Button 

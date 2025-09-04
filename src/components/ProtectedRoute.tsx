@@ -7,10 +7,15 @@ import { AlertTriangle, User } from 'lucide-react';
 interface ProtectedRouteProps {
   children: React.ReactNode;
   requireAdmin?: boolean;
+  requireProfessional?: boolean;
 }
 
-export default function ProtectedRoute({ children, requireAdmin = false }: ProtectedRouteProps) {
-  const { isAuthenticated, isApproved, isAdmin, loading, profile } = useAuth();
+export default function ProtectedRoute({ 
+  children, 
+  requireAdmin = false, 
+  requireProfessional = false 
+}: ProtectedRouteProps) {
+  const { isAuthenticated, isApproved, isAdmin, isProfessional, loading, profile } = useAuth();
 
   if (loading) {
     return (
@@ -39,9 +44,27 @@ export default function ProtectedRoute({ children, requireAdmin = false }: Prote
             <div className="w-16 h-16 bg-destructive rounded-full flex items-center justify-center mx-auto mb-4">
               <AlertTriangle className="h-8 w-8 text-destructive-foreground" />
             </div>
-            <h2 className="text-xl font-semibold text-foreground mb-2">Acesso Negado</h2>
+            <h2 className="text-xl font-semibold text-foreground mb-2">Acesso de Administrador Necessário</h2>
             <p className="text-muted-foreground">
-              Você não tem permissão para acessar esta página.
+              Esta página requer privilégios de administrador.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (requireProfessional && !isProfessional && !isAdmin) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-primary/5 flex items-center justify-center p-4">
+        <Card className="w-full max-w-md shadow-xl">
+          <CardContent className="p-8 text-center">
+            <div className="w-16 h-16 bg-destructive rounded-full flex items-center justify-center mx-auto mb-4">
+              <AlertTriangle className="h-8 w-8 text-destructive-foreground" />
+            </div>
+            <h2 className="text-xl font-semibold text-foreground mb-2">Acesso Profissional Necessário</h2>
+            <p className="text-muted-foreground">
+              Esta página é restrita a fonoaudiólogos.
             </p>
           </CardContent>
         </Card>
