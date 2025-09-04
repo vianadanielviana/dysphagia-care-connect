@@ -120,14 +120,19 @@ const PacientesManager = () => {
 
       let response;
       if (editingPaciente) {
-        // Update existing patient using functions.invoke with different approach
-        response = await supabase.functions.invoke('pacientes', {
-          method: 'PUT',
-          body: {
-            id: editingPaciente.id,
-            ...cleanedData
-          }
-        });
+        // Update existing patient directly with Supabase client (RLS will handle permissions)
+        const { data: updatedPaciente, error: updateError } = await supabase
+          .from('pacientes')
+          .update(cleanedData)
+          .eq('id', editingPaciente.id)
+          .select()
+          .single();
+
+        if (updateError) {
+          throw updateError;
+        }
+
+        response = { data: updatedPaciente, error: null };
       } else {
         // Create new patient
         response = await supabase.functions.invoke('pacientes', {
