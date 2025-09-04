@@ -933,6 +933,45 @@ export type Database = {
         }
         Relationships: []
       }
+      vector_document_access_log: {
+        Row: {
+          accessed_at: string | null
+          action: string
+          document_id: number | null
+          id: string
+          ip_address: unknown | null
+          metadata: Json | null
+          search_query: string | null
+          user_agent: string | null
+          user_id: string | null
+          user_type: string | null
+        }
+        Insert: {
+          accessed_at?: string | null
+          action: string
+          document_id?: number | null
+          id?: string
+          ip_address?: unknown | null
+          metadata?: Json | null
+          search_query?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+          user_type?: string | null
+        }
+        Update: {
+          accessed_at?: string | null
+          action?: string
+          document_id?: number | null
+          id?: string
+          ip_address?: unknown | null
+          metadata?: Json | null
+          search_query?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+          user_type?: string | null
+        }
+        Relationships: []
+      }
       vector_documents: {
         Row: {
           content: string | null
@@ -1059,6 +1098,20 @@ export type Database = {
       }
       match_vector_documents: {
         Args: { filter?: Json; match_count?: number; query_embedding: string }
+        Returns: {
+          content: string
+          id: number
+          metadata: Json
+          similarity: number
+        }[]
+      }
+      secure_match_vector_documents: {
+        Args: {
+          filter?: Json
+          match_count?: number
+          query_embedding: string
+          similarity_threshold?: number
+        }
         Returns: {
           content: string
           id: number
