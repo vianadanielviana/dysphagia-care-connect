@@ -104,63 +104,6 @@ export type Database = {
         }
         Relationships: []
       }
-      contatos: {
-        Row: {
-          ativo: boolean | null
-          categoria: string | null
-          created_at: string | null
-          dias_para_followup: number | null
-          email: string | null
-          erro_envio: string | null
-          id: number
-          mensagem_followup: string | null
-          nome: string
-          status: string | null
-          status_envio: string | null
-          telefone: string | null
-          tentativas_followup: number | null
-          ultima_mensagem_enviada: string | null
-          ultimo_contato: string | null
-          updated_at: string | null
-        }
-        Insert: {
-          ativo?: boolean | null
-          categoria?: string | null
-          created_at?: string | null
-          dias_para_followup?: number | null
-          email?: string | null
-          erro_envio?: string | null
-          id?: number
-          mensagem_followup?: string | null
-          nome: string
-          status?: string | null
-          status_envio?: string | null
-          telefone?: string | null
-          tentativas_followup?: number | null
-          ultima_mensagem_enviada?: string | null
-          ultimo_contato?: string | null
-          updated_at?: string | null
-        }
-        Update: {
-          ativo?: boolean | null
-          categoria?: string | null
-          created_at?: string | null
-          dias_para_followup?: number | null
-          email?: string | null
-          erro_envio?: string | null
-          id?: number
-          mensagem_followup?: string | null
-          nome?: string
-          status?: string | null
-          status_envio?: string | null
-          telefone?: string | null
-          tentativas_followup?: number | null
-          ultima_mensagem_enviada?: string | null
-          ultimo_contato?: string | null
-          updated_at?: string | null
-        }
-        Relationships: []
-      }
       documents: {
         Row: {
           content: string | null
@@ -181,53 +124,6 @@ export type Database = {
           metadata?: Json | null
         }
         Relationships: []
-      }
-      followup_logs: {
-        Row: {
-          categoria: string | null
-          contact_id: number | null
-          created_at: string | null
-          erro: string | null
-          id: number
-          mensagem_enviada: string | null
-          nome: string | null
-          resposta_api: string | null
-          status: string | null
-          telefone: string | null
-        }
-        Insert: {
-          categoria?: string | null
-          contact_id?: number | null
-          created_at?: string | null
-          erro?: string | null
-          id?: number
-          mensagem_enviada?: string | null
-          nome?: string | null
-          resposta_api?: string | null
-          status?: string | null
-          telefone?: string | null
-        }
-        Update: {
-          categoria?: string | null
-          contact_id?: number | null
-          created_at?: string | null
-          erro?: string | null
-          id?: number
-          mensagem_enviada?: string | null
-          nome?: string | null
-          resposta_api?: string | null
-          status?: string | null
-          telefone?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "followup_logs_contact_id_fkey"
-            columns: ["contact_id"]
-            isOneToOne: false
-            referencedRelation: "contatos"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       n8n_chat_histories: {
         Row: {
@@ -346,39 +242,6 @@ export type Database = {
           nome?: string | null
           tipo_usuario?: string
           updated_at?: string
-        }
-        Relationships: []
-      }
-      reminder_log: {
-        Row: {
-          appointment_id: string
-          channel: string | null
-          id: number
-          message_id: string | null
-          recipient: string | null
-          reminder_type: string
-          sent_at: string
-          status: string | null
-        }
-        Insert: {
-          appointment_id: string
-          channel?: string | null
-          id?: number
-          message_id?: string | null
-          recipient?: string | null
-          reminder_type: string
-          sent_at?: string
-          status?: string | null
-        }
-        Update: {
-          appointment_id?: string
-          channel?: string | null
-          id?: number
-          message_id?: string | null
-          recipient?: string | null
-          reminder_type?: string
-          sent_at?: string
-          status?: string | null
         }
         Relationships: []
       }
