@@ -1,6 +1,6 @@
 import React from 'react';
+import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import AuthForm from './AuthForm';
 import { Card, CardContent } from '@/components/ui/card';
 import { AlertTriangle, User } from 'lucide-react';
 
@@ -28,7 +28,7 @@ export default function ProtectedRoute({ children, requireAdmin = false }: Prote
   }
 
   if (!isAuthenticated) {
-    return <AuthForm />;
+    return <Navigate to="/auth" replace />;
   }
 
   if (requireAdmin && !isAdmin) {
