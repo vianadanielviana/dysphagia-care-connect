@@ -878,6 +878,7 @@ export type Database = {
           session_id: string | null
           type: string | null
           updated_at: string | null
+          user_id: string | null
         }
         Insert: {
           additional_kwargs?: Json | null
@@ -887,6 +888,7 @@ export type Database = {
           session_id?: string | null
           type?: string | null
           updated_at?: string | null
+          user_id?: string | null
         }
         Update: {
           additional_kwargs?: Json | null
@@ -896,6 +898,7 @@ export type Database = {
           session_id?: string | null
           type?: string | null
           updated_at?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }
