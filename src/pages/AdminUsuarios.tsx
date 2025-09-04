@@ -28,17 +28,31 @@ export default function AdminUsuarios() {
 
   const fetchPendingUsers = async () => {
     try {
+      console.log('Buscando usuários pendentes...');
+      
+      // Buscar usuários pendentes
       const { data, error } = await supabase
         .from('profiles')
-        .select('id, email, nome, tipo_usuario, created_at')
+        .select('id, email, nome, tipo_usuario, created_at, is_approved')
         .eq('is_approved', false);
 
       if (error) {
         toast.error('Erro ao buscar usuários pendentes.');
         console.error('Error fetching users:', error);
       } else {
+        console.log('Usuários pendentes encontrados:', data);
         setUsuarios(data || []);
       }
+
+      // Debug: Buscar todos os usuários para verificar
+      const { data: allUsers, error: allError } = await supabase
+        .from('profiles')
+        .select('id, email, nome, tipo_usuario, is_approved, created_at');
+      
+      if (!allError) {
+        console.log('Todos os usuários:', allUsers);
+      }
+      
     } catch (error) {
       toast.error('Erro ao buscar usuários pendentes.');
       console.error('Error:', error);
