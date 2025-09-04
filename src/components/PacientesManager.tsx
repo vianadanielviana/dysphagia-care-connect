@@ -229,6 +229,9 @@ const PacientesManager = () => {
               <DialogTitle>
                 {editingPaciente ? 'Editar Paciente' : 'Novo Paciente'}
               </DialogTitle>
+              <p className="text-sm text-muted-foreground">
+                * Apenas o nome é obrigatório. Preencha os demais campos conforme necessário.
+              </p>
             </DialogHeader>
             
             <Form {...form}>

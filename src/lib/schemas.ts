@@ -38,9 +38,15 @@ export const signInSchema = z.object({
 
 export const pacienteSchema = z.object({
   nome: nomeSchema,
-  cpf: cpfSchema.optional(),
-  email: emailSchema.optional(),
-  telefone: telefoneSchema.optional(),
+  cpf: z.string().optional().refine(val => !val || /^\d{3}\.\d{3}\.\d{3}-\d{2}$/.test(val), {
+    message: 'CPF deve estar no formato xxx.xxx.xxx-xx'
+  }),
+  email: z.string().optional().refine(val => !val || z.string().email().safeParse(val).success, {
+    message: 'Email inválido'
+  }),
+  telefone: z.string().optional().refine(val => !val || /^\(\d{2}\)\s\d{4,5}-\d{4}$/.test(val), {
+    message: 'Telefone deve estar no formato (xx) xxxxx-xxxx'
+  }),
   data_nascimento: z.string().optional(),
   endereco: z.string().max(200, 'Endereço deve ter no máximo 200 caracteres').optional(),
   tipo_usuario: z.enum(['paciente']),
@@ -48,9 +54,15 @@ export const pacienteSchema = z.object({
   historico_medico: z.string().max(1000, 'Histórico médico deve ter no máximo 1000 caracteres').optional(),
   medicamentos_atuais: z.string().max(500, 'Medicamentos atuais deve ter no máximo 500 caracteres').optional(),
   observacoes: z.string().max(500, 'Observações deve ter no máximo 500 caracteres').optional(),
-  responsavel_nome: nomeSchema.optional(),
-  responsavel_email: emailSchema.optional(),
-  responsavel_telefone: telefoneSchema.optional()
+  responsavel_nome: z.string().optional().refine(val => !val || (val.length >= 2 && /^[a-zA-ZÀ-ÿ\s]+$/.test(val)), {
+    message: 'Nome deve conter apenas letras e espaços e ter pelo menos 2 caracteres'
+  }),
+  responsavel_email: z.string().optional().refine(val => !val || z.string().email().safeParse(val).success, {
+    message: 'Email inválido'
+  }),
+  responsavel_telefone: z.string().optional().refine(val => !val || /^\(\d{2}\)\s\d{4,5}-\d{4}$/.test(val), {
+    message: 'Telefone deve estar no formato (xx) xxxxx-xxxx'
+  })
 });
 
 export type SignUpFormData = z.infer<typeof signUpSchema>;
