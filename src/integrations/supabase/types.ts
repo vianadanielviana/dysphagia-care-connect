@@ -41,6 +41,45 @@ export type Database = {
         }
         Relationships: []
       }
+      chat_access_log: {
+        Row: {
+          accessed_at: string | null
+          action: string
+          id: string
+          ip_address: unknown | null
+          message_id: number | null
+          metadata: Json | null
+          session_id: string
+          user_agent: string | null
+          user_id: string
+          user_type: string | null
+        }
+        Insert: {
+          accessed_at?: string | null
+          action: string
+          id?: string
+          ip_address?: unknown | null
+          message_id?: number | null
+          metadata?: Json | null
+          session_id: string
+          user_agent?: string | null
+          user_id: string
+          user_type?: string | null
+        }
+        Update: {
+          accessed_at?: string | null
+          action?: string
+          id?: string
+          ip_address?: unknown | null
+          message_id?: number | null
+          metadata?: Json | null
+          session_id?: string
+          user_agent?: string | null
+          user_id?: string
+          user_type?: string | null
+        }
+        Relationships: []
+      }
       chat_memory: {
         Row: {
           additional_kwargs: Json | null
