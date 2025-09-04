@@ -89,11 +89,30 @@ const PacientesManager = () => {
 
   const onSubmit = async (data: PacienteFormData) => {
     try {
+      // Filter out empty strings and convert to null for optional fields
+      const cleanedData = {
+        ...data,
+        cpf: data.cpf?.trim() || null,
+        email: data.email?.trim() || null,
+        telefone: data.telefone?.trim() || null,
+        data_nascimento: data.data_nascimento?.trim() || null,
+        endereco: data.endereco?.trim() || null,
+        diagnostico: data.diagnostico?.trim() || null,
+        historico_medico: data.historico_medico?.trim() || null,
+        medicamentos_atuais: data.medicamentos_atuais?.trim() || null,
+        observacoes: data.observacoes?.trim() || null,
+        responsavel_nome: data.responsavel_nome?.trim() || null,
+        responsavel_email: data.responsavel_email?.trim() || null,
+        responsavel_telefone: data.responsavel_telefone?.trim() || null,
+      };
+
+      console.log('Sending patient data:', cleanedData);
+
       if (editingPaciente) {
         // Update existing patient
-        const { data: updatedPaciente, error } = await supabase.functions.invoke('pacientes', {
+        const { data: updatedPaciente, error } = await supabase.functions.invoke(`pacientes/${editingPaciente.id}`, {
           method: 'PUT',
-          body: { ...data, id: editingPaciente.id }
+          body: cleanedData
         });
 
         if (error) throw error;
@@ -107,7 +126,7 @@ const PacientesManager = () => {
         // Create new patient
         const { data: newPaciente, error } = await supabase.functions.invoke('pacientes', {
           method: 'POST',
-          body: data
+          body: cleanedData
         });
 
         if (error) throw error;
@@ -124,7 +143,7 @@ const PacientesManager = () => {
       console.error('Erro ao salvar paciente:', error);
       toast({
         title: "Erro",
-        description: "Erro ao salvar paciente",
+        description: "Erro ao salvar paciente. Verifique os dados e tente novamente.",
         variant: "destructive",
       });
     }

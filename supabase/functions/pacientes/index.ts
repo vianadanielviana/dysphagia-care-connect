@@ -94,12 +94,26 @@ serve(async (req) => {
           })
         }
 
-        // Add user id to the patient data
+        // Clean the data - convert empty strings to null for database
         const pacienteData = {
-          ...newPaciente,
+          nome: newPaciente.nome.trim(),
+          cpf: newPaciente.cpf?.trim() || null,
+          email: newPaciente.email?.trim() || null,
+          telefone: newPaciente.telefone?.trim() || null,
+          data_nascimento: newPaciente.data_nascimento?.trim() || null,
+          endereco: newPaciente.endereco?.trim() || null,
+          diagnostico: newPaciente.diagnostico?.trim() || null,
+          historico_medico: newPaciente.historico_medico?.trim() || null,
+          medicamentos_atuais: newPaciente.medicamentos_atuais?.trim() || null,
+          observacoes: newPaciente.observacoes?.trim() || null,
+          responsavel_nome: newPaciente.responsavel_nome?.trim() || null,
+          responsavel_email: newPaciente.responsavel_email?.trim() || null,
+          responsavel_telefone: newPaciente.responsavel_telefone?.trim() || null,
           usuario_cadastro_id: user.id,
           tipo_usuario: 'paciente'
         }
+
+        console.log('Inserting patient data:', pacienteData)
 
         const { data: createdPaciente, error: createError } = await supabaseClient
           .from('pacientes')
@@ -131,9 +145,28 @@ serve(async (req) => {
 
         const updatedData = await req.json()
         
+        // Clean the data - convert empty strings to null for database
+        const cleanedData = {
+          nome: updatedData.nome?.trim(),
+          cpf: updatedData.cpf?.trim() || null,
+          email: updatedData.email?.trim() || null,
+          telefone: updatedData.telefone?.trim() || null,
+          data_nascimento: updatedData.data_nascimento?.trim() || null,
+          endereco: updatedData.endereco?.trim() || null,
+          diagnostico: updatedData.diagnostico?.trim() || null,
+          historico_medico: updatedData.historico_medico?.trim() || null,
+          medicamentos_atuais: updatedData.medicamentos_atuais?.trim() || null,
+          observacoes: updatedData.observacoes?.trim() || null,
+          responsavel_nome: updatedData.responsavel_nome?.trim() || null,
+          responsavel_email: updatedData.responsavel_email?.trim() || null,
+          responsavel_telefone: updatedData.responsavel_telefone?.trim() || null,
+        }
+
+        console.log('Updating patient data:', cleanedData)
+        
         const { data: updatedPaciente, error: updateError } = await supabaseClient
           .from('pacientes')
-          .update(updatedData)
+          .update(cleanedData)
           .eq('id', pacienteId)
           .eq('usuario_cadastro_id', user.id)
           .select()
