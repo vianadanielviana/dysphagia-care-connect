@@ -93,6 +93,8 @@ const DisfagiaApp = () => {
                 onClick={() => {
                   if (view === 'triagem') {
                     setCurrentView('patient-selection');
+                  } else if (view === 'registro') {
+                    setCurrentView('patient-selection-registro');
                   } else {
                     setCurrentView(view);
                   }
@@ -353,15 +355,6 @@ const DisfagiaApp = () => {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 gap-3">
-                <Button 
-                  onClick={() => setCurrentView('patient-selection-registro')}
-                  variant="outline"
-                  className="h-auto py-4 flex flex-col items-center space-y-2"
-                >
-                  <Calendar className="h-6 w-6 text-primary" />
-                  <span className="text-sm">Registro Diário</span>
-                </Button>
-                
                 <Button 
                   onClick={() => setCurrentView('patient-selection')}
                   variant="outline"
