@@ -183,78 +183,37 @@ const AuthForm = () => {
           ) : (
             <Form {...signUpForm}>
               <form onSubmit={signUpForm.handleSubmit(handleSignUp)} className="space-y-4">
-                {/* Input de teste direto - sem react-hook-form */}
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Teste Input Direto</label>
-                  <input 
-                    type="text" 
-                    placeholder="Digite aqui para testar"
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                    onChange={(e) => console.log('Input direto funcionando:', e.target.value)}
-                  />
-                </div>
-                
                 <FormField
                   control={signUpForm.control}
                   name="nome"
-                  render={({ field }) => {
-                    console.log('Nome field render:', field, 'disabled:', field.disabled, 'readonly:', (field as any).readOnly);
-                    return (
-                      <FormItem>
-                        <FormLabel>Nome Completo</FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder="Digite seu nome completo"
-                            autoComplete="name"
-                            disabled={false}
-                            readOnly={false}
-                            onFocus={() => console.log('Nome field focused')}
-                            onKeyDown={(e) => console.log('Nome keydown:', e.key)}
-                            onChange={(e) => {
-                              console.log('Nome onChange triggered:', e.target.value);
-                              field.onChange(e);
-                            }}
-                            onBlur={field.onBlur}
-                            name={field.name}
-                            value={field.value || ''}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    );
-                  }}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Nome Completo</FormLabel>
+                      <Input
+                        placeholder="Digite seu nome completo"
+                        autoComplete="name"
+                        {...field}
+                      />
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
 
                 <FormField
                   control={signUpForm.control}
                   name="email"
-                  render={({ field }) => {
-                    console.log('Email field render:', field, 'disabled:', field.disabled, 'readonly:', (field as any).readOnly);
-                    return (
-                      <FormItem>
-                        <FormLabel>Email</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="email"
-                            placeholder="Digite seu email"
-                            autoComplete="email"
-                            disabled={false}
-                            readOnly={false}
-                            onFocus={() => console.log('Email field focused')}
-                            onKeyDown={(e) => console.log('Email keydown:', e.key)}
-                            onChange={(e) => {
-                              console.log('Email onChange triggered:', e.target.value);
-                              field.onChange(e);
-                            }}
-                            onBlur={field.onBlur}
-                            name={field.name}
-                            value={field.value || ''}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    );
-                  }}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email</FormLabel>
+                      <Input
+                        type="email"
+                        placeholder="Digite seu email"
+                        autoComplete="email"
+                        {...field}
+                      />
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
 
                 <FormField
