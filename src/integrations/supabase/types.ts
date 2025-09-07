@@ -1090,6 +1090,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }
+      can_view_patients_list: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
       get_available_users_for_assignment: {
         Args: Record<PropertyKey, never>
         Returns: {
