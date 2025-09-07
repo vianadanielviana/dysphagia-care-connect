@@ -1136,6 +1136,31 @@ export type Database = {
           usuario_cadastro_id: string
         }[]
       }
+      get_patient_data_secure: {
+        Args: { patient_uuid: string }
+        Returns: {
+          access_level: string
+          caregiver_id: string
+          cpf: string
+          created_at: string
+          data_nascimento: string
+          diagnostico: string
+          email: string
+          endereco: string
+          historico_medico: string
+          id: string
+          medicamentos_atuais: string
+          nome: string
+          observacoes: string
+          professional_id: string
+          responsavel_email: string
+          responsavel_nome: string
+          responsavel_telefone: string
+          status: string
+          telefone: string
+          updated_at: string
+        }[]
+      }
       get_security_status: {
         Args: Record<PropertyKey, never>
         Returns: Json
