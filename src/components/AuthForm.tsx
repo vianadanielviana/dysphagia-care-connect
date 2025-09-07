@@ -38,7 +38,7 @@ const AuthForm = () => {
       confirmPassword: '',
       tipo_usuario: 'cuidador',
     },
-    mode: 'onBlur',
+    mode: 'onSubmit',
   });
 
   
@@ -209,7 +209,14 @@ const AuthForm = () => {
                         type="email"
                         placeholder="Digite seu email"
                         autoComplete="email"
-                        {...field}
+                        value={field.value || ''}
+                        onChange={(e) => {
+                          console.log('Email digitado:', e.target.value);
+                          field.onChange(e.target.value);
+                        }}
+                        onBlur={field.onBlur}
+                        name={field.name}
+                        disabled={loading}
                       />
                       <FormMessage />
                     </FormItem>
