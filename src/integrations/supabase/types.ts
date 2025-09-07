@@ -289,6 +289,7 @@ export type Database = {
           id: string
           observations: string | null
           patient_id: string | null
+          photo_urls: string[] | null
           record_date: string
           risk_score: number | null
           updated_at: string | null
@@ -300,6 +301,7 @@ export type Database = {
           id?: string
           observations?: string | null
           patient_id?: string | null
+          photo_urls?: string[] | null
           record_date: string
           risk_score?: number | null
           updated_at?: string | null
@@ -311,6 +313,7 @@ export type Database = {
           id?: string
           observations?: string | null
           patient_id?: string | null
+          photo_urls?: string[] | null
           record_date?: string
           risk_score?: number | null
           updated_at?: string | null

@@ -15,6 +15,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import PhotoCapture from '@/components/PhotoCapture';
 
 interface TriageData {
   totalScore?: number;
@@ -1047,106 +1048,246 @@ const DisfagiaApp = () => {
   const DailyRecordForm = () => {
     const [formData, setFormData] = useState({
       sintomas: [] as string[],
-      consistencia: '',
+      consistencia: 'normal' as 'liquida_fina' | 'pastosa' | 'normal',
       observacoes: '',
-      videoFile: null,
-      photoFile: null
     });
+    const [photoUrls, setPhotoUrls] = useState<string[]>([]);
+    const [loading, setLoading] = useState(false);
     const { toast } = useToast();
 
     const sintomas = [
-      'Tosse durante alimentação',
-      'Engasgo',
-      'Voz molhada após comer',
-      'Escape de alimento pela boca',
-      'Dificuldade para engolir',
-      'Recusa alimentar',
-      'Demora excessiva para comer'
+      { id: 'tosse', label: 'Tosse durante alimentação', icon: '🤧' },
+      { id: 'engasgo', label: 'Engasgo', icon: '😵' },
+      { id: 'voz_molhada', label: 'Voz molhada após comer', icon: '🗣️' },
+      { id: 'escape_alimento', label: 'Escape de alimento pela boca', icon: '🍽️' },
+      { id: 'dificuldade_engolir', label: 'Dificuldade para engolir', icon: '⏱️' },
+      { id: 'recusa_alimentar', label: 'Recusa alimentar', icon: '🚫' },
+      { id: 'demora_excessiva', label: 'Demora excessiva para comer', icon: '😴' }
     ];
 
     const consistencias = [
-      'Normal',
-      'Pastosa',
-      'Líquida modificada',
-      'Líquida fina'
+      { 
+        value: 'normal', 
+        label: 'Normal', 
+        description: 'Sólidos, dieta regular',
+        color: 'bg-green-100 text-green-800'
+      },
+      { 
+        value: 'pastosa', 
+        label: 'Pastoso', 
+        description: 'Purês, vitaminas, sopas',
+        color: 'bg-orange-100 text-orange-800'
+      },
+      { 
+        value: 'liquida_fina', 
+        label: 'Líquido', 
+        description: 'Água, sucos, chás',
+        color: 'bg-blue-100 text-blue-800'
+      }
     ];
 
-    const handleSubmit = () => {
-      // Save daily record
-      const newRecord = {
-        date: new Date().toISOString().split('T')[0],
-        sintomas: formData.sintomas.length,
-        consistencia: formData.consistencia,
-        observacoes: formData.observacoes,
-        risco: Math.min(4, Math.floor(formData.sintomas.length / 2))
-      };
+    const calculateRiskScore = () => {
+      const highRiskSymptoms = ['tosse', 'engasgo', 'voz_molhada'];
+      const mediumRiskSymptoms = ['escape_alimento', 'dificuldade_engolir', 'recusa_alimentar'];
       
-      setDailyRecords(prev => [...prev, newRecord]);
-      
-      toast({
-        title: "Registro salvo!",
-        description: "Registro diário salvo com sucesso.",
-        duration: 3000,
+      let score = 0;
+      formData.sintomas.forEach(symptom => {
+        if (highRiskSymptoms.includes(symptom)) {
+          score += 3;
+        } else if (mediumRiskSymptoms.includes(symptom)) {
+          score += 2;
+        } else {
+          score += 1;
+        }
       });
-      
-      setCurrentView('dashboard');
+
+      if (formData.consistencia === 'liquida_fina') score += 1;
+      return score;
     };
+
+    const getRiskLevel = (score: number) => {
+      if (score === 0) return { level: 'baixo', label: 'Sem Sintomas', color: 'text-medical-green' };
+      if (score <= 3) return { level: 'baixo', label: 'Baixo Risco', color: 'text-medical-green' };
+      if (score <= 6) return { level: 'medio', label: 'Médio Risco', color: 'text-medical-amber' };
+      return { level: 'alto', label: 'Alto Risco', color: 'text-medical-red' };
+    };
+
+    const handleSubmit = async () => {
+      if (!selectedPatient) {
+        toast({
+          title: "Erro",
+          description: "Selecione um paciente primeiro.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setLoading(true);
+
+      try {
+        const riskScore = calculateRiskScore();
+        const riskLevel = getRiskLevel(riskScore);
+
+        // Save daily record
+        const { data: record, error: recordError } = await supabase
+          .from('daily_records')
+          .insert({
+            patient_id: selectedPatient.id,
+            caregiver_id: (await supabase.auth.getUser()).data.user?.id,
+            record_date: new Date().toISOString().split('T')[0],
+            food_consistency: formData.consistencia,
+            observations: formData.observacoes,
+            risk_score: riskScore,
+            photo_urls: photoUrls
+          })
+          .select()
+          .single();
+
+        if (recordError) throw recordError;
+
+        // Save symptoms
+        if (formData.sintomas.length > 0) {
+          const symptomsToSave = formData.sintomas.map(symptomId => ({
+            daily_record_id: record.id,
+            symptom_name: sintomas.find(s => s.id === symptomId)?.label || symptomId
+          }));
+
+          const { error: symptomsError } = await supabase
+            .from('daily_record_symptoms')
+            .insert(symptomsToSave);
+
+          if (symptomsError) throw symptomsError;
+        }
+
+        toast({
+          title: "Registro salvo!",
+          description: `Registro diário salvo com sucesso. Nível de risco: ${riskLevel.label}`,
+        });
+        
+        setCurrentView('dashboard');
+
+        // Reset form
+        setFormData({
+          sintomas: [],
+          consistencia: 'normal',
+          observacoes: '',
+        });
+        setPhotoUrls([]);
+
+      } catch (error: any) {
+        console.error('Erro ao salvar registro:', error);
+        toast({
+          title: "Erro",
+          description: "Erro ao salvar registro. Tente novamente.",
+          variant: "destructive",
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (!selectedPatient) {
+      return (
+        <div className="px-4 py-6 sm:px-0 text-center">
+          <Card className="max-w-md mx-auto">
+            <CardContent className="p-8">
+              <AlertTriangle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <h3 className="font-medium mb-2">Nenhum paciente selecionado</h3>
+              <p className="text-sm text-muted-foreground mb-4">
+                Selecione um paciente para fazer o registro diário
+              </p>
+              <Button onClick={() => setCurrentView('patient-selection-registro')}>
+                Selecionar Paciente
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      );
+    }
+
+    const riskScore = calculateRiskScore();
+    const riskLevel = getRiskLevel(riskScore);
 
     return (
       <div className="px-4 py-6 sm:px-0">
-        <div className="max-w-2xl mx-auto">
+        <div className="max-w-3xl mx-auto">
           <Card className="shadow-lg">
             <CardHeader>
               <div className="flex justify-between items-start">
                 <div>
-                  <CardTitle className="text-2xl">Registro Diário</CardTitle>
+                  <CardTitle className="text-2xl flex items-center">
+                    <Calendar className="h-6 w-6 mr-2" />
+                    Registro Diário
+                  </CardTitle>
                   <p className="text-sm text-muted-foreground mt-1">
-                    Paciente: <span className="font-medium">{selectedPatient?.nome || 'Nenhum paciente selecionado'}</span>
+                    Paciente: <span className="font-medium">{selectedPatient.nome}</span>
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {new Date().toLocaleDateString('pt-BR')}
                   </p>
                 </div>
+                <Button
+                  onClick={() => setCurrentView('patient-selection-registro')}
+                  variant="outline"
+                  size="sm"
+                >
+                  Trocar Paciente
+                </Button>
               </div>
             </CardHeader>
             <CardContent className="space-y-6">
+              {/* Sintomas */}
               <div>
                 <Label className="text-base font-medium mb-3 block">
                   Sintomas observados hoje (marque todos que se aplicam):
                 </Label>
-                <div className="space-y-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {sintomas.map((sintoma) => (
-                    <div key={sintoma} className="flex items-center space-x-2">
+                    <div key={sintoma.id} className="flex items-center space-x-3">
                       <Checkbox
-                        id={sintoma}
+                        id={sintoma.id}
+                        checked={formData.sintomas.includes(sintoma.id)}
                         onCheckedChange={(checked) => {
                           if (checked) {
-                            setFormData({...formData, sintomas: [...formData.sintomas, sintoma]});
+                            setFormData({...formData, sintomas: [...formData.sintomas, sintoma.id]});
                           } else {
-                            setFormData({...formData, sintomas: formData.sintomas.filter(s => s !== sintoma)});
+                            setFormData({...formData, sintomas: formData.sintomas.filter(s => s !== sintoma.id)});
                           }
                         }}
                       />
-                      <Label htmlFor={sintoma} className="text-sm">{sintoma}</Label>
+                      <Label htmlFor={sintoma.id} className="flex items-center space-x-2 cursor-pointer">
+                        <span className="text-lg">{sintoma.icon}</span>
+                        <span className="text-sm">{sintoma.label}</span>
+                      </Label>
                     </div>
                   ))}
                 </div>
               </div>
 
+              {/* Consistência */}
               <div>
                 <Label className="text-base font-medium mb-3 block">
                   Consistência dos alimentos oferecidos:
                 </Label>
                 <RadioGroup 
                   value={formData.consistencia} 
-                  onValueChange={(value) => setFormData({...formData, consistencia: value})}
+                  onValueChange={(value: any) => setFormData({...formData, consistencia: value})}
                 >
                   {consistencias.map((consistencia) => (
-                    <div key={consistencia} className="flex items-center space-x-2">
-                      <RadioGroupItem value={consistencia} id={consistencia} />
-                      <Label htmlFor={consistencia} className="text-sm">{consistencia}</Label>
+                    <div key={consistencia.value} className="flex items-center space-x-2">
+                      <RadioGroupItem value={consistencia.value} id={consistencia.value} />
+                      <Label htmlFor={consistencia.value} className="flex-1">
+                        <div className="flex items-center justify-between">
+                          <span className="font-medium">{consistencia.label}</span>
+                          <Badge className={consistencia.color}>{consistencia.description}</Badge>
+                        </div>
+                      </Label>
                     </div>
                   ))}
                 </RadioGroup>
               </div>
 
+              {/* Observações */}
               <div>
                 <Label htmlFor="observacoes" className="text-base font-medium mb-2 block">
                   Observações adicionais:
@@ -1160,52 +1301,82 @@ const DisfagiaApp = () => {
                 />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <Label className="text-base font-medium mb-2 block">
-                    Vídeo da alimentação (opcional):
-                  </Label>
-                  <div className="border-2 border-dashed border-muted rounded-lg p-6 text-center hover:border-primary/50 transition-colors cursor-pointer">
-                    <Camera className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-                    <p className="text-sm text-muted-foreground">Toque para gravar vídeo</p>
-                  </div>
-                </div>
-
-                <div>
-                  <Label className="text-base font-medium mb-2 block">
-                    Foto do prato (opcional):
-                  </Label>
-                  <div className="border-2 border-dashed border-muted rounded-lg p-6 text-center hover:border-primary/50 transition-colors cursor-pointer">
-                    <Upload className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-                    <p className="text-sm text-muted-foreground">Toque para tirar foto</p>
-                  </div>
-                </div>
+              {/* Photo Capture */}
+              <div>
+                <Label className="text-base font-medium mb-3 block">
+                  Fotos da alimentação (opcional):
+                </Label>
+                <PhotoCapture 
+                  onPhotosChange={setPhotoUrls}
+                  maxPhotos={3}
+                />
               </div>
 
-              <div className="flex space-x-4">
-                <Button
-                  onClick={handleSubmit}
-                  className="flex-1"
-                >
-                  Salvar Registro
-                </Button>
+              {/* Risk Preview */}
+              {(formData.sintomas.length > 0 || riskScore > 0) && (
+                <Card className={`border-l-4 ${
+                  riskLevel.level === 'alto' ? 'border-l-red-500 bg-red-50' :
+                  riskLevel.level === 'medio' ? 'border-l-yellow-500 bg-yellow-50' :
+                  'border-l-green-500 bg-green-50'
+                }`}>
+                  <CardContent className="pt-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="font-medium">Avaliação de Risco</h4>
+                        <p className={`text-lg font-semibold ${riskLevel.color}`}>
+                          {riskLevel.label}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          Pontuação: {riskScore} pontos
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        {riskLevel.level === 'alto' && <AlertTriangle className="h-8 w-8 text-red-500" />}
+                        {riskLevel.level === 'medio' && <AlertTriangle className="h-8 w-8 text-yellow-500" />}
+                        {riskLevel.level === 'baixo' && <CheckCircle className="h-8 w-8 text-green-500" />}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              <div className="flex justify-between space-x-4">
                 <Button
                   onClick={() => {
                     setSelectedPatient(null);
                     setCurrentView('patient-selection-view');
                   }}
                   variant="outline"
-                  className="mr-2"
                 >
                   <ArrowLeft className="h-4 w-4 mr-2" />
                   Trocar Paciente
                 </Button>
-                <Button
-                  onClick={() => setCurrentView('dashboard')}
-                  variant="outline"
-                >
-                  Cancelar
-                </Button>
+                
+                <div className="flex space-x-2">
+                  <Button
+                    onClick={() => setCurrentView('dashboard')}
+                    variant="outline"
+                    disabled={loading}
+                  >
+                    Cancelar
+                  </Button>
+                  <Button
+                    onClick={handleSubmit}
+                    disabled={loading || !selectedPatient}
+                  >
+                    {loading ? (
+                      <>
+                        <div className="h-4 w-4 mr-2 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                        Salvando...
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle className="h-4 w-4 mr-2" />
+                        Salvar Registro
+                      </>
+                    )}
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -1280,7 +1451,8 @@ const DisfagiaApp = () => {
           date: record.record_date,
           risco: record.risk_score,
           consistencia: record.food_consistency,
-          observacoes: record.observations
+          observacoes: record.observations,
+          photo_urls: record.photo_urls || []
         }));
 
         const processedTriageData = (triageData || []).map(assessment => ({
@@ -1441,41 +1613,59 @@ const DisfagiaApp = () => {
               <CardContent>
                 {patientHistoryData.length > 0 ? (
                   <div className="space-y-4">
-                    {patientHistoryData.slice(-5).reverse().map((record, index) => (
-                      <Card key={index} className="border">
-                        <CardContent className="p-4">
-                          <div className="flex justify-between items-start">
-                            <div className="flex-1">
-                              <p className="font-medium text-foreground">
-                                {new Date(record.date).toLocaleDateString()}
-                              </p>
-                              <p className="text-sm text-muted-foreground">
-                                Consistência: {record.consistencia || 'Não informado'}
-                              </p>
-                              {record.observacoes && (
-                                <p className="text-sm text-muted-foreground mt-1">
-                                  Observações: {record.observacoes}
-                                </p>
-                              )}
-                            </div>
-                            <Badge 
-                              variant={
-                                record.risco <= 5 ? "default" :
-                                record.risco <= 10 ? "secondary" : "destructive"
-                              }
-                              className={
-                                record.risco <= 5 ? 'bg-medical-green text-medical-green-foreground' :
-                                record.risco <= 10 ? 'bg-medical-amber text-medical-amber-foreground' :
-                                'bg-medical-red text-medical-red-foreground'
-                              }
-                            >
-                              {record.risco <= 5 ? 'Baixo Risco' :
-                               record.risco <= 10 ? 'Médio Risco' : 'Alto Risco'}
-                            </Badge>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
+                     {patientHistoryData.slice(-5).reverse().map((record, index) => (
+                       <Card key={index} className="border">
+                         <CardContent className="p-4">
+                           <div className="flex justify-between items-start mb-3">
+                             <div className="flex-1">
+                               <p className="font-medium text-foreground">
+                                 {new Date(record.date).toLocaleDateString('pt-BR')}
+                               </p>
+                               <p className="text-sm text-muted-foreground">
+                                 Consistência: {record.consistencia || 'Não informado'}
+                               </p>
+                               {record.observacoes && (
+                                 <p className="text-sm text-muted-foreground mt-1">
+                                   Observações: {record.observacoes}
+                                 </p>
+                               )}
+                             </div>
+                             <Badge 
+                               variant={
+                                 record.risco <= 3 ? "default" :
+                                 record.risco <= 6 ? "secondary" : "destructive"
+                               }
+                               className={
+                                 record.risco <= 3 ? 'bg-medical-green text-medical-green-foreground' :
+                                 record.risco <= 6 ? 'bg-medical-amber text-medical-amber-foreground' :
+                                 'bg-medical-red text-medical-red-foreground'
+                               }
+                             >
+                               {record.risco <= 3 ? 'Baixo Risco' :
+                                record.risco <= 6 ? 'Médio Risco' : 'Alto Risco'}
+                             </Badge>
+                           </div>
+                           
+                           {/* Exibir fotos se existirem */}
+                           {record.photo_urls && record.photo_urls.length > 0 && (
+                             <div className="mt-3">
+                               <p className="text-sm font-medium mb-2">Fotos do registro:</p>
+                               <div className="flex space-x-2 overflow-x-auto">
+                                 {record.photo_urls.map((photoUrl: string, photoIndex: number) => (
+                                   <img
+                                     key={photoIndex}
+                                     src={photoUrl}
+                                     alt={`Foto ${photoIndex + 1}`}
+                                     className="w-16 h-16 object-cover rounded-lg cursor-pointer hover:scale-110 transition-transform"
+                                     onClick={() => window.open(photoUrl, '_blank')}
+                                   />
+                                 ))}
+                               </div>
+                             </div>
+                           )}
+                         </CardContent>
+                       </Card>
+                     ))}
                   </div>
                 ) : (
                   <div className="text-center py-8">

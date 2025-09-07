@@ -9,6 +9,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import PhotoCapture from '@/components/PhotoCapture';
 import { 
   Camera, 
   Upload, 
@@ -35,6 +36,7 @@ interface DailyRecordData {
 const DailyRecordForm: React.FC<DailyRecordFormProps> = ({ patient, onComplete, onBack }) => {
   const [loading, setLoading] = useState(false);
   const [selectedSymptoms, setSelectedSymptoms] = useState<string[]>([]);
+  const [photoUrls, setPhotoUrls] = useState<string[]>([]);
   const { toast } = useToast();
 
   const { register, handleSubmit, watch, formState: { errors } } = useForm<DailyRecordData>({
@@ -131,7 +133,8 @@ const DailyRecordForm: React.FC<DailyRecordFormProps> = ({ patient, onComplete, 
           record_date: data.record_date,
           food_consistency: data.food_consistency,
           observations: data.observations,
-          risk_score: riskScore
+          risk_score: riskScore,
+          photo_urls: photoUrls
         })
         .select()
         .single();
@@ -281,31 +284,22 @@ const DailyRecordForm: React.FC<DailyRecordFormProps> = ({ patient, onComplete, 
           </CardContent>
         </Card>
 
-        {/* Media Upload (Placeholder) */}
+        {/* Photo Capture */}
         <Card>
           <CardHeader>
-            <CardTitle>Evidências (Opcional)</CardTitle>
+            <CardTitle className="flex items-center">
+              <Camera className="h-5 w-5 mr-2" />
+              Fotos da Alimentação (Opcional)
+            </CardTitle>
+            <p className="text-sm text-muted-foreground">
+              Capture ou carregue fotos que possam ajudar na avaliação
+            </p>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="border-2 border-dashed border-muted rounded-lg p-6 text-center">
-                <Camera className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-                <p className="text-sm text-muted-foreground mb-2">Foto da alimentação</p>
-                <Button variant="outline" size="sm" type="button">
-                  <Upload className="h-4 w-4 mr-2" />
-                  Adicionar Foto
-                </Button>
-              </div>
-              
-              <div className="border-2 border-dashed border-muted rounded-lg p-6 text-center">
-                <Upload className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-                <p className="text-sm text-muted-foreground mb-2">Vídeo (máx. 30s)</p>
-                <Button variant="outline" size="sm" type="button">
-                  <Upload className="h-4 w-4 mr-2" />
-                  Adicionar Vídeo
-                </Button>
-              </div>
-            </div>
+            <PhotoCapture 
+              onPhotosChange={setPhotoUrls}
+              maxPhotos={3}
+            />
           </CardContent>
         </Card>
 
