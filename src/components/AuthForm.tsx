@@ -199,29 +199,28 @@ const AuthForm = () => {
                   )}
                 />
 
-                <FormField
-                  control={signUpForm.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email</FormLabel>
-                      <Input
-                        type="email"
-                        placeholder="Digite seu email"
-                        autoComplete="email"
-                        value={field.value || ''}
-                        onChange={(e) => {
-                          console.log('Email digitado:', e.target.value);
-                          field.onChange(e.target.value);
-                        }}
-                        onBlur={field.onBlur}
-                        name={field.name}
-                        disabled={loading}
-                      />
-                      <FormMessage />
-                    </FormItem>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-foreground">Email</label>
+                  <input
+                    type="email"
+                    placeholder="Digite seu email"
+                    autoComplete="email"
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+                    value={signUpForm.watch('email') || ''}
+                    onChange={(e) => {
+                      console.log('Email onChange manual:', e.target.value);
+                      signUpForm.setValue('email', e.target.value, { 
+                        shouldValidate: false,
+                        shouldDirty: true 
+                      });
+                    }}
+                  />
+                  {signUpForm.formState.errors.email && (
+                    <p className="text-sm font-medium text-destructive">
+                      {signUpForm.formState.errors.email.message}
+                    </p>
                   )}
-                />
+                </div>
 
                 <FormField
                   control={signUpForm.control}
