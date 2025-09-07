@@ -328,28 +328,7 @@ const AuthForm = () => {
             }
           </Button>
 
-          {!isSignUp ? (
-            <>
-              <Button
-                variant="outline"
-                onClick={fillAdminCredentials}
-                disabled={loading}
-                size="sm"
-                className="w-full"
-              >
-                Preencher Login Admin
-              </Button>
-              <Button
-                variant="outline"
-                onClick={handleTestAdmin}
-                disabled={loading}
-                size="sm"
-                className="w-full"
-              >
-                Login como Admin
-              </Button>
-            </>
-          ) : (
+          {isSignUp && (
             <Button
               variant="outline"
               onClick={fillAdminSignupData}
