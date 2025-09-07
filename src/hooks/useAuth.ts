@@ -9,7 +9,6 @@ interface UserProfile {
   nome: string;
   tipo_usuario: string;
   is_approved: boolean;
-  is_admin: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -61,7 +60,7 @@ export function useAuth() {
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .select('id, email, nome, tipo_usuario, is_approved, is_admin, created_at, updated_at')
+        .select('*')
         .eq('id', userId)
         .single();
 
@@ -114,11 +113,11 @@ export function useAuth() {
       if (data.user) {
         const { data: profileData } = await supabase
           .from('profiles')
-          .select('is_approved, is_admin, tipo_usuario')
+          .select('is_approved, tipo_usuario')
           .eq('id', data.user.id)
           .single();
 
-        if (profileData && !profileData.is_approved && !profileData.is_admin) {
+        if (profileData && !profileData.is_approved && email !== 'viana.vianadaniel@outlook.com') {
           await supabase.auth.signOut();
           throw new Error('Sua conta ainda não foi aprovada. Aguarde a aprovação de um administrador.');
         }
@@ -179,21 +178,6 @@ export function useAuth() {
     }
   };
 
-  const resetPassword = async (email: string) => {
-    try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`,
-      });
-
-      if (error) throw error;
-
-      toast.success('Email de recuperação enviado! Verifique sua caixa de entrada.');
-    } catch (error: any) {
-      toast.error(error.message || 'Erro ao enviar email de recuperação');
-      throw error;
-    }
-  };
-
   return {
     user,
     session,
@@ -202,9 +186,8 @@ export function useAuth() {
     signIn,
     signUp,
     signOut,
-    resetPassword,
     isAuthenticated: !!user,
     isApproved: profile?.is_approved ?? false,
-    isAdmin: profile?.is_admin ?? false
+    isAdmin: user?.email === 'viana.vianadaniel@outlook.com'
   };
 }
