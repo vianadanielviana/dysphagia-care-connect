@@ -1120,19 +1120,19 @@ export type Database = {
           caregiver_id?: string | null
           cpf?: never
           created_at?: string | null
-          data_nascimento?: string | null
-          diagnostico?: string | null
+          data_nascimento?: never
+          diagnostico?: never
           email?: never
-          endereco?: string | null
-          historico_medico?: string | null
+          endereco?: never
+          historico_medico?: never
           id?: string | null
-          medicamentos_atuais?: string | null
+          medicamentos_atuais?: never
           nome?: never
-          observacoes?: string | null
+          observacoes?: never
           professional_id?: string | null
-          responsavel_email?: string | null
-          responsavel_nome?: string | null
-          responsavel_telefone?: string | null
+          responsavel_email?: never
+          responsavel_nome?: never
+          responsavel_telefone?: never
           status?: string | null
           telefone?: never
           updated_at?: string | null
@@ -1142,19 +1142,19 @@ export type Database = {
           caregiver_id?: string | null
           cpf?: never
           created_at?: string | null
-          data_nascimento?: string | null
-          diagnostico?: string | null
+          data_nascimento?: never
+          diagnostico?: never
           email?: never
-          endereco?: string | null
-          historico_medico?: string | null
+          endereco?: never
+          historico_medico?: never
           id?: string | null
-          medicamentos_atuais?: string | null
+          medicamentos_atuais?: never
           nome?: never
-          observacoes?: string | null
+          observacoes?: never
           professional_id?: string | null
-          responsavel_email?: string | null
-          responsavel_nome?: string | null
-          responsavel_telefone?: string | null
+          responsavel_email?: never
+          responsavel_nome?: never
+          responsavel_telefone?: never
           status?: string | null
           telefone?: never
           updated_at?: string | null
@@ -1249,7 +1249,7 @@ export type Database = {
         Returns: boolean
       }
       mask_sensitive_data: {
-        Args: { input_text: string; mask_type?: string }
+        Args: { input_data: string; mask_type?: string }
         Returns: string
       }
       match_documents: {
