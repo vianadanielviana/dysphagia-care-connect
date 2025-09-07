@@ -699,6 +699,7 @@ export type Database = {
           created_at: string
           email: string
           id: string
+          is_admin: boolean | null
           is_approved: boolean
           nome: string | null
           tipo_usuario: string
@@ -708,6 +709,7 @@ export type Database = {
           created_at?: string
           email: string
           id: string
+          is_admin?: boolean | null
           is_approved?: boolean
           nome?: string | null
           tipo_usuario: string
@@ -717,6 +719,7 @@ export type Database = {
           created_at?: string
           email?: string
           id?: string
+          is_admin?: boolean | null
           is_approved?: boolean
           nome?: string | null
           tipo_usuario?: string

@@ -87,18 +87,31 @@ const AuthForm = () => {
   const handleTestAdmin = async () => {
     setLoading(true);
     try {
-      await signIn('viana.vianadaniel@outlook.com', 'admin123');
+      await signIn('viana.vianadaniel@outlook.com', 'Dviana77');
       navigate('/dashboard');
     } catch (error: any) {
       console.error('Test admin error:', error);
       toast({
         title: "Erro",
-        description: "Credenciais de teste não disponíveis",
+        description: "Faça o cadastro primeiro com este email",
         variant: "destructive",
       });
     } finally {
       setLoading(false);
     }
+  };
+
+  const fillAdminCredentials = () => {
+    signInForm.setValue('email', 'viana.vianadaniel@outlook.com');
+    signInForm.setValue('password', 'Dviana77');
+  };
+
+  const fillAdminSignupData = () => {
+    signUpForm.setValue('nome', 'Daniel Viana');
+    signUpForm.setValue('email', 'viana.vianadaniel@outlook.com');
+    signUpForm.setValue('password', 'Dviana77');
+    signUpForm.setValue('confirmPassword', 'Dviana77');
+    signUpForm.setValue('tipo_usuario', 'fonoaudiologo');
   };
 
   return (
@@ -315,15 +328,36 @@ const AuthForm = () => {
             }
           </Button>
 
-          {!isSignUp && (
+          {!isSignUp ? (
+            <>
+              <Button
+                variant="outline"
+                onClick={fillAdminCredentials}
+                disabled={loading}
+                size="sm"
+                className="w-full"
+              >
+                Preencher Login Admin
+              </Button>
+              <Button
+                variant="outline"
+                onClick={handleTestAdmin}
+                disabled={loading}
+                size="sm"
+                className="w-full"
+              >
+                Login como Admin
+              </Button>
+            </>
+          ) : (
             <Button
               variant="outline"
-              onClick={handleTestAdmin}
+              onClick={fillAdminSignupData}
               disabled={loading}
               size="sm"
               className="w-full"
             >
-              Testar como Administrador
+              Preencher Dados Admin
             </Button>
           )}
         </CardFooter>
