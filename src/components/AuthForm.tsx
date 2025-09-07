@@ -20,8 +20,6 @@ const AuthForm = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  console.log('AuthForm rendered, isSignUp:', isSignUp, 'loading:', loading);
-
   const signInForm = useForm<SignInFormData>({
     resolver: zodResolver(signInSchema),
     defaultValues: {
@@ -40,10 +38,10 @@ const AuthForm = () => {
       confirmPassword: '',
       tipo_usuario: 'cuidador',
     },
-    mode: 'onChange',
+    mode: 'onBlur',
   });
 
-  console.log('SignUp form values:', signUpForm.watch());
+  
 
   const handleSignIn = async (data: SignInFormData) => {
     setLoading(true);
@@ -195,10 +193,7 @@ const AuthForm = () => {
                         <Input
                           placeholder="Digite seu nome completo"
                           autoComplete="name"
-                          value={field.value}
-                          onChange={field.onChange}
-                          onBlur={field.onBlur}
-                          name={field.name}
+                          {...field}
                         />
                       </FormControl>
                       <FormMessage />
@@ -217,10 +212,7 @@ const AuthForm = () => {
                           type="email"
                           placeholder="Digite seu email"
                           autoComplete="email"
-                          value={field.value}
-                          onChange={field.onChange}
-                          onBlur={field.onBlur}
-                          name={field.name}
+                          {...field}
                         />
                       </FormControl>
                       <FormMessage />
@@ -299,9 +291,6 @@ const AuthForm = () => {
                   )}
                 />
 
-                <div className="text-sm text-muted-foreground">
-                  Formulário válido: {signUpForm.formState.isValid ? 'Sim' : 'Não'}
-                </div>
                 
                 <Button 
                   type="submit" 
