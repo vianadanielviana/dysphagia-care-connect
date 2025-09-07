@@ -213,6 +213,7 @@ export type Database = {
           ultima_mensagem_enviada: string | null
           ultimo_contato: string | null
           updated_at: string | null
+          user_id: string
         }
         Insert: {
           ativo?: boolean | null
@@ -231,6 +232,7 @@ export type Database = {
           ultima_mensagem_enviada?: string | null
           ultimo_contato?: string | null
           updated_at?: string | null
+          user_id: string
         }
         Update: {
           ativo?: boolean | null
@@ -249,6 +251,7 @@ export type Database = {
           ultima_mensagem_enviada?: string | null
           ultimo_contato?: string | null
           updated_at?: string | null
+          user_id?: string
         }
         Relationships: []
       }
