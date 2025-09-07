@@ -8,119 +8,119 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 210 20% 98%;
-    --foreground: 215 25% 16%;
+    --background: 35 15% 97%;
+    --foreground: 25 15% 25%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 215 25% 16%;
+    --card: 30 20% 99%;
+    --card-foreground: 25 15% 25%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 215 25% 16%;
+    --popover: 30 20% 99%;
+    --popover-foreground: 25 15% 25%;
 
-    /* Medical blue palette */
-    --primary: 210 100% 56%;
+    /* Nude/taupe palette */
+    --primary: 25 25% 65%;
     --primary-foreground: 0 0% 100%;
-    --primary-hover: 210 100% 48%;
+    --primary-hover: 25 30% 58%;
 
-    /* Medical green for positive/safe */
-    --medical-green: 142 76% 48%;
+    /* Sage green for positive/safe */
+    --medical-green: 100 25% 65%;
     --medical-green-foreground: 0 0% 100%;
-    --medical-green-light: 142 50% 94%;
+    --medical-green-light: 100 30% 95%;
 
-    /* Warning amber */
-    --medical-amber: 38 92% 52%;
-    --medical-amber-foreground: 0 0% 100%;
-    --medical-amber-light: 38 100% 95%;
+    /* Soft peach */
+    --medical-amber: 15 45% 75%;
+    --medical-amber-foreground: 25 15% 25%;
+    --medical-amber-light: 15 50% 96%;
 
-    /* Danger red */
-    --medical-red: 0 84% 56%;
+    /* Dusty rose */
+    --medical-red: 350 35% 72%;
     --medical-red-foreground: 0 0% 100%;
-    --medical-red-light: 0 100% 96%;
+    --medical-red-light: 350 45% 96%;
 
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 215 25% 16%;
+    --secondary: 30 25% 94%;
+    --secondary-foreground: 25 15% 25%;
 
-    --muted: 210 40% 96%;
-    --muted-foreground: 215 16% 47%;
+    --muted: 30 20% 95%;
+    --muted-foreground: 25 10% 50%;
 
-    --accent: 210 40% 96%;
-    --accent-foreground: 215 25% 16%;
+    --accent: 35 25% 92%;
+    --accent-foreground: 25 15% 25%;
 
-    --destructive: 0 84% 56%;
+    --destructive: 350 35% 72%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
-    --ring: 210 100% 56%;
+    --border: 30 20% 88%;
+    --input: 30 20% 88%;
+    --ring: 25 25% 65%;
 
     --radius: 0.5rem;
 
-    --sidebar-background: 0 0% 98%;
+    --sidebar-background: 35 15% 98%;
 
-    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-foreground: 25 15% 35%;
 
-    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary: 25 20% 45%;
 
-    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-primary-foreground: 35 15% 98%;
 
-    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent: 30 25% 93%;
 
-    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-accent-foreground: 25 15% 35%;
 
-    --sidebar-border: 220 13% 91%;
+    --sidebar-border: 30 20% 87%;
 
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-ring: 25 25% 65%;
   }
 
   .dark {
-    --background: 215 28% 8%;
-    --foreground: 210 20% 98%;
+    --background: 25 15% 8%;
+    --foreground: 35 15% 92%;
 
-    --card: 215 28% 10%;
-    --card-foreground: 210 20% 98%;
+    --card: 25 12% 12%;
+    --card-foreground: 35 15% 92%;
 
-    --popover: 215 28% 10%;
-    --popover-foreground: 210 20% 98%;
+    --popover: 25 12% 12%;
+    --popover-foreground: 35 15% 92%;
 
-    --primary: 210 100% 64%;
-    --primary-foreground: 215 28% 8%;
-    --primary-hover: 210 100% 56%;
+    --primary: 25 30% 70%;
+    --primary-foreground: 25 15% 8%;
+    --primary-hover: 25 35% 75%;
 
-    --medical-green: 142 76% 56%;
-    --medical-green-foreground: 215 28% 8%;
-    --medical-green-light: 142 50% 12%;
+    --medical-green: 100 30% 70%;
+    --medical-green-foreground: 25 15% 8%;
+    --medical-green-light: 100 25% 15%;
 
-    --medical-amber: 38 92% 60%;
-    --medical-amber-foreground: 215 28% 8%;
-    --medical-amber-light: 38 100% 12%;
+    --medical-amber: 15 50% 78%;
+    --medical-amber-foreground: 25 15% 8%;
+    --medical-amber-light: 15 40% 15%;
 
-    --medical-red: 0 84% 64%;
-    --medical-red-foreground: 215 28% 8%;
-    --medical-red-light: 0 100% 12%;
+    --medical-red: 350 40% 75%;
+    --medical-red-foreground: 25 15% 8%;
+    --medical-red-light: 350 30% 15%;
 
-    --secondary: 215 32% 17%;
-    --secondary-foreground: 210 20% 98%;
+    --secondary: 25 15% 18%;
+    --secondary-foreground: 35 15% 92%;
 
-    --muted: 215 32% 17%;
-    --muted-foreground: 215 20% 65%;
+    --muted: 25 12% 20%;
+    --muted-foreground: 25 8% 65%;
 
-    --accent: 215 32% 17%;
-    --accent-foreground: 210 20% 98%;
+    --accent: 25 15% 18%;
+    --accent-foreground: 35 15% 92%;
 
-    --destructive: 0 62% 46%;
-    --destructive-foreground: 210 20% 98%;
+    --destructive: 350 40% 75%;
+    --destructive-foreground: 25 15% 8%;
 
-    --border: 215 32% 17%;
-    --input: 215 32% 17%;
-    --ring: 210 100% 64%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --border: 25 12% 20%;
+    --input: 25 12% 20%;
+    --ring: 25 30% 70%;
+    --sidebar-background: 25 15% 10%;
+    --sidebar-foreground: 35 15% 85%;
+    --sidebar-primary: 25 25% 55%;
+    --sidebar-primary-foreground: 35 15% 98%;
+    --sidebar-accent: 25 12% 18%;
+    --sidebar-accent-foreground: 35 15% 85%;
+    --sidebar-border: 25 12% 18%;
+    --sidebar-ring: 25 30% 70%;
   }
 }
 
