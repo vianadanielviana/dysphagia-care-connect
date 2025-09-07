@@ -31,13 +31,23 @@ interface Paciente {
   responsavel_nome?: string;
   responsavel_email?: string;
   responsavel_telefone?: string;
+  professional_id?: string;
+  caregiver_id?: string;
   status: string;
   created_at: string;
   updated_at: string;
 }
 
+interface UsuarioSistema {
+  id: string;
+  nome: string;
+  email: string;
+  tipo_usuario: string;
+}
+
 const PacientesManager = () => {
   const [pacientes, setPacientes] = useState<Paciente[]>([]);
+  const [usuarios, setUsuarios] = useState<UsuarioSistema[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingPaciente, setEditingPaciente] = useState<Paciente | null>(null);
@@ -59,19 +69,23 @@ const PacientesManager = () => {
       observacoes: '',
       responsavel_nome: '',
       responsavel_email: '',
-      responsavel_telefone: ''
+      responsavel_telefone: '',
+      professional_id: '',
+      caregiver_id: ''
     },
   });
 
   useEffect(() => {
     fetchPacientes();
+    fetchUsuarios();
   }, []);
 
   const fetchPacientes = async () => {
     try {
-      const { data, error } = await supabase.functions.invoke('pacientes', {
-        method: 'GET'
-      });
+      const { data, error } = await supabase
+        .from('pacientes')
+        .select('*')
+        .order('created_at', { ascending: false });
 
       if (error) throw error;
 
@@ -85,6 +99,24 @@ const PacientesManager = () => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchUsuarios = async () => {
+    try {
+      const { data, error } = await supabase
+        .rpc('get_available_users_for_assignment');
+
+      if (error) throw error;
+
+      setUsuarios(data || []);
+    } catch (error) {
+      console.error('Erro ao carregar usuários:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao carregar lista de usuários",
+        variant: "destructive",
+      });
     }
   };
 
@@ -105,8 +137,10 @@ const PacientesManager = () => {
         medicamentos_atuais: data.medicamentos_atuais?.trim() || null,
         observacoes: data.observacoes?.trim() || null,
         responsavel_nome: data.responsavel_nome?.trim() || null,
-        responsavel_email: data.responsavel_email?.trim() || null,
-        responsavel_telefone: data.responsavel_telefone?.trim() || null,
+      responsavel_email: data.responsavel_email?.trim() || null,
+      responsavel_telefone: data.responsavel_telefone?.trim() || null,
+      professional_id: data.professional_id?.trim() || null,
+      caregiver_id: data.caregiver_id?.trim() || null,
       };
 
       // Remove empty strings completely
@@ -120,7 +154,7 @@ const PacientesManager = () => {
 
       let response;
       if (editingPaciente) {
-        // Update existing patient directly with Supabase client (RLS will handle permissions)
+        // Update existing patient
         const { data: updatedPaciente, error: updateError } = await supabase
           .from('pacientes')
           .update(cleanedData)
@@ -135,10 +169,17 @@ const PacientesManager = () => {
         response = { data: updatedPaciente, error: null };
       } else {
         // Create new patient
-        response = await supabase.functions.invoke('pacientes', {
-          method: 'POST',
-          body: cleanedData
-        });
+        const { data: newPaciente, error: insertError } = await supabase
+          .from('pacientes')
+          .insert(cleanedData)
+          .select()
+          .single();
+
+        if (insertError) {
+          throw insertError;
+        }
+
+        response = { data: newPaciente, error: null };
       }
 
       console.log('API Response:', response);
@@ -192,7 +233,9 @@ const PacientesManager = () => {
       observacoes: paciente.observacoes || '',
       responsavel_nome: paciente.responsavel_nome || '',
       responsavel_email: paciente.responsavel_email || '',
-      responsavel_telefone: paciente.responsavel_telefone || ''
+      responsavel_telefone: paciente.responsavel_telefone || '',
+      professional_id: paciente.professional_id || '',
+      caregiver_id: paciente.caregiver_id || ''
     });
     setIsDialogOpen(true);
   };
@@ -201,10 +244,10 @@ const PacientesManager = () => {
     if (!confirm('Tem certeza que deseja excluir este paciente?')) return;
 
     try {
-      const { error } = await supabase.functions.invoke('pacientes', {
-        method: 'DELETE',
-        body: { id }
-      });
+      const { error } = await supabase
+        .from('pacientes')
+        .delete()
+        .eq('id', id);
 
       if (error) throw error;
 
@@ -495,6 +538,68 @@ const PacientesManager = () => {
                   </div>
                 </div>
 
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold">Usuários Responsáveis no Sistema</h3>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="professional_id"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Profissional Responsável</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Selecione um profissional" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="">Nenhum</SelectItem>
+                              {usuarios
+                                .filter(u => u.tipo_usuario === 'fonoaudiologo' || u.tipo_usuario === 'admin')
+                                .map(usuario => (
+                                <SelectItem key={usuario.id} value={usuario.id}>
+                                  {usuario.nome} ({usuario.tipo_usuario})
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="caregiver_id"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Cuidador Responsável</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Selecione um cuidador" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="">Nenhum</SelectItem>
+                              {usuarios
+                                .filter(u => u.tipo_usuario === 'cuidador')
+                                .map(usuario => (
+                                <SelectItem key={usuario.id} value={usuario.id}>
+                                  {usuario.nome}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </div>
+
                 <div className="flex justify-end space-x-2 pt-4">
                   <Button type="button" variant="outline" onClick={handleCloseDialog}>
                     Cancelar
@@ -558,6 +663,16 @@ const PacientesManager = () => {
                       {paciente.responsavel_nome && (
                         <div>
                           <span className="font-medium">Responsável:</span> {paciente.responsavel_nome}
+                        </div>
+                      )}
+                      {paciente.professional_id && (
+                        <div>
+                          <span className="font-medium">Profissional:</span> {usuarios.find(u => u.id === paciente.professional_id)?.nome || 'Não identificado'}
+                        </div>
+                      )}
+                      {paciente.caregiver_id && (
+                        <div>
+                          <span className="font-medium">Cuidador:</span> {usuarios.find(u => u.id === paciente.caregiver_id)?.nome || 'Não identificado'}
                         </div>
                       )}
                       <div>

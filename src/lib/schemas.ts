@@ -69,7 +69,9 @@ export const pacienteSchema = z.object({
     return /^\(\d{2}\)\s\d{4,5}-\d{4}$/.test(val) || /^\d{10,11}$/.test(val);
   }, {
     message: 'Telefone deve estar no formato (xx) xxxxx-xxxx'
-  })
+  }),
+  professional_id: z.string().optional(),
+  caregiver_id: z.string().optional()
 });
 
 export type SignUpFormData = z.infer<typeof signUpSchema>;

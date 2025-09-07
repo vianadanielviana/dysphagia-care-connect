@@ -1090,6 +1090,15 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }
+      get_available_users_for_assignment: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          email: string
+          id: string
+          nome: string
+          tipo_usuario: string
+        }[]
+      }
       get_comprehensive_security_status: {
         Args: Record<PropertyKey, never>
         Returns: Json
