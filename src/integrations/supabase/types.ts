@@ -323,7 +323,7 @@ export type Database = {
             foreignKeyName: "daily_records_caregiver_id_fkey"
             columns: ["caregiver_id"]
             isOneToOne: false
-            referencedRelation: "users"
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
           {
