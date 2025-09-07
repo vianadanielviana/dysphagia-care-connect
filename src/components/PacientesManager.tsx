@@ -16,6 +16,7 @@ import { pacienteSchema, PacienteFormData } from '@/lib/schemas';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import InputMask from 'react-input-mask';
 import { useAuth } from '@/hooks/useAuth';
+import PatientDocuments from './PatientDocuments';
 
 interface Paciente {
   id: string;
@@ -704,6 +705,15 @@ const PacientesManager = () => {
                         <p className="text-sm text-muted-foreground mt-1">{paciente.diagnostico}</p>
                       </div>
                     )}
+
+                    {/* Seção de Documentos */}
+                    <div className="mt-4 pt-4 border-t">
+                      <PatientDocuments 
+                        patientId={paciente.id}
+                        patientName={paciente.nome}
+                        canUpload={profile?.tipo_usuario === 'fonoaudiologo' || profile?.tipo_usuario === 'admin'}
+                      />
+                    </div>
                   </div>
                   
                   <div className="flex space-x-2 ml-4">
