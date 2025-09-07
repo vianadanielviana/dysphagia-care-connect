@@ -410,12 +410,12 @@ const DisfagiaApp = () => {
         )}
         
         {!selectedPatient && (
-          <Card className="border-l-4 border-l-blue-500 bg-blue-50">
+          <Card className="border-l-4 border-l-primary bg-accent">
             <CardContent className="pt-4">
               <div className="flex items-center space-x-2">
-                <AlertTriangle className="h-5 w-5 text-blue-600" />
+                <AlertTriangle className="h-5 w-5 text-primary" />
                 <div>
-                  <p className="font-medium">Selecione um paciente</p>
+                  <p className="font-medium text-foreground">Selecione um paciente</p>
                   <p className="text-sm text-muted-foreground">
                     Escolha um paciente para ver seu status e realizar avaliações
                   </p>
