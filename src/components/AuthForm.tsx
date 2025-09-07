@@ -68,8 +68,8 @@ export default function AuthForm() {
   };
 
   const fillAdminCredentials = () => {
-    signInForm.setValue('email', 'viana.vianadaniel@outlook.com');
-    signInForm.setValue('password', '123qwe');
+    signInForm.setValue('email', 'teste@admin.com');
+    signInForm.setValue('password', 'teste123');
   };
 
   return (
@@ -137,7 +137,31 @@ export default function AuthForm() {
                 size="lg"
               >
                 <User className="h-5 w-5 mr-2" />
-                Acesso Admin (Teste)
+                Preencher Dados de Teste
+              </Button>
+
+              <Button
+                type="button"
+                onClick={async () => {
+                  setLoading(true);
+                  try {
+                    // Criar conta de teste primeiro
+                    await signUp('teste@admin.com', 'teste123', 'Admin Teste', 'fonoaudiologo');
+                    // Depois preencher os dados
+                    fillAdminCredentials();
+                  } catch (error) {
+                    console.log('Conta pode já existir, tentando preencher dados...');
+                    fillAdminCredentials();
+                  } finally {
+                    setLoading(false);
+                  }
+                }}
+                className="w-full h-12 bg-green-600 hover:bg-green-700 text-white"
+                size="lg"
+                disabled={loading}
+              >
+                <UserPlus className="h-5 w-5 mr-2" />
+                {loading ? 'Criando...' : 'Criar Conta Teste'}
               </Button>
 
               <div className="text-center space-y-2">
