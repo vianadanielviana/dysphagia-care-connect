@@ -1172,6 +1172,10 @@ export type Database = {
         Args: { patient_uuid: string }
         Returns: boolean
       }
+      can_create_patients: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
       get_current_user_role: {
         Args: Record<PropertyKey, never>
         Returns: string
@@ -1211,6 +1215,10 @@ export type Database = {
       hnswhandler: {
         Args: { "": unknown }
         Returns: unknown
+      }
+      is_authorized_for_patient: {
+        Args: { patient_uuid: string }
+        Returns: boolean
       }
       is_system_admin: {
         Args: Record<PropertyKey, never>
