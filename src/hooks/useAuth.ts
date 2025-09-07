@@ -9,6 +9,7 @@ interface UserProfile {
   nome: string;
   tipo_usuario: string;
   is_approved: boolean;
+  is_admin: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -113,11 +114,11 @@ export function useAuth() {
       if (data.user) {
         const { data: profileData } = await supabase
           .from('profiles')
-          .select('is_approved, tipo_usuario')
+          .select('is_approved, is_admin, tipo_usuario')
           .eq('id', data.user.id)
           .single();
 
-        if (profileData && !profileData.is_approved && email !== 'viana.vianadaniel@outlook.com') {
+        if (profileData && !profileData.is_approved && !profileData.is_admin) {
           await supabase.auth.signOut();
           throw new Error('Sua conta ainda não foi aprovada. Aguarde a aprovação de um administrador.');
         }
@@ -188,6 +189,6 @@ export function useAuth() {
     signOut,
     isAuthenticated: !!user,
     isApproved: profile?.is_approved ?? false,
-    isAdmin: user?.email === 'viana.vianadaniel@outlook.com'
+    isAdmin: profile?.is_admin ?? false
   };
 }
