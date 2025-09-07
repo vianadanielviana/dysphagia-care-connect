@@ -15,6 +15,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { pacienteSchema, PacienteFormData } from '@/lib/schemas';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import InputMask from 'react-input-mask';
+import { useAuth } from '@/hooks/useAuth';
 
 interface Paciente {
   id: string;
@@ -52,6 +53,7 @@ const PacientesManager = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingPaciente, setEditingPaciente] = useState<Paciente | null>(null);
   const { toast } = useToast();
+  const { profile } = useAuth();
 
   const form = useForm<PacienteFormData>({
     resolver: zodResolver(pacienteSchema),
@@ -305,14 +307,23 @@ const PacientesManager = () => {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold text-foreground">Pacientes</h1>
-          <p className="text-muted-foreground">Gerencie os pacientes cadastrados</p>
+          <p className="text-muted-foreground">
+            {profile?.tipo_usuario === 'admin' 
+              ? 'Gerencie todos os pacientes do sistema' 
+              : profile?.tipo_usuario === 'fonoaudiologo'
+              ? 'Gerencie seus pacientes atribuídos'
+              : 'Visualize seus pacientes atribuídos'
+            }
+          </p>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button onClick={() => setEditingPaciente(null)}>
-              <UserPlus className="h-4 w-4 mr-2" />
-              Novo Paciente
-            </Button>
+            {(profile?.tipo_usuario === 'fonoaudiologo' || profile?.tipo_usuario === 'admin') && (
+              <Button onClick={() => setEditingPaciente(null)}>
+                <UserPlus className="h-4 w-4 mr-2" />
+                Novo Paciente
+              </Button>
+            )}
           </DialogTrigger>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
@@ -619,14 +630,21 @@ const PacientesManager = () => {
           <CardContent className="py-12">
             <div className="text-center">
               <User className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-semibold mb-2">Nenhum paciente cadastrado</h3>
+              <h3 className="text-lg font-semibold mb-2">Nenhum paciente encontrado</h3>
               <p className="text-muted-foreground mb-4">
-                Comece cadastrando seu primeiro paciente.
+                {profile?.tipo_usuario === 'admin' 
+                  ? 'Nenhum paciente cadastrado no sistema.'
+                  : profile?.tipo_usuario === 'fonoaudiologo'
+                  ? 'Você não tem pacientes atribuídos ou não há pacientes cadastrados.'
+                  : 'Você não tem pacientes atribuídos.'
+                }
               </p>
-              <Button onClick={() => setIsDialogOpen(true)}>
-                <Plus className="h-4 w-4 mr-2" />
-                Cadastrar Paciente
-              </Button>
+              {(profile?.tipo_usuario === 'fonoaudiologo' || profile?.tipo_usuario === 'admin') && (
+                <Button onClick={() => setIsDialogOpen(true)}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Cadastrar Paciente
+                </Button>
+              )}
             </div>
           </CardContent>
         </Card>
