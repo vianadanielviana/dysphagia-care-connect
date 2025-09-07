@@ -195,7 +195,6 @@ const AuthForm = () => {
                         <Input
                           placeholder="Digite seu nome completo"
                           autoComplete="name"
-                          disabled={loading}
                           {...field}
                         />
                       </FormControl>
@@ -215,7 +214,6 @@ const AuthForm = () => {
                           type="email"
                           placeholder="Digite seu email"
                           autoComplete="email"
-                          disabled={loading}
                           {...field}
                         />
                       </FormControl>
@@ -235,7 +233,6 @@ const AuthForm = () => {
                           onValueChange={field.onChange}
                           value={field.value}
                           className="grid grid-cols-1 gap-4"
-                          disabled={loading}
                         >
                           <div className="flex items-center space-x-2">
                             <RadioGroupItem value="cuidador" id="cuidador" />
@@ -269,7 +266,6 @@ const AuthForm = () => {
                           type="password"
                           placeholder="Mínimo 6 caracteres"
                           autoComplete="new-password"
-                          disabled={loading}
                           {...field}
                         />
                       </FormControl>
@@ -289,7 +285,6 @@ const AuthForm = () => {
                           type="password"
                           placeholder="Digite a senha novamente"
                           autoComplete="new-password"
-                          disabled={loading}
                           {...field}
                         />
                       </FormControl>
