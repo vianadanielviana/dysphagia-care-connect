@@ -187,24 +187,10 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "communications_receiver_id_fkey"
-            columns: ["receiver_id"]
-            isOneToOne: false
-            referencedRelation: "users_contact_safe"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "communications_sender_id_fkey"
             columns: ["sender_id"]
             isOneToOne: false
             referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "communications_sender_id_fkey"
-            columns: ["sender_id"]
-            isOneToOne: false
-            referencedRelation: "users_contact_safe"
             referencedColumns: ["id"]
           },
         ]
@@ -335,13 +321,6 @@ export type Database = {
             columns: ["caregiver_id"]
             isOneToOne: false
             referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "daily_records_caregiver_id_fkey"
-            columns: ["caregiver_id"]
-            isOneToOne: false
-            referencedRelation: "users_contact_safe"
             referencedColumns: ["id"]
           },
           {
@@ -707,24 +686,10 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "patients_caregiver_id_fkey"
-            columns: ["caregiver_id"]
-            isOneToOne: false
-            referencedRelation: "users_contact_safe"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "patients_professional_id_fkey"
             columns: ["professional_id"]
             isOneToOne: false
             referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "patients_professional_id_fkey"
-            columns: ["professional_id"]
-            isOneToOne: false
-            referencedRelation: "users_contact_safe"
             referencedColumns: ["id"]
           },
         ]
@@ -1107,36 +1072,7 @@ export type Database = {
       }
     }
     Views: {
-      users_contact_safe: {
-        Row: {
-          created_at: string | null
-          email: string | null
-          id: string | null
-          name: string | null
-          phone: string | null
-          registration_number: string | null
-          user_type: Database["public"]["Enums"]["user_type"] | null
-        }
-        Insert: {
-          created_at?: string | null
-          email?: never
-          id?: string | null
-          name?: string | null
-          phone?: never
-          registration_number?: never
-          user_type?: Database["public"]["Enums"]["user_type"] | null
-        }
-        Update: {
-          created_at?: string | null
-          email?: never
-          id?: string | null
-          name?: string | null
-          phone?: never
-          registration_number?: never
-          user_type?: Database["public"]["Enums"]["user_type"] | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
       binary_quantize: {
@@ -1184,6 +1120,18 @@ export type Database = {
         Args: { user_uuid: string }
         Returns: number
       }
+      get_users_contact_safe: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          created_at: string
+          email: string
+          id: string
+          name: string
+          phone: string
+          registration_number: string
+          user_type: Database["public"]["Enums"]["user_type"]
+        }[]
+      }
       halfvec_avg: {
         Args: { "": number[] }
         Returns: unknown
@@ -1221,6 +1169,10 @@ export type Database = {
         Returns: boolean
       }
       is_system_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      is_system_admin_secure: {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }
