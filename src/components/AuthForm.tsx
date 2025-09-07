@@ -134,41 +134,51 @@ const AuthForm = () => {
           {!isSignUp ? (
             <Form {...signInForm}>
               <form onSubmit={signInForm.handleSubmit(handleSignIn)} className="space-y-4">
-                <FormField
-                  control={signInForm.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="email"
-                          placeholder="seu@email.com"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-foreground">Email</label>
+                  <input
+                    type="email"
+                    placeholder="seu@email.com"
+                    autoComplete="email"
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+                    value={signInForm.watch('email') || ''}
+                    onChange={(e) => {
+                      console.log('Login Email onChange:', e.target.value);
+                      signInForm.setValue('email', e.target.value, { 
+                        shouldValidate: false,
+                        shouldDirty: true 
+                      });
+                    }}
+                  />
+                  {signInForm.formState.errors.email && (
+                    <p className="text-sm font-medium text-destructive">
+                      {signInForm.formState.errors.email.message}
+                    </p>
                   )}
-                />
+                </div>
 
-                <FormField
-                  control={signInForm.control}
-                  name="password"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Senha</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="password"
-                          placeholder="Sua senha"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-foreground">Senha</label>
+                  <input
+                    type="password"
+                    placeholder="Sua senha"
+                    autoComplete="current-password"
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+                    value={signInForm.watch('password') || ''}
+                    onChange={(e) => {
+                      console.log('Login Password onChange:', e.target.value);
+                      signInForm.setValue('password', e.target.value, { 
+                        shouldValidate: false,
+                        shouldDirty: true 
+                      });
+                    }}
+                  />
+                  {signInForm.formState.errors.password && (
+                    <p className="text-sm font-medium text-destructive">
+                      {signInForm.formState.errors.password.message}
+                    </p>
                   )}
-                />
+                </div>
 
                 <Button 
                   type="submit" 
