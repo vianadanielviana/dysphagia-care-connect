@@ -330,6 +330,13 @@ export type Database = {
             referencedRelation: "pacientes"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "daily_records_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "pacientes_safe"
+            referencedColumns: ["id"]
+          },
         ]
       }
       document_access_log: {
@@ -644,6 +651,13 @@ export type Database = {
             referencedRelation: "pacientes"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "fk_patient_access_log_patient"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "pacientes_safe"
+            referencedColumns: ["id"]
+          },
         ]
       }
       patients: {
@@ -954,6 +968,13 @@ export type Database = {
             referencedRelation: "pacientes"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "triage_assessments_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "pacientes_safe"
+            referencedColumns: ["id"]
+          },
         ]
       }
       users: {
@@ -1072,12 +1093,84 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      pacientes_safe: {
+        Row: {
+          caregiver_id: string | null
+          cpf: string | null
+          created_at: string | null
+          data_nascimento: string | null
+          diagnostico: string | null
+          email: string | null
+          endereco: string | null
+          historico_medico: string | null
+          id: string | null
+          medicamentos_atuais: string | null
+          nome: string | null
+          observacoes: string | null
+          professional_id: string | null
+          responsavel_email: string | null
+          responsavel_nome: string | null
+          responsavel_telefone: string | null
+          status: string | null
+          telefone: string | null
+          updated_at: string | null
+          usuario_cadastro_id: string | null
+        }
+        Insert: {
+          caregiver_id?: string | null
+          cpf?: never
+          created_at?: string | null
+          data_nascimento?: string | null
+          diagnostico?: string | null
+          email?: never
+          endereco?: string | null
+          historico_medico?: string | null
+          id?: string | null
+          medicamentos_atuais?: string | null
+          nome?: never
+          observacoes?: string | null
+          professional_id?: string | null
+          responsavel_email?: string | null
+          responsavel_nome?: string | null
+          responsavel_telefone?: string | null
+          status?: string | null
+          telefone?: never
+          updated_at?: string | null
+          usuario_cadastro_id?: string | null
+        }
+        Update: {
+          caregiver_id?: string | null
+          cpf?: never
+          created_at?: string | null
+          data_nascimento?: string | null
+          diagnostico?: string | null
+          email?: never
+          endereco?: string | null
+          historico_medico?: string | null
+          id?: string | null
+          medicamentos_atuais?: string | null
+          nome?: never
+          observacoes?: string | null
+          professional_id?: string | null
+          responsavel_email?: string | null
+          responsavel_nome?: string | null
+          responsavel_telefone?: string | null
+          status?: string | null
+          telefone?: never
+          updated_at?: string | null
+          usuario_cadastro_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       binary_quantize: {
         Args: { "": string } | { "": unknown }
         Returns: unknown
+      }
+      can_access_patient: {
+        Args: { patient_uuid: string }
+        Returns: boolean
       }
       get_current_user_role: {
         Args: Record<PropertyKey, never>
@@ -1119,6 +1212,10 @@ export type Database = {
         Args: { "": unknown }
         Returns: unknown
       }
+      is_system_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
       ivfflat_bit_support: {
         Args: { "": unknown }
         Returns: unknown
@@ -1142,6 +1239,10 @@ export type Database = {
       mark_message_as_read: {
         Args: { message_uuid: string; user_uuid: string }
         Returns: boolean
+      }
+      mask_sensitive_data: {
+        Args: { input_text: string; mask_type?: string }
+        Returns: string
       }
       match_documents: {
         Args: { filter?: Json; match_count?: number; query_embedding: string }
