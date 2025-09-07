@@ -330,13 +330,6 @@ export type Database = {
             referencedRelation: "pacientes"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "daily_records_patient_id_fkey"
-            columns: ["patient_id"]
-            isOneToOne: false
-            referencedRelation: "pacientes_safe"
-            referencedColumns: ["id"]
-          },
         ]
       }
       document_access_log: {
@@ -651,13 +644,6 @@ export type Database = {
             referencedRelation: "pacientes"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "fk_patient_access_log_patient"
-            columns: ["patient_id"]
-            isOneToOne: false
-            referencedRelation: "pacientes_safe"
-            referencedColumns: ["id"]
-          },
         ]
       }
       patients: {
@@ -968,13 +954,6 @@ export type Database = {
             referencedRelation: "pacientes"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "triage_assessments_patient_id_fkey"
-            columns: ["patient_id"]
-            isOneToOne: false
-            referencedRelation: "pacientes_safe"
-            referencedColumns: ["id"]
-          },
         ]
       }
       users: {
@@ -1093,75 +1072,7 @@ export type Database = {
       }
     }
     Views: {
-      pacientes_safe: {
-        Row: {
-          caregiver_id: string | null
-          cpf: string | null
-          created_at: string | null
-          data_nascimento: string | null
-          diagnostico: string | null
-          email: string | null
-          endereco: string | null
-          historico_medico: string | null
-          id: string | null
-          medicamentos_atuais: string | null
-          nome: string | null
-          observacoes: string | null
-          professional_id: string | null
-          responsavel_email: string | null
-          responsavel_nome: string | null
-          responsavel_telefone: string | null
-          status: string | null
-          telefone: string | null
-          updated_at: string | null
-          usuario_cadastro_id: string | null
-        }
-        Insert: {
-          caregiver_id?: string | null
-          cpf?: never
-          created_at?: string | null
-          data_nascimento?: never
-          diagnostico?: never
-          email?: never
-          endereco?: never
-          historico_medico?: never
-          id?: string | null
-          medicamentos_atuais?: never
-          nome?: never
-          observacoes?: never
-          professional_id?: string | null
-          responsavel_email?: never
-          responsavel_nome?: never
-          responsavel_telefone?: never
-          status?: string | null
-          telefone?: never
-          updated_at?: string | null
-          usuario_cadastro_id?: string | null
-        }
-        Update: {
-          caregiver_id?: string | null
-          cpf?: never
-          created_at?: string | null
-          data_nascimento?: never
-          diagnostico?: never
-          email?: never
-          endereco?: never
-          historico_medico?: never
-          id?: string | null
-          medicamentos_atuais?: never
-          nome?: never
-          observacoes?: never
-          professional_id?: string | null
-          responsavel_email?: never
-          responsavel_nome?: never
-          responsavel_telefone?: never
-          status?: string | null
-          telefone?: never
-          updated_at?: string | null
-          usuario_cadastro_id?: string | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
       binary_quantize: {
@@ -1179,6 +1090,31 @@ export type Database = {
       get_current_user_role: {
         Args: Record<PropertyKey, never>
         Returns: string
+      }
+      get_pacientes_safe: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          caregiver_id: string
+          cpf: string
+          created_at: string
+          data_nascimento: string
+          diagnostico: string
+          email: string
+          endereco: string
+          historico_medico: string
+          id: string
+          medicamentos_atuais: string
+          nome: string
+          observacoes: string
+          professional_id: string
+          responsavel_email: string
+          responsavel_nome: string
+          responsavel_telefone: string
+          status: string
+          telefone: string
+          updated_at: string
+          usuario_cadastro_id: string
+        }[]
       }
       get_unread_messages_count: {
         Args: { user_uuid: string }
