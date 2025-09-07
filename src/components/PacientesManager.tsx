@@ -70,8 +70,8 @@ const PacientesManager = () => {
       responsavel_nome: '',
       responsavel_email: '',
       responsavel_telefone: '',
-      professional_id: '',
-      caregiver_id: ''
+      professional_id: 'none',
+      caregiver_id: 'none'
     },
   });
 
@@ -137,10 +137,10 @@ const PacientesManager = () => {
         medicamentos_atuais: data.medicamentos_atuais?.trim() || null,
         observacoes: data.observacoes?.trim() || null,
         responsavel_nome: data.responsavel_nome?.trim() || null,
-      responsavel_email: data.responsavel_email?.trim() || null,
-      responsavel_telefone: data.responsavel_telefone?.trim() || null,
-      professional_id: data.professional_id?.trim() || null,
-      caregiver_id: data.caregiver_id?.trim() || null,
+        responsavel_email: data.responsavel_email?.trim() || null,
+        responsavel_telefone: data.responsavel_telefone?.trim() || null,
+        professional_id: data.professional_id === 'none' ? null : (data.professional_id?.trim() || null),
+        caregiver_id: data.caregiver_id === 'none' ? null : (data.caregiver_id?.trim() || null),
       };
 
       // Remove empty strings completely
@@ -234,8 +234,8 @@ const PacientesManager = () => {
       responsavel_nome: paciente.responsavel_nome || '',
       responsavel_email: paciente.responsavel_email || '',
       responsavel_telefone: paciente.responsavel_telefone || '',
-      professional_id: paciente.professional_id || '',
-      caregiver_id: paciente.caregiver_id || ''
+      professional_id: paciente.professional_id || 'none',
+      caregiver_id: paciente.caregiver_id || 'none'
     });
     setIsDialogOpen(true);
   };
@@ -555,7 +555,7 @@ const PacientesManager = () => {
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              <SelectItem value="">Nenhum</SelectItem>
+                              <SelectItem value="none">Nenhum</SelectItem>
                               {usuarios
                                 .filter(u => u.tipo_usuario === 'fonoaudiologo' || u.tipo_usuario === 'admin')
                                 .map(usuario => (
@@ -583,7 +583,7 @@ const PacientesManager = () => {
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              <SelectItem value="">Nenhum</SelectItem>
+                              <SelectItem value="none">Nenhum</SelectItem>
                               {usuarios
                                 .filter(u => u.tipo_usuario === 'cuidador')
                                 .map(usuario => (
