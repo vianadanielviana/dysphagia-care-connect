@@ -61,7 +61,7 @@ export function useAuth() {
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .select('*')
+        .select('id, email, nome, tipo_usuario, is_approved, is_admin, created_at, updated_at')
         .eq('id', userId)
         .single();
 
@@ -179,6 +179,21 @@ export function useAuth() {
     }
   };
 
+  const resetPassword = async (email: string) => {
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+
+      if (error) throw error;
+
+      toast.success('Email de recuperação enviado! Verifique sua caixa de entrada.');
+    } catch (error: any) {
+      toast.error(error.message || 'Erro ao enviar email de recuperação');
+      throw error;
+    }
+  };
+
   return {
     user,
     session,
@@ -187,6 +202,7 @@ export function useAuth() {
     signIn,
     signUp,
     signOut,
+    resetPassword,
     isAuthenticated: !!user,
     isApproved: profile?.is_approved ?? false,
     isAdmin: profile?.is_admin ?? false

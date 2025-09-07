@@ -41,6 +41,45 @@ export type Database = {
         }
         Relationships: []
       }
+      chat_access_log: {
+        Row: {
+          accessed_at: string | null
+          action: string
+          id: string
+          ip_address: unknown | null
+          message_id: number | null
+          metadata: Json | null
+          session_id: string
+          user_agent: string | null
+          user_id: string
+          user_type: string | null
+        }
+        Insert: {
+          accessed_at?: string | null
+          action: string
+          id?: string
+          ip_address?: unknown | null
+          message_id?: number | null
+          metadata?: Json | null
+          session_id: string
+          user_agent?: string | null
+          user_id: string
+          user_type?: string | null
+        }
+        Update: {
+          accessed_at?: string | null
+          action?: string
+          id?: string
+          ip_address?: unknown | null
+          message_id?: number | null
+          metadata?: Json | null
+          session_id?: string
+          user_agent?: string | null
+          user_id?: string
+          user_type?: string | null
+        }
+        Relationships: []
+      }
       chat_memory: {
         Row: {
           additional_kwargs: Json | null
@@ -293,6 +332,42 @@ export type Database = {
           },
         ]
       }
+      document_access_log: {
+        Row: {
+          accessed_at: string | null
+          action: string
+          document_id: number
+          id: string
+          ip_address: unknown | null
+          metadata: Json | null
+          user_agent: string | null
+          user_id: string
+          user_type: string | null
+        }
+        Insert: {
+          accessed_at?: string | null
+          action: string
+          document_id: number
+          id?: string
+          ip_address?: unknown | null
+          metadata?: Json | null
+          user_agent?: string | null
+          user_id: string
+          user_type?: string | null
+        }
+        Update: {
+          accessed_at?: string | null
+          action?: string
+          document_id?: number
+          id?: string
+          ip_address?: unknown | null
+          metadata?: Json | null
+          user_agent?: string | null
+          user_id?: string
+          user_type?: string | null
+        }
+        Relationships: []
+      }
       documents: {
         Row: {
           content: string | null
@@ -454,6 +529,7 @@ export type Database = {
       }
       pacientes: {
         Row: {
+          caregiver_id: string | null
           cpf: string | null
           created_at: string
           data_nascimento: string | null
@@ -465,6 +541,7 @@ export type Database = {
           medicamentos_atuais: string | null
           nome: string
           observacoes: string | null
+          professional_id: string | null
           responsavel_email: string | null
           responsavel_nome: string | null
           responsavel_telefone: string | null
@@ -475,6 +552,7 @@ export type Database = {
           usuario_cadastro_id: string | null
         }
         Insert: {
+          caregiver_id?: string | null
           cpf?: string | null
           created_at?: string
           data_nascimento?: string | null
@@ -486,6 +564,7 @@ export type Database = {
           medicamentos_atuais?: string | null
           nome: string
           observacoes?: string | null
+          professional_id?: string | null
           responsavel_email?: string | null
           responsavel_nome?: string | null
           responsavel_telefone?: string | null
@@ -496,6 +575,7 @@ export type Database = {
           usuario_cadastro_id?: string | null
         }
         Update: {
+          caregiver_id?: string | null
           cpf?: string | null
           created_at?: string
           data_nascimento?: string | null
@@ -507,6 +587,7 @@ export type Database = {
           medicamentos_atuais?: string | null
           nome?: string
           observacoes?: string | null
+          professional_id?: string | null
           responsavel_email?: string | null
           responsavel_nome?: string | null
           responsavel_telefone?: string | null
@@ -517,6 +598,53 @@ export type Database = {
           usuario_cadastro_id?: string | null
         }
         Relationships: []
+      }
+      patient_access_log: {
+        Row: {
+          accessed_at: string | null
+          accessed_fields: string[] | null
+          action: string
+          id: string
+          ip_address: unknown | null
+          metadata: Json | null
+          patient_id: string | null
+          user_agent: string | null
+          user_id: string | null
+          user_type: string | null
+        }
+        Insert: {
+          accessed_at?: string | null
+          accessed_fields?: string[] | null
+          action: string
+          id?: string
+          ip_address?: unknown | null
+          metadata?: Json | null
+          patient_id?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+          user_type?: string | null
+        }
+        Update: {
+          accessed_at?: string | null
+          accessed_fields?: string[] | null
+          action?: string
+          id?: string
+          ip_address?: unknown | null
+          metadata?: Json | null
+          patient_id?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+          user_type?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_patient_access_log_patient"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "pacientes"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       patients: {
         Row: {
@@ -571,6 +699,7 @@ export type Database = {
           created_at: string
           email: string
           id: string
+          is_admin: boolean | null
           is_approved: boolean
           nome: string | null
           tipo_usuario: string
@@ -580,6 +709,7 @@ export type Database = {
           created_at?: string
           email: string
           id: string
+          is_admin?: boolean | null
           is_approved?: boolean
           nome?: string | null
           tipo_usuario: string
@@ -589,6 +719,7 @@ export type Database = {
           created_at?: string
           email?: string
           id?: string
+          is_admin?: boolean | null
           is_approved?: boolean
           nome?: string | null
           tipo_usuario?: string
@@ -668,6 +799,39 @@ export type Database = {
           temperatura?: string | null
           updated_at?: string
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      team_message_access_log: {
+        Row: {
+          accessed_at: string | null
+          action: string
+          id: string
+          ip_address: unknown | null
+          message_id: string | null
+          user_agent: string | null
+          user_id: string
+          user_type: string | null
+        }
+        Insert: {
+          accessed_at?: string | null
+          action: string
+          id?: string
+          ip_address?: unknown | null
+          message_id?: string | null
+          user_agent?: string | null
+          user_id: string
+          user_type?: string | null
+        }
+        Update: {
+          accessed_at?: string | null
+          action?: string
+          id?: string
+          ip_address?: unknown | null
+          message_id?: string | null
+          user_agent?: string | null
+          user_id?: string
+          user_type?: string | null
         }
         Relationships: []
       }
@@ -825,6 +989,45 @@ export type Database = {
         }
         Relationships: []
       }
+      vector_document_access_log: {
+        Row: {
+          accessed_at: string | null
+          action: string
+          document_id: number | null
+          id: string
+          ip_address: unknown | null
+          metadata: Json | null
+          search_query: string | null
+          user_agent: string | null
+          user_id: string | null
+          user_type: string | null
+        }
+        Insert: {
+          accessed_at?: string | null
+          action: string
+          document_id?: number | null
+          id?: string
+          ip_address?: unknown | null
+          metadata?: Json | null
+          search_query?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+          user_type?: string | null
+        }
+        Update: {
+          accessed_at?: string | null
+          action?: string
+          document_id?: number | null
+          id?: string
+          ip_address?: unknown | null
+          metadata?: Json | null
+          search_query?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+          user_type?: string | null
+        }
+        Relationships: []
+      }
       vector_documents: {
         Row: {
           content: string | null
@@ -958,6 +1161,20 @@ export type Database = {
           similarity: number
         }[]
       }
+      secure_match_vector_documents: {
+        Args: {
+          filter?: Json
+          match_count?: number
+          query_embedding: string
+          similarity_threshold?: number
+        }
+        Returns: {
+          content: string
+          id: number
+          metadata: Json
+          similarity: number
+        }[]
+      }
       sparsevec_out: {
         Args: { "": unknown }
         Returns: unknown
@@ -1001,6 +1218,11 @@ export type Database = {
         | "pastosa"
         | "liquida_modificada"
         | "liquida_fina"
+      food_consistency_type:
+        | "liquida_fina"
+        | "liquida_modificada"
+        | "pastosa"
+        | "normal"
       risk_level: "baixo" | "medio" | "alto"
       tipo:
         | "Mercado"
@@ -1143,6 +1365,12 @@ export const Constants = {
         "pastosa",
         "liquida_modificada",
         "liquida_fina",
+      ],
+      food_consistency_type: [
+        "liquida_fina",
+        "liquida_modificada",
+        "pastosa",
+        "normal",
       ],
       risk_level: ["baixo", "medio", "alto"],
       tipo: [
