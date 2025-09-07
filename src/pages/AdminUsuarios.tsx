@@ -68,6 +68,27 @@ export default function AdminUsuarios() {
     }
   };
 
+  const negarUsuario = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .delete()
+        .eq('id', id);
+
+      if (error) {
+        toast.error('Erro ao negar usuário.');
+        console.error('Error denying user:', error);
+      } else {
+        setUsuarios((prev) => prev.filter((u) => u.id !== id));
+        toast.success('Usuário negado com sucesso!');
+        console.log('[AdminDenial]', id);
+      }
+    } catch (error) {
+      toast.error('Erro ao negar usuário.');
+      console.error('Error:', error);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background p-4">
@@ -143,12 +164,20 @@ export default function AdminUsuarios() {
                             Criado em: {new Date(user.created_at).toLocaleDateString('pt-BR')}
                           </p>
                         </div>
-                        <Button
-                          onClick={() => aprovarUsuario(user.id)}
-                          className="bg-medical-green hover:bg-medical-green/90 text-white"
-                        >
-                          Aprovar
-                        </Button>
+                        <div className="flex flex-col sm:flex-row gap-2">
+                          <Button
+                            onClick={() => aprovarUsuario(user.id)}
+                            className="bg-medical-green hover:bg-medical-green/90 text-white"
+                          >
+                            Aprovar
+                          </Button>
+                          <Button
+                            onClick={() => negarUsuario(user.id)}
+                            variant="destructive"
+                          >
+                            Negar
+                          </Button>
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
