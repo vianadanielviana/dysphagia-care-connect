@@ -140,7 +140,7 @@ export default function AuthForm() {
                 Acesso Admin (Teste)
               </Button>
 
-              <div className="text-center">
+              <div className="text-center space-y-2">
                 <Button
                   type="button"
                   variant="link"
@@ -148,6 +148,22 @@ export default function AuthForm() {
                   className="text-primary"
                 >
                   Não tem conta? Cadastre-se
+                </Button>
+                <Button
+                  type="button"
+                  variant="link"
+                  onClick={() => {
+                    const email = signInForm.getValues('email');
+                    if (email) {
+                      // Trigger password reset
+                      window.alert('Funcionalidade de recuperação será implementada');
+                    } else {
+                      window.alert('Digite seu email primeiro');
+                    }
+                  }}
+                  className="text-muted-foreground text-sm block w-full"
+                >
+                  Esqueceu a senha?
                 </Button>
               </div>
             </form>
