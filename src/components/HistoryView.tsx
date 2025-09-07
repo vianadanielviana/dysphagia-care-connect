@@ -35,10 +35,26 @@ interface TriageRecord {
   answers?: any[];
 }
 
+interface DailyRecord {
+  id: string;
+  record_date: string;
+  food_consistency: string;
+  observations: string;
+  risk_score: number;
+  photo_urls: string[] | null;
+  caregiver_id: string;
+  patient_id: string;
+  created_at: string;
+  symptoms?: { symptom_name: string }[];
+}
+
 const HistoryView: React.FC<HistoryViewProps> = ({ selectedPatient }) => {
   const [records, setRecords] = useState<TriageRecord[]>([]);
+  const [dailyRecords, setDailyRecords] = useState<DailyRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedRecord, setSelectedRecord] = useState<TriageRecord | null>(null);
+  const [selectedDailyRecord, setSelectedDailyRecord] = useState<DailyRecord | null>(null);
+  const [activeTab, setActiveTab] = useState<'triagem' | 'registros'>('triagem');
   const [filters, setFilters] = useState({
     startDate: '',
     endDate: '',
@@ -49,6 +65,7 @@ const HistoryView: React.FC<HistoryViewProps> = ({ selectedPatient }) => {
   useEffect(() => {
     if (selectedPatient) {
       fetchTriageHistory();
+      fetchDailyRecords();
     }
   }, [selectedPatient, filters]);
 
@@ -90,6 +107,46 @@ const HistoryView: React.FC<HistoryViewProps> = ({ selectedPatient }) => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchDailyRecords = async () => {
+    if (!selectedPatient) return;
+    
+    try {
+      let query = supabase
+        .from('daily_records')
+        .select(`
+          *,
+          daily_record_symptoms(*)
+        `)
+        .eq('patient_id', selectedPatient.id)
+        .order('record_date', { ascending: false });
+
+      // Apply filters
+      if (filters.startDate) {
+        query = query.gte('record_date', filters.startDate);
+      }
+      if (filters.endDate) {
+        query = query.lte('record_date', filters.endDate);
+      }
+      if (filters.riskLevel !== 'all') {
+        const riskRange = filters.riskLevel === 'baixo' ? [0, 3] : 
+                         filters.riskLevel === 'medio' ? [4, 6] : [7, 100];
+        query = query.gte('risk_score', riskRange[0]).lte('risk_score', riskRange[1]);
+      }
+
+      const { data, error } = await query;
+
+      if (error) throw error;
+      setDailyRecords(data || []);
+    } catch (error) {
+      console.error('Erro ao buscar registros diários:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao carregar registros diários",
+        variant: "destructive",
+      });
     }
   };
 
@@ -161,6 +218,26 @@ const HistoryView: React.FC<HistoryViewProps> = ({ selectedPatient }) => {
 
   const viewDetails = (record: TriageRecord) => {
     setSelectedRecord(record);
+  };
+
+  const viewDailyDetails = (record: DailyRecord) => {
+    setSelectedDailyRecord(record);
+  };
+
+  const getDailyRiskBadge = (riskScore: number) => {
+    const riskLevel = riskScore === 0 ? 'baixo' : 
+                     riskScore <= 3 ? 'baixo' : 
+                     riskScore <= 6 ? 'medio' : 'alto';
+    return getRiskBadge(riskLevel);
+  };
+
+  const getConsistencyLabel = (consistency: string) => {
+    const labels: { [key: string]: string } = {
+      'liquida_fina': 'Líquido',
+      'pastosa': 'Pastoso',
+      'normal': 'Normal'
+    };
+    return labels[consistency] || consistency;
   };
 
   if (!selectedPatient) {
@@ -239,12 +316,34 @@ const HistoryView: React.FC<HistoryViewProps> = ({ selectedPatient }) => {
         </CardContent>
       </Card>
 
+      {/* Tabs */}
+      <div className="flex space-x-2 border-b">
+        <Button
+          variant={activeTab === 'triagem' ? 'default' : 'ghost'}
+          onClick={() => setActiveTab('triagem')}
+          className="rounded-b-none"
+        >
+          Triagens ({records.length})
+        </Button>
+        <Button
+          variant={activeTab === 'registros' ? 'default' : 'ghost'}
+          onClick={() => setActiveTab('registros')}
+          className="rounded-b-none"
+        >
+          Registros Diários ({dailyRecords.length})
+        </Button>
+      </div>
+
       {/* Results */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
-            <span>Registros Encontrados</span>
-            <Badge variant="outline">{records.length} triagens</Badge>
+            <span>
+              {activeTab === 'triagem' ? 'Triagens Encontradas' : 'Registros Diários Encontrados'}
+            </span>
+            <Badge variant="outline">
+              {activeTab === 'triagem' ? `${records.length} triagens` : `${dailyRecords.length} registros`}
+            </Badge>
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -252,55 +351,138 @@ const HistoryView: React.FC<HistoryViewProps> = ({ selectedPatient }) => {
             <div className="flex items-center justify-center h-32">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
             </div>
-          ) : records.length === 0 ? (
-            <div className="text-center py-8">
-              <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <p className="text-muted-foreground">Nenhuma triagem encontrada</p>
-            </div>
+          ) : activeTab === 'triagem' ? (
+            records.length === 0 ? (
+              <div className="text-center py-8">
+                <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                <p className="text-muted-foreground">Nenhuma triagem encontrada</p>
+              </div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Data</TableHead>
+                    <TableHead>Horário</TableHead>
+                    <TableHead>Pontuação</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Ações</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {records.map((record) => {
+                    const { date, time } = formatDateTime(record.completed_at);
+                    return (
+                      <TableRow key={record.id}>
+                        <TableCell className="font-medium">{date}</TableCell>
+                        <TableCell>
+                          <div className="flex items-center">
+                            <Clock className="h-4 w-4 mr-2 text-muted-foreground" />
+                            {time}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline">{record.total_score} pts</Badge>
+                        </TableCell>
+                        <TableCell>
+                          {getRiskBadge(record.risk_level)}
+                        </TableCell>
+                        <TableCell>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => viewDetails(record)}
+                          >
+                            <Eye className="h-4 w-4 mr-2" />
+                            Ver Detalhes
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            )
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Data</TableHead>
-                  <TableHead>Horário</TableHead>
-                  <TableHead>Pontuação</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Ações</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {records.map((record) => {
-                  const { date, time } = formatDateTime(record.completed_at);
-                  return (
-                    <TableRow key={record.id}>
-                      <TableCell className="font-medium">{date}</TableCell>
-                      <TableCell>
-                        <div className="flex items-center">
-                          <Clock className="h-4 w-4 mr-2 text-muted-foreground" />
-                          {time}
+            dailyRecords.length === 0 ? (
+              <div className="text-center py-8">
+                <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                <p className="text-muted-foreground">Nenhum registro diário encontrado</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {dailyRecords.map((record) => (
+                  <Card key={record.id} className="hover:shadow-md transition-shadow">
+                    <CardContent className="pt-4">
+                      <div className="flex justify-between items-start mb-3">
+                        <div>
+                          <h4 className="font-semibold text-lg">
+                            {new Date(record.record_date).toLocaleDateString('pt-BR')}
+                          </h4>
+                          <p className="text-sm text-muted-foreground">
+                            Consistência: {getConsistencyLabel(record.food_consistency)}
+                          </p>
                         </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="outline">{record.total_score} pts</Badge>
-                      </TableCell>
-                      <TableCell>
-                        {getRiskBadge(record.risk_level)}
-                      </TableCell>
-                      <TableCell>
+                        <div className="text-right">
+                          {getDailyRiskBadge(record.risk_score || 0)}
+                          <p className="text-sm text-muted-foreground mt-1">
+                            {record.risk_score} pontos
+                          </p>
+                        </div>
+                      </div>
+                      
+                      {record.observations && (
+                        <div className="mb-3">
+                          <p className="text-sm font-medium mb-1">Observações:</p>
+                          <p className="text-sm text-muted-foreground">{record.observations}</p>
+                        </div>
+                      )}
+
+                      {record.symptoms && record.symptoms.length > 0 && (
+                        <div className="mb-3">
+                          <p className="text-sm font-medium mb-2">Sintomas observados:</p>
+                          <div className="flex flex-wrap gap-1">
+                            {record.symptoms.map((symptom, index) => (
+                              <Badge key={index} variant="secondary" className="text-xs">
+                                {symptom.symptom_name}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Exibir fotos se existirem */}
+                      {record.photo_urls && record.photo_urls.length > 0 && (
+                        <div className="mt-3">
+                          <p className="text-sm font-medium mb-2">Fotos do registro:</p>
+                          <div className="flex space-x-2 overflow-x-auto">
+                            {record.photo_urls.map((photoUrl: string, photoIndex: number) => (
+                              <img
+                                key={photoIndex}
+                                src={photoUrl}
+                                alt={`Foto ${photoIndex + 1}`}
+                                className="w-16 h-16 object-cover rounded-lg cursor-pointer hover:scale-110 transition-transform"
+                                onClick={() => window.open(photoUrl, '_blank')}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="flex justify-end mt-3">
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => viewDetails(record)}
+                          onClick={() => viewDailyDetails(record)}
                         >
                           <Eye className="h-4 w-4 mr-2" />
                           Ver Detalhes
                         </Button>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )
           )}
         </CardContent>
       </Card>
@@ -380,6 +562,93 @@ const HistoryView: React.FC<HistoryViewProps> = ({ selectedPatient }) => {
                   </div>
                 )}
               </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* Daily Record Details Dialog */}
+      {selectedDailyRecord && (
+        <Dialog open={!!selectedDailyRecord} onOpenChange={() => setSelectedDailyRecord(null)}>
+          <DialogContent className="max-w-3xl">
+            <DialogHeader>
+              <DialogTitle>Detalhes do Registro Diário</DialogTitle>
+            </DialogHeader>
+            
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-sm font-medium text-muted-foreground">Data</Label>
+                  <p className="text-lg font-semibold">
+                    {new Date(selectedDailyRecord.record_date).toLocaleDateString('pt-BR')}
+                  </p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium text-muted-foreground">Pontuação de Risco</Label>
+                  <p className="text-lg font-semibold">{selectedDailyRecord.risk_score || 0} pontos</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-sm font-medium text-muted-foreground">Consistência</Label>
+                  <p className="text-lg font-semibold">
+                    {getConsistencyLabel(selectedDailyRecord.food_consistency)}
+                  </p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium text-muted-foreground">Nível de Risco</Label>
+                  <div className="mt-1">
+                    {getDailyRiskBadge(selectedDailyRecord.risk_score || 0)}
+                  </div>
+                </div>
+              </div>
+
+              {selectedDailyRecord.observations && (
+                <div>
+                  <Label className="text-sm font-medium text-muted-foreground">Observações</Label>
+                  <p className="mt-1 p-3 bg-muted rounded-lg">{selectedDailyRecord.observations}</p>
+                </div>
+              )}
+
+              {selectedDailyRecord.symptoms && selectedDailyRecord.symptoms.length > 0 && (
+                <div>
+                  <Label className="text-sm font-medium text-muted-foreground mb-2 block">
+                    Sintomas Observados
+                  </Label>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedDailyRecord.symptoms.map((symptom, index) => (
+                      <Badge key={index} variant="secondary">
+                        {symptom.symptom_name}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Fotos em tamanho maior no modal */}
+              {selectedDailyRecord.photo_urls && selectedDailyRecord.photo_urls.length > 0 && (
+                <div>
+                  <Label className="text-sm font-medium text-muted-foreground mb-2 block">
+                    Fotos do Registro
+                  </Label>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    {selectedDailyRecord.photo_urls.map((photoUrl: string, photoIndex: number) => (
+                      <div key={photoIndex} className="relative group">
+                        <img
+                          src={photoUrl}
+                          alt={`Foto ${photoIndex + 1}`}
+                          className="w-full h-32 object-cover rounded-lg cursor-pointer hover:scale-105 transition-transform"
+                          onClick={() => window.open(photoUrl, '_blank')}
+                        />
+                        <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-opacity rounded-lg flex items-center justify-center">
+                          <Eye className="h-6 w-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </DialogContent>
         </Dialog>
