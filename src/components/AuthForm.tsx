@@ -40,7 +40,7 @@ const AuthForm = () => {
       confirmPassword: '',
       tipo_usuario: 'cuidador',
     },
-    mode: 'onSubmit',
+    mode: 'onChange',
   });
 
   console.log('SignUp form values:', signUpForm.watch());
@@ -188,52 +188,44 @@ const AuthForm = () => {
                 <FormField
                   control={signUpForm.control}
                   name="nome"
-                  render={({ field }) => {
-                    console.log('Nome field:', field);
-                    return (
-                      <FormItem>
-                        <FormLabel>Nome Completo</FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder="Digite seu nome completo"
-                            autoComplete="name"
-                            {...field}
-                            onChange={(e) => {
-                              console.log('Nome onChange:', e.target.value);
-                              field.onChange(e);
-                            }}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    );
-                  }}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Nome Completo</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Digite seu nome completo"
+                          autoComplete="name"
+                          value={field.value}
+                          onChange={field.onChange}
+                          onBlur={field.onBlur}
+                          name={field.name}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
 
                 <FormField
                   control={signUpForm.control}
                   name="email"
-                  render={({ field }) => {
-                    console.log('Email field:', field);
-                    return (
-                      <FormItem>
-                        <FormLabel>Email</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="email"
-                            placeholder="Digite seu email"
-                            autoComplete="email"
-                            {...field}
-                            onChange={(e) => {
-                              console.log('Email onChange:', e.target.value);
-                              field.onChange(e);
-                            }}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    );
-                  }}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="email"
+                          placeholder="Digite seu email"
+                          autoComplete="email"
+                          value={field.value}
+                          onChange={field.onChange}
+                          onBlur={field.onBlur}
+                          name={field.name}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
 
                 <FormField
