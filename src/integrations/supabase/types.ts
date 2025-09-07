@@ -1116,6 +1116,10 @@ export type Database = {
           usuario_cadastro_id: string
         }[]
       }
+      get_security_status: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
       get_unread_messages_count: {
         Args: { user_uuid: string }
         Returns: number
