@@ -54,10 +54,8 @@ const DisfagiaApp = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                <User className="h-5 w-5 text-primary-foreground" />
-              </div>
-              <h1 className="text-xl font-semibold text-foreground">DisfagiaMonitor</h1>
+              <img src="/gama-logo.png" alt="Gama Logo" className="h-8 w-8" />
+              <h1 className="text-xl font-semibold text-foreground">Gama - Soluções em Saúde</h1>
             </div>
             <div className="flex items-center space-x-4">
               <span className="text-sm text-muted-foreground">
@@ -1689,10 +1687,8 @@ const DisfagiaApp = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-medical-green rounded-lg flex items-center justify-center">
-                <FileText className="h-5 w-5 text-medical-green-foreground" />
-              </div>
-              <h1 className="text-xl font-semibold text-foreground">DisfagiaMonitor Pro</h1>
+              <img src="/gama-logo.png" alt="Gama Logo" className="h-8 w-8" />
+              <h1 className="text-xl font-semibold text-foreground">Gama - Soluções em Saúde Pro</h1>
             </div>
             <div className="flex items-center space-x-4">
               <span className="text-sm text-muted-foreground">Dra. Fernanda Silva - CRFa 12345-SP</span>

@@ -119,8 +119,13 @@ const AuthForm = () => {
           <div className="w-12 h-12 bg-primary rounded-lg flex items-center justify-center mx-auto mb-4">
             <Stethoscope className="h-6 w-6 text-primary-foreground" />
           </div>
-          <CardTitle className="text-2xl font-bold">
-            {isSignUp ? 'Criar Conta' : 'DisfagiaMonitor'}
+          <CardTitle className="text-2xl font-bold flex items-center justify-center gap-2">
+            {isSignUp ? 'Criar Conta' : (
+              <>
+                <img src="/gama-logo.png" alt="Gama Logo" className="h-6 w-6" />
+                Gama - Soluções em Saúde
+              </>
+            )}
           </CardTitle>
           <CardDescription>
             {isSignUp 
