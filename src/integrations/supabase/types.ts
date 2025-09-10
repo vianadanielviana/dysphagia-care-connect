@@ -1191,6 +1191,10 @@ export type Database = {
         Args: { patient_uuid: string }
         Returns: boolean
       }
+      can_access_patient_secure: {
+        Args: { patient_uuid: string }
+        Returns: boolean
+      }
       can_create_patients: {
         Args: Record<PropertyKey, never>
         Returns: boolean
@@ -1217,6 +1221,10 @@ export type Database = {
         Returns: Json
       }
       get_current_user_role: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
+      get_current_user_type: {
         Args: Record<PropertyKey, never>
         Returns: string
       }
@@ -1306,10 +1314,6 @@ export type Database = {
         Args: { "": unknown[] }
         Returns: number
       }
-      has_legitimate_patient_access: {
-        Args: { patient_uuid: string }
-        Returns: boolean
-      }
       hnsw_bit_support: {
         Args: { "": unknown }
         Returns: unknown
@@ -1325,6 +1329,10 @@ export type Database = {
       hnswhandler: {
         Args: { "": unknown }
         Returns: unknown
+      }
+      is_approved_user: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
       }
       is_authorized_for_patient: {
         Args: { patient_uuid: string }
