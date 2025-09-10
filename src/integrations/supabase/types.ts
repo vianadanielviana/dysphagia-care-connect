@@ -1366,6 +1366,10 @@ export type Database = {
         Args: { "": string } | { "": unknown } | { "": unknown }
         Returns: unknown
       }
+      log_patient_access_simple: {
+        Args: { action_type: string; patient_id: string }
+        Returns: undefined
+      }
       mark_message_as_read: {
         Args: { message_uuid: string; user_uuid: string }
         Returns: boolean
