@@ -329,6 +329,13 @@ export type Database = {
             referencedRelation: "pacientes"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "daily_records_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "pacientes_secure_view"
+            referencedColumns: ["id"]
+          },
         ]
       }
       document_access_log: {
@@ -643,6 +650,13 @@ export type Database = {
             referencedRelation: "pacientes"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "fk_patient_access_log_patient"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "pacientes_secure_view"
+            referencedColumns: ["id"]
+          },
         ]
       }
       patient_assignment_approvals: {
@@ -743,7 +757,6 @@ export type Database = {
           is_admin: boolean | null
           is_approved: boolean
           nome: string | null
-          senha: string | null
           tipo_usuario: string
           updated_at: string
         }
@@ -754,7 +767,6 @@ export type Database = {
           is_admin?: boolean | null
           is_approved?: boolean
           nome?: string | null
-          senha?: string | null
           tipo_usuario: string
           updated_at?: string
         }
@@ -765,7 +777,6 @@ export type Database = {
           is_admin?: boolean | null
           is_approved?: boolean
           nome?: string | null
-          senha?: string | null
           tipo_usuario?: string
           updated_at?: string
         }
@@ -998,6 +1009,13 @@ export type Database = {
             referencedRelation: "pacientes"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "triage_assessments_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "pacientes_secure_view"
+            referencedColumns: ["id"]
+          },
         ]
       }
       users: {
@@ -1116,7 +1134,36 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      pacientes_secure_view: {
+        Row: {
+          access_level: string | null
+          cpf: string | null
+          created_at: string | null
+          data_nascimento: string | null
+          id: string | null
+          nome: string | null
+          status: string | null
+        }
+        Insert: {
+          access_level?: never
+          cpf?: never
+          created_at?: string | null
+          data_nascimento?: never
+          id?: string | null
+          nome?: never
+          status?: string | null
+        }
+        Update: {
+          access_level?: never
+          cpf?: never
+          created_at?: string | null
+          data_nascimento?: never
+          id?: string | null
+          nome?: never
+          status?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       assign_patient_securely: {
@@ -1199,6 +1246,31 @@ export type Database = {
         }[]
       }
       get_patient_data_secure: {
+        Args: { patient_uuid: string }
+        Returns: {
+          access_level: string
+          caregiver_id: string
+          cpf: string
+          created_at: string
+          data_nascimento: string
+          diagnostico: string
+          email: string
+          endereco: string
+          historico_medico: string
+          id: string
+          medicamentos_atuais: string
+          nome: string
+          observacoes: string
+          professional_id: string
+          responsavel_email: string
+          responsavel_nome: string
+          responsavel_telefone: string
+          status: string
+          telefone: string
+          updated_at: string
+        }[]
+      }
+      get_patient_data_secure_enhanced: {
         Args: { patient_uuid: string }
         Returns: {
           access_level: string
@@ -1319,6 +1391,10 @@ export type Database = {
         Args: { message_uuid: string; user_uuid: string }
         Returns: boolean
       }
+      mask_medical_data: {
+        Args: { access_level?: string; field_type?: string; input_data: string }
+        Returns: string
+      }
       mask_sensitive_data: {
         Args: { input_data: string; mask_type?: string }
         Returns: string
@@ -1340,6 +1416,10 @@ export type Database = {
           metadata: Json
           similarity: number
         }[]
+      }
+      monitor_patient_security_violations: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
       }
       secure_match_vector_documents: {
         Args: {
