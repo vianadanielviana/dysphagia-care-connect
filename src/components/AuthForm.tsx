@@ -117,7 +117,7 @@ const AuthForm = () => {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="flex flex-col items-center mb-4">
-            <img src="/gama-logo.png" alt="Gama Logo" className="h-16 w-16 mb-3" />
+            <img src="/lovable-uploads/4fc3d8d5-aa4a-4c2c-9b26-e7162b91a5b6.png" alt="Gama Logo" className="h-16 w-16 mb-3" />
             <CardTitle className="text-2xl font-bold">
               {isSignUp ? 'Criar Conta' : 'Gama - Soluções em Saúde'}
             </CardTitle>

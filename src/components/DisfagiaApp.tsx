@@ -54,7 +54,7 @@ const DisfagiaApp = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-3">
-              <img src="/gama-logo.png" alt="Gama Logo" className="h-8 w-8" />
+              <img src="/lovable-uploads/4fc3d8d5-aa4a-4c2c-9b26-e7162b91a5b6.png" alt="Gama Logo" className="h-8 w-8" />
               <h1 className="text-xl font-semibold text-foreground">Gama - Soluções em Saúde</h1>
             </div>
             <div className="flex items-center space-x-4">
@@ -1687,7 +1687,7 @@ const DisfagiaApp = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-3">
-              <img src="/gama-logo.png" alt="Gama Logo" className="h-8 w-8" />
+              <img src="/lovable-uploads/4fc3d8d5-aa4a-4c2c-9b26-e7162b91a5b6.png" alt="Gama Logo" className="h-8 w-8" />
               <h1 className="text-xl font-semibold text-foreground">Gama - Soluções em Saúde Pro</h1>
             </div>
             <div className="flex items-center space-x-4">
