@@ -91,7 +91,7 @@ const DisfagiaApp = () => {
 
       <nav className="bg-card border-b">
         <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
-          <div className="flex space-x-1 sm:space-x-4 lg:space-x-8 overflow-x-auto">
+          <div className="flex space-x-2 sm:space-x-4 lg:space-x-8 overflow-x-auto scrollbar-hide py-1">
             {['dashboard', 'triagem', 'registro', 'historico', 'comunicacao'].map((view) => (
               <Button
                 key={view}
@@ -105,7 +105,7 @@ const DisfagiaApp = () => {
                   }
                 }}
                 variant="ghost"
-                className={`rounded-none border-b-2 whitespace-nowrap px-2 sm:px-4 text-xs sm:text-sm ${
+                className={`rounded-none border-b-2 whitespace-nowrap px-3 sm:px-4 py-2 text-xs sm:text-sm flex-shrink-0 ${
                   currentView === view 
                     ? 'border-primary text-primary' 
                     : 'border-transparent text-muted-foreground hover:text-foreground hover:border-muted'
@@ -123,7 +123,7 @@ const DisfagiaApp = () => {
             <Button
               onClick={() => navigate('/pacientes')}
               variant="ghost"
-              className="rounded-none border-b-2 border-transparent text-muted-foreground hover:text-foreground hover:border-muted whitespace-nowrap px-2 sm:px-4 text-xs sm:text-sm"
+              className="rounded-none border-b-2 border-transparent text-muted-foreground hover:text-foreground hover:border-muted whitespace-nowrap px-3 sm:px-4 py-2 text-xs sm:text-sm flex-shrink-0"
             >
               Pacientes
             </Button>
