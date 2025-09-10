@@ -92,11 +92,11 @@ const DisfagiaApp = () => {
       <nav className="bg-card border-b">
         <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
           <div className="flex space-x-2 sm:space-x-4 lg:space-x-8 overflow-x-auto scrollbar-hide py-1">
-            {['dashboard', 'triagem', 'registro', 'historico', 'comunicacao'].map((view) => (
+            {['dashboard', 'radi', 'registro', 'historico', 'comunicacao'].map((view) => (
               <Button
                 key={view}
                 onClick={() => {
-                  if (view === 'triagem') {
+                  if (view === 'radi') {
                     setCurrentView('patient-selection');
                   } else if (view === 'registro') {
                     setCurrentView('patient-selection-registro');
@@ -112,7 +112,7 @@ const DisfagiaApp = () => {
                 }`}
               >
                 {view === 'dashboard' && 'Resumo'}
-                {view === 'triagem' && 'RaDI'}
+                {view === 'radi' && 'RaDI'}
                 {view === 'registro' && <span className="hidden sm:inline">Registro Diário</span>}
                 {view === 'registro' && <span className="sm:hidden">Registro</span>}
                 {view === 'historico' && 'Histórico'}
@@ -136,7 +136,7 @@ const DisfagiaApp = () => {
         {currentView === 'patient-selection' && <PatientSelection />}
         {currentView === 'patient-selection-view' && <PatientSelectionForView />}
         {currentView === 'patient-selection-registro' && <PatientSelectionForRegistro />}
-        {currentView === 'triagem' && <RaDIForm />}
+        {currentView === 'radi' && <RaDIForm />}
         {currentView === 'registro' && <DailyRecordForm />}
         {currentView === 'historico' && <HistoryView />}
         {currentView === 'comunicacao' && <CommunicationView />}
@@ -739,7 +739,7 @@ const DisfagiaApp = () => {
 
     const handleSelectPatient = (patient: any) => {
       setSelectedPatient(patient);
-      setCurrentView('triagem');
+      setCurrentView('radi');
     };
 
     if (loading) {
