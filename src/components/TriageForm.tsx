@@ -19,19 +19,18 @@ interface TriageFormProps {
 }
 
 interface TriageAnswers {
-  // Step 1 - Observações durante refeição
-  cough_during_eating: number;
-  frequent_choking: number;
-  wet_voice_after_eating: number;
-  slow_swallowing: number;
-  food_residue_in_mouth: number;
+  // Step 1 - Questões RaDI 1-5
+  cough_when_drinking_water: number;
+  difficulty_swallowing_saliva: number;
+  difficulty_swallowing_solids: number;
+  throat_clearing_after_swallowing: number;
+  voice_changes_after_swallowing: number;
   
-  // Step 2 - Sintomas gerais  
-  recent_weight_loss: number;
-  pneumonia_last_6_months: number;
-  avoids_foods: number;
-  avoided_foods_description: string;
-  pain_swallowing: number;
+  // Step 2 - Questões RaDI 6-9  
+  choking_after_swallowing: number;
+  pneumonia_after_choking: number;
+  tiredness_after_eating: number;
+  pain_when_swallowing: number;
   
   // Step 3 - Observações
   additional_observations: string;
@@ -41,7 +40,6 @@ const TriageForm: React.FC<TriageFormProps> = ({ patient, onComplete, onBack }) 
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [answers, setAnswers] = useState<Partial<TriageAnswers>>({
-    avoided_foods_description: '',
     additional_observations: ''
   });
   const { toast } = useToast();
@@ -49,21 +47,21 @@ const TriageForm: React.FC<TriageFormProps> = ({ patient, onComplete, onBack }) 
   const totalSteps = 3;
   const progress = (currentStep / totalSteps) * 100;
 
-  // Questões do Step 1
+  // Questões do Step 1 - RaDI 1-5
   const step1Questions = [
-    { key: 'cough_during_eating', label: 'Tosse durante ou após comer?', icon: '🤧' },
-    { key: 'frequent_choking', label: 'Engasgo frequente?', icon: '😵' },
-    { key: 'wet_voice_after_eating', label: 'Voz fica "molhada" após comer?', icon: '🗣️' },
-    { key: 'slow_swallowing', label: 'Demora muito para engolir?', icon: '⏱️' },
-    { key: 'food_residue_in_mouth', label: 'Deixa restos de comida na boca?', icon: '🍽️' }
+    { key: 'cough_when_drinking_water', label: 'Tosse quando bebe água?', icon: '💧' },
+    { key: 'difficulty_swallowing_saliva', label: 'Tem dificuldade para engolir a saliva?', icon: '😣' },
+    { key: 'difficulty_swallowing_solids', label: 'Tem dificuldade para engolir alimentos sólidos?', icon: '🍽️' },
+    { key: 'throat_clearing_after_swallowing', label: 'Tem pigarro depois de engolir?', icon: '😤' },
+    { key: 'voice_changes_after_swallowing', label: 'Sua voz modifica depois de engolir?', icon: '🗣️' }
   ];
 
-  // Questões do Step 2
+  // Questões do Step 2 - RaDI 6-9
   const step2Questions = [
-    { key: 'recent_weight_loss', label: 'Perdeu peso recentemente?', icon: '⚖️', type: 'boolean' },
-    { key: 'pneumonia_last_6_months', label: 'Teve pneumonia nos últimos 6 meses?', icon: '🫁', type: 'boolean' },
-    { key: 'avoids_foods', label: 'Evita alguns alimentos?', icon: '🚫', type: 'boolean' },
-    { key: 'pain_swallowing', label: 'Sente dor ao engolir?', icon: '😣' }
+    { key: 'choking_after_swallowing', label: 'Tem engasgo depois de engolir?', icon: '😵' },
+    { key: 'pneumonia_after_choking', label: 'Teve pneumonia depois de algum engasgo?', icon: '🫁' },
+    { key: 'tiredness_after_eating', label: 'Sente cansaço depois de comer?', icon: '😴' },
+    { key: 'pain_when_swallowing', label: 'Sente dor ao engolir?', icon: '😣' }
   ];
 
   const handleAnswerChange = (questionKey: string, value: number | string) => {
@@ -76,26 +74,16 @@ const TriageForm: React.FC<TriageFormProps> = ({ patient, onComplete, onBack }) 
   const calculateRiskScore = () => {
     let score = 0;
     
-    // Step 1 questions (0=Não, 1=Às vezes, 2=Sim)
-    step1Questions.forEach(q => {
+    // All RaDI questions are yes/no (0=Não, 1=Sim)
+    // Count all "Sim" answers
+    const allQuestions = [...step1Questions, ...step2Questions];
+    
+    allQuestions.forEach(q => {
       const answer = answers[q.key as keyof TriageAnswers];
-      if (typeof answer === 'number') {
-        score += answer;
+      if (answer === 1) { // "Sim"
+        score += 1;
       }
     });
-
-    // Step 2 questions (except avoids_foods which is handled separately)
-    ['recent_weight_loss', 'pneumonia_last_6_months', 'pain_swallowing'].forEach(key => {
-      const answer = answers[key as keyof TriageAnswers];
-      if (answer === 2 || answer === 1) { // Sim or Às vezes
-        score += key === 'pneumonia_last_6_months' ? 3 : 2; // Pneumonia has higher weight
-      }
-    });
-
-    // Avoids foods
-    if (answers.avoids_foods === 1) { // Sim
-      score += 2;
-    }
 
     return score;
   };
@@ -140,9 +128,8 @@ const TriageForm: React.FC<TriageFormProps> = ({ patient, onComplete, onBack }) 
     }
     
     if (currentStep === 2) {
-      const requiredAnswers = ['recent_weight_loss', 'pneumonia_last_6_months', 'avoids_foods', 'pain_swallowing'];
-      return requiredAnswers.every(key => 
-        answers[key as keyof TriageAnswers] !== undefined
+      return step2Questions.every(q => 
+        answers[q.key as keyof TriageAnswers] !== undefined
       );
     }
     
@@ -175,7 +162,7 @@ const TriageForm: React.FC<TriageFormProps> = ({ patient, onComplete, onBack }) 
       const answersToSave = Object.entries(answers)
         .filter(([key, value]) => 
           typeof value === 'number' && 
-          !['avoided_foods_description', 'additional_observations'].includes(key)
+          key !== 'additional_observations'
         )
         .map(([questionId, answerValue]) => ({
           assessment_id: assessment.id,
@@ -220,10 +207,10 @@ const TriageForm: React.FC<TriageFormProps> = ({ patient, onComplete, onBack }) 
     <div className="space-y-6">
       <div className="text-center mb-6">
         <h3 className="text-lg font-semibold text-foreground mb-2">
-          Observações Durante a Refeição
+          Questões RaDI - Parte 1
         </h3>
         <p className="text-muted-foreground">
-          Avalie os sintomas observados durante as refeições
+          Responda as questões do rastreamento de disfagia
         </p>
       </div>
 
@@ -244,11 +231,7 @@ const TriageForm: React.FC<TriageFormProps> = ({ patient, onComplete, onBack }) 
             </div>
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="1" id={`${question.key}-1`} />
-              <Label htmlFor={`${question.key}-1`}>Às vezes</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="2" id={`${question.key}-2`} />
-              <Label htmlFor={`${question.key}-2`}>Sim</Label>
+              <Label htmlFor={`${question.key}-1`}>Sim</Label>
             </div>
           </RadioGroup>
         </Card>
@@ -260,10 +243,10 @@ const TriageForm: React.FC<TriageFormProps> = ({ patient, onComplete, onBack }) 
     <div className="space-y-6">
       <div className="text-center mb-6">
         <h3 className="text-lg font-semibold text-foreground mb-2">
-          Sintomas Gerais
+          Questões RaDI - Parte 2
         </h3>
         <p className="text-muted-foreground">
-          Informações sobre o estado geral de saúde
+          Continue respondendo as questões do rastreamento
         </p>
       </div>
 
@@ -278,49 +261,15 @@ const TriageForm: React.FC<TriageFormProps> = ({ patient, onComplete, onBack }) 
             value={answers[question.key as keyof TriageAnswers]?.toString() || ''}
             onValueChange={(value) => handleAnswerChange(question.key, parseInt(value))}
           >
-            {question.type === 'boolean' ? (
-              <>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="0" id={`${question.key}-0`} />
-                  <Label htmlFor={`${question.key}-0`}>Não</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="1" id={`${question.key}-1`} />
-                  <Label htmlFor={`${question.key}-1`}>Sim</Label>
-                </div>
-              </>
-            ) : (
-              <>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="0" id={`${question.key}-0`} />
-                  <Label htmlFor={`${question.key}-0`}>Não</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="1" id={`${question.key}-1`} />
-                  <Label htmlFor={`${question.key}-1`}>Às vezes</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="2" id={`${question.key}-2`} />
-                  <Label htmlFor={`${question.key}-2`}>Sim</Label>
-                </div>
-              </>
-            )}
-          </RadioGroup>
-
-          {question.key === 'avoids_foods' && answers.avoids_foods === 1 && (
-            <div className="mt-4">
-              <Label htmlFor="avoided-foods" className="text-sm font-medium">
-                Quais alimentos evita?
-              </Label>
-              <Textarea
-                id="avoided-foods"
-                placeholder="Descreva quais alimentos são evitados e por quê..."
-                value={answers.avoided_foods_description || ''}
-                onChange={(e) => handleAnswerChange('avoided_foods_description', e.target.value)}
-                className="mt-2"
-              />
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="0" id={`${question.key}-0`} />
+              <Label htmlFor={`${question.key}-0`}>Não</Label>
             </div>
-          )}
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="1" id={`${question.key}-1`} />
+              <Label htmlFor={`${question.key}-1`}>Sim</Label>
+            </div>
+          </RadioGroup>
         </Card>
       ))}
     </div>
@@ -440,8 +389,8 @@ const TriageForm: React.FC<TriageFormProps> = ({ patient, onComplete, onBack }) 
         <Progress value={progress} className="h-2" />
         
         <div className="flex justify-between text-sm text-muted-foreground mt-2">
-          <span>Observações</span>
-          <span>Sintomas</span>
+          <span>RaDI 1-5</span>
+          <span>RaDI 6-9</span>
           <span>Evidências</span>
         </div>
       </div>
