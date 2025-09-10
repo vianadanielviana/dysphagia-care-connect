@@ -55,11 +55,14 @@ const DisfagiaApp = () => {
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-3">
               <img src="/lovable-uploads/4fc3d8d5-aa4a-4c2c-9b26-e7162b91a5b6.png" alt="Gama Logo" className="h-8 w-8" />
-              <h1 className="text-xl font-semibold text-foreground">Gama - Soluções em Saúde</h1>
+              <h1 className="text-sm sm:text-lg md:text-xl font-normal text-foreground truncate">Gama - Soluções em Saúde</h1>
             </div>
-            <div className="flex items-center space-x-4">
-              <span className="text-sm text-muted-foreground">
+            <div className="flex items-center space-x-2 sm:space-x-4">
+              <span className="text-xs sm:text-sm text-muted-foreground hidden sm:block">
                 {profile?.tipo_usuario === 'fonoaudiologo' ? 'Fonoaudiólogo' : 'Cuidador'}: {profile?.nome}
+              </span>
+              <span className="text-xs text-muted-foreground block sm:hidden">
+                {profile?.nome}
               </span>
               {isAdmin && (
                 <Button 
@@ -67,8 +70,8 @@ const DisfagiaApp = () => {
                   variant="ghost"
                   size="sm"
                 >
-                  <Settings className="h-4 w-4 mr-2" />
-                  Admin
+                  <Settings className="h-4 w-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Admin</span>
                 </Button>
               )}
               <Button 
@@ -76,8 +79,8 @@ const DisfagiaApp = () => {
                 variant="ghost"
                 size="sm"
               >
-                <LogOut className="h-4 w-4 mr-2" />
-                Sair
+                <LogOut className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Sair</span>
               </Button>
             </div>
           </div>
@@ -1687,16 +1690,18 @@ const DisfagiaApp = () => {
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-3">
               <img src="/lovable-uploads/4fc3d8d5-aa4a-4c2c-9b26-e7162b91a5b6.png" alt="Gama Logo" className="h-8 w-8" />
-              <h1 className="text-xl font-semibold text-foreground">Gama - Soluções em Saúde Pro</h1>
+              <h1 className="text-sm sm:text-lg md:text-xl font-normal text-foreground truncate">Gama - Soluções em Saúde Pro</h1>
             </div>
-            <div className="flex items-center space-x-4">
-              <span className="text-sm text-muted-foreground">Dra. Fernanda Silva - CRFa 12345-SP</span>
+            <div className="flex items-center space-x-2 sm:space-x-4">
+              <span className="text-xs sm:text-sm text-muted-foreground hidden sm:block">Dra. Fernanda Silva - CRFa 12345-SP</span>
+              <span className="text-xs text-muted-foreground block sm:hidden">Dra. Fernanda</span>
               <Button 
                 onClick={() => setCurrentView('login')}
                 variant="ghost"
                 size="sm"
               >
-                Sair
+                <span className="hidden sm:inline">Sair</span>
+                <span className="sm:hidden">🚪</span>
               </Button>
             </div>
           </div>
