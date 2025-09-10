@@ -1,0 +1,5 @@
+// public/env.js
+window.__ENV__ = {
+  VITE_SUPABASE_URL: 'https://lodpbrcaxnktfbdbsfyz.supabase.co',
+  VITE_SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxvZHBicmNheG5rdGZiZGJzZnl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc4MjUzNzMsImV4cCI6MjA2MzQwMTM3M30._n8XW_NNSRNZ9NDoj7IWD8zGywG2UVpql85oKHW0Ta4',
+};
