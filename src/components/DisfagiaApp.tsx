@@ -53,31 +53,36 @@ const DisfagiaApp = () => {
       <header className="bg-card shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-3">
-              <img src="/lovable-uploads/4fc3d8d5-aa4a-4c2c-9b26-e7162b91a5b6.png" alt="Gama Logo" className="h-8 w-8" />
-              <h1 className="text-xl font-semibold text-foreground">Gama - Soluções em Saúde</h1>
+            <div className="flex items-center space-x-2 sm:space-x-3">
+              <img src="/lovable-uploads/4fc3d8d5-aa4a-4c2c-9b26-e7162b91a5b6.png" alt="Gama Logo" className="h-6 w-6 sm:h-8 sm:w-8" />
+              <h1 className="text-sm lg:text-lg xl:text-xl font-normal text-foreground truncate">Gama - Soluções em Saúde</h1>
             </div>
-            <div className="flex items-center space-x-4">
-              <span className="text-sm text-muted-foreground">
+            <div className="flex items-center space-x-2 sm:space-x-4">
+              <span className="hidden sm:inline text-sm text-muted-foreground truncate">
                 {profile?.tipo_usuario === 'fonoaudiologo' ? 'Fonoaudiólogo' : 'Cuidador'}: {profile?.nome}
+              </span>
+              <span className="sm:hidden text-xs text-muted-foreground">
+                {profile?.nome?.split(' ')[0]}
               </span>
               {isAdmin && (
                 <Button 
                   onClick={() => navigate('/admin/usuarios')}
                   variant="ghost"
                   size="sm"
+                  className="p-2 sm:px-3"
                 >
-                  <Settings className="h-4 w-4 mr-2" />
-                  Admin
+                  <Settings className="h-4 w-4" />
+                  <span className="hidden sm:ml-2 sm:inline">Admin</span>
                 </Button>
               )}
               <Button 
                 onClick={signOut}
                 variant="ghost"
                 size="sm"
+                className="p-2 sm:px-3"
               >
-                <LogOut className="h-4 w-4 mr-2" />
-                Sair
+                <LogOut className="h-4 w-4" />
+                <span className="hidden sm:ml-2 sm:inline">Sair</span>
               </Button>
             </div>
           </div>
@@ -85,8 +90,8 @@ const DisfagiaApp = () => {
       </header>
 
       <nav className="bg-card border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex space-x-8">
+        <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
+          <div className="flex space-x-1 sm:space-x-4 lg:space-x-8 overflow-x-auto">
             {['dashboard', 'triagem', 'registro', 'historico', 'comunicacao'].map((view) => (
               <Button
                 key={view}
@@ -100,7 +105,7 @@ const DisfagiaApp = () => {
                   }
                 }}
                 variant="ghost"
-                className={`rounded-none border-b-2 ${
+                className={`rounded-none border-b-2 whitespace-nowrap px-2 sm:px-4 text-xs sm:text-sm ${
                   currentView === view 
                     ? 'border-primary text-primary' 
                     : 'border-transparent text-muted-foreground hover:text-foreground hover:border-muted'
@@ -108,15 +113,17 @@ const DisfagiaApp = () => {
               >
                 {view === 'dashboard' && 'Resumo'}
                 {view === 'triagem' && 'RaDI'}
-                {view === 'registro' && 'Registro Diário'}
+                {view === 'registro' && <span className="hidden sm:inline">Registro Diário</span>}
+                {view === 'registro' && <span className="sm:hidden">Registro</span>}
                 {view === 'historico' && 'Histórico'}
-                {view === 'comunicacao' && 'Comunicação'}
+                {view === 'comunicacao' && <span className="hidden sm:inline">Comunicação</span>}
+                {view === 'comunicacao' && <span className="sm:hidden">Chat</span>}
               </Button>
             ))}
             <Button
               onClick={() => navigate('/pacientes')}
               variant="ghost"
-              className="rounded-none border-b-2 border-transparent text-muted-foreground hover:text-foreground hover:border-muted"
+              className="rounded-none border-b-2 border-transparent text-muted-foreground hover:text-foreground hover:border-muted whitespace-nowrap px-2 sm:px-4 text-xs sm:text-sm"
             >
               Pacientes
             </Button>
