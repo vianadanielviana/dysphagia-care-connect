@@ -173,13 +173,6 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "communications_patient_id_fkey"
-            columns: ["patient_id"]
-            isOneToOne: false
-            referencedRelation: "patients"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "communications_receiver_id_fkey"
             columns: ["receiver_id"]
             isOneToOne: false
@@ -741,54 +734,6 @@ export type Database = {
           patient_id?: string
         }
         Relationships: []
-      }
-      patients: {
-        Row: {
-          age: number
-          caregiver_id: string | null
-          created_at: string | null
-          current_risk_level: Database["public"]["Enums"]["risk_level"] | null
-          id: string
-          name: string
-          professional_id: string | null
-          updated_at: string | null
-        }
-        Insert: {
-          age: number
-          caregiver_id?: string | null
-          created_at?: string | null
-          current_risk_level?: Database["public"]["Enums"]["risk_level"] | null
-          id?: string
-          name: string
-          professional_id?: string | null
-          updated_at?: string | null
-        }
-        Update: {
-          age?: number
-          caregiver_id?: string | null
-          created_at?: string | null
-          current_risk_level?: Database["public"]["Enums"]["risk_level"] | null
-          id?: string
-          name?: string
-          professional_id?: string | null
-          updated_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "patients_caregiver_id_fkey"
-            columns: ["caregiver_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "patients_professional_id_fkey"
-            columns: ["professional_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       profiles: {
         Row: {

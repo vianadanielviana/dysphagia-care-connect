@@ -946,17 +946,16 @@ const DisfagiaApp = () => {
 
           if (answersError) throw answersError;
 
-          // Update patient's current risk level if patients table exists
+          // Update patient status in pacientes table (fixed to use correct table)
           try {
             const { error: patientError } = await supabase
-              .from('patients')
-              .update({ current_risk_level: riskLevel })
+              .from('pacientes')
+              .update({ status: 'ativo' }) // Update available column
               .eq('id', selectedPatient.id);
             
-            // Ignore error if patients table doesn't exist or patient not found
-            if (patientError) console.warn('Could not update patient risk level:', patientError);
+            if (patientError) console.warn('Could not update patient status:', patientError);
           } catch (err) {
-            console.warn('Patients table may not exist:', err);
+            console.warn('Error updating patient status:', err);
           }
 
           setTriageData({ totalScore, riskLevel, answers: newAnswers, date: new Date().toISOString(), patient: selectedPatient });
