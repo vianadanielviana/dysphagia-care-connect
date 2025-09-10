@@ -20,17 +20,17 @@ interface TriageFormProps {
 
 interface TriageAnswers {
   // Step 1 - Questões RaDI 1-5
-  cough_when_drinking_water: number;
-  difficulty_swallowing_saliva: number;
-  difficulty_swallowing_solids: number;
+  multiple_swallows_needed: number;
+  effort_to_swallow: number;
+  pain_when_swallowing: number;
+  weight_loss_difficulty_swallowing: number;
   throat_clearing_after_swallowing: number;
-  voice_changes_after_swallowing: number;
   
   // Step 2 - Questões RaDI 6-9  
+  voice_changes_after_swallowing: number;
   choking_after_swallowing: number;
   pneumonia_after_choking: number;
   tiredness_after_eating: number;
-  pain_when_swallowing: number;
   
   // Step 3 - Observações
   additional_observations: string;
@@ -49,19 +49,19 @@ const TriageForm: React.FC<TriageFormProps> = ({ patient, onComplete, onBack }) 
 
   // Questões do Step 1 - RaDI 1-5
   const step1Questions = [
-    { key: 'cough_when_drinking_water', label: 'Tosse quando bebe água?', icon: '💧' },
-    { key: 'difficulty_swallowing_saliva', label: 'Tem dificuldade para engolir a saliva?', icon: '😣' },
-    { key: 'difficulty_swallowing_solids', label: 'Tem dificuldade para engolir alimentos sólidos?', icon: '🍽️' },
-    { key: 'throat_clearing_after_swallowing', label: 'Tem pigarro depois de engolir?', icon: '😤' },
-    { key: 'voice_changes_after_swallowing', label: 'Sua voz modifica depois de engolir?', icon: '🗣️' }
+    { key: 'multiple_swallows_needed', label: 'Precisa engolir muitas vezes o alimento para fazê-lo descer?', icon: '🔄' },
+    { key: 'effort_to_swallow', label: 'Faz esforço para engolir?', icon: '💪' },
+    { key: 'pain_when_swallowing', label: 'Sente dor ao engolir?', icon: '😣' },
+    { key: 'weight_loss_difficulty_swallowing', label: 'Perdeu peso por ter dificuldade de engolir?', icon: '⚖️' },
+    { key: 'throat_clearing_after_swallowing', label: 'Tem pigarro depois de engolir?', icon: '😤' }
   ];
 
   // Questões do Step 2 - RaDI 6-9
   const step2Questions = [
+    { key: 'voice_changes_after_swallowing', label: 'Sua voz modifica depois de engolir?', icon: '🗣️' },
     { key: 'choking_after_swallowing', label: 'Tem engasgo depois de engolir?', icon: '😵' },
     { key: 'pneumonia_after_choking', label: 'Teve pneumonia depois de algum engasgo?', icon: '🫁' },
-    { key: 'tiredness_after_eating', label: 'Sente cansaço depois de comer?', icon: '😴' },
-    { key: 'pain_when_swallowing', label: 'Sente dor ao engolir?', icon: '😣' }
+    { key: 'tiredness_after_eating', label: 'Sente cansaço depois de comer?', icon: '😴' }
   ];
 
   const handleAnswerChange = (questionKey: string, value: number | string) => {
