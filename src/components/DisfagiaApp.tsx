@@ -138,15 +138,11 @@ const DisfagiaApp = () => {
         {currentView === 'patient-selection-view' && <PatientSelectionForView />}
         {currentView === 'patient-selection-registro' && <PatientSelectionForRegistro />}
         {currentView === 'radi' && (
-          <div>
-            {console.log('RENDERIZANDO RADI - selectedPatient:', selectedPatient)}
-            {console.log('RENDERIZANDO RADI - currentView:', currentView)}
-            <TriageForm 
-              patient={selectedPatient}
-              onComplete={() => setCurrentView('dashboard')}
-              onBack={() => setCurrentView('patient-selection')}
-            />
-          </div>
+          <TriageForm 
+            patient={selectedPatient}
+            onComplete={() => setCurrentView('dashboard')}
+            onBack={() => setCurrentView('patient-selection')}
+          />
         )}
         {currentView === 'registro' && <DailyRecordForm />}
         {currentView === 'historico' && <HistoryView />}
@@ -854,16 +850,15 @@ const DisfagiaApp = () => {
     );
   };
 
-  console.log('Debug: selectedPatient =', selectedPatient);
-  console.log('Debug: currentView =', currentView);
-
-
-    if (!selectedPatient) {
-      setCurrentView('patient-selection');
-      return null;
-    }
-
-    const questions = [
+  const DailyRecordForm = () => {
+    const [formData, setFormData] = useState({
+      sintomas: [] as string[],
+      consistencia: 'normal' as 'liquida_fina' | 'pastosa' | 'normal',
+      observacoes: '',
+    });
+    const [photoUrls, setPhotoUrls] = useState<string[]>([]);
+    const [loading, setLoading] = useState(false);
+    const { toast } = useToast();
       {
         id: 'tosse',
         question: 'O paciente tosse ou engasga durante ou após as refeições?',
