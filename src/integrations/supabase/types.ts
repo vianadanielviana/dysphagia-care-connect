@@ -1145,6 +1145,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }
+      emergency_security_check: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
       get_assignment_security_status: {
         Args: Record<PropertyKey, never>
         Returns: Json
