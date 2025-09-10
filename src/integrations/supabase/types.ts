@@ -329,13 +329,6 @@ export type Database = {
             referencedRelation: "pacientes"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "daily_records_patient_id_fkey"
-            columns: ["patient_id"]
-            isOneToOne: false
-            referencedRelation: "pacientes_secure_view"
-            referencedColumns: ["id"]
-          },
         ]
       }
       document_access_log: {
@@ -648,13 +641,6 @@ export type Database = {
             columns: ["patient_id"]
             isOneToOne: false
             referencedRelation: "pacientes"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_patient_access_log_patient"
-            columns: ["patient_id"]
-            isOneToOne: false
-            referencedRelation: "pacientes_secure_view"
             referencedColumns: ["id"]
           },
         ]
@@ -1009,13 +995,6 @@ export type Database = {
             referencedRelation: "pacientes"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "triage_assessments_patient_id_fkey"
-            columns: ["patient_id"]
-            isOneToOne: false
-            referencedRelation: "pacientes_secure_view"
-            referencedColumns: ["id"]
-          },
         ]
       }
       users: {
@@ -1134,36 +1113,7 @@ export type Database = {
       }
     }
     Views: {
-      pacientes_secure_view: {
-        Row: {
-          access_level: string | null
-          cpf: string | null
-          created_at: string | null
-          data_nascimento: string | null
-          id: string | null
-          nome: string | null
-          status: string | null
-        }
-        Insert: {
-          access_level?: never
-          cpf?: never
-          created_at?: string | null
-          data_nascimento?: never
-          id?: string | null
-          nome?: never
-          status?: string | null
-        }
-        Update: {
-          access_level?: never
-          cpf?: never
-          created_at?: string | null
-          data_nascimento?: never
-          id?: string | null
-          nome?: never
-          status?: string | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
       assign_patient_securely: {
@@ -1243,6 +1193,18 @@ export type Database = {
           telefone: string
           updated_at: string
           usuario_cadastro_id: string
+        }[]
+      }
+      get_pacientes_secure_list: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          access_level: string
+          cpf: string
+          created_at: string
+          data_nascimento: string
+          id: string
+          nome: string
+          status: string
         }[]
       }
       get_patient_data_secure: {
