@@ -129,7 +129,7 @@ const DisfagiaApp = () => {
         {currentView === 'patient-selection' && <PatientSelection />}
         {currentView === 'patient-selection-view' && <PatientSelectionForView />}
         {currentView === 'patient-selection-registro' && <PatientSelectionForRegistro />}
-        {currentView === 'triagem' && <TriagemForm />}
+        {currentView === 'triagem' && <RaDIForm />}
         {currentView === 'registro' && <DailyRecordForm />}
         {currentView === 'historico' && <HistoryView />}
         {currentView === 'comunicacao' && <CommunicationView />}
@@ -174,16 +174,16 @@ const DisfagiaApp = () => {
 
         setTriageHistory(formattedData);
       } catch (error) {
-        console.error('Erro ao buscar histórico de triagens:', error);
+        console.error('Erro ao buscar histórico de RaDI:', error);
       } finally {
         setLoadingTriageHistory(false);
       }
     };
 
-    // Calculate current status from latest triage or triageData
+    // Calculate current status from latest RaDI or triageData
     const getCurrentStatus = () => {
-      const latestTriage = triageHistory[0];
-      const currentRisk = latestTriage?.riskLevel || triageData.riskLevel;
+      const latestRaDI = triageHistory[0];
+      const currentRisk = latestRaDI?.riskLevel || triageData.riskLevel;
       
       if (!currentRisk) return { level: 'Não avaliado', color: 'text-muted-foreground', icon: AlertTriangle };
       
@@ -200,9 +200,9 @@ const DisfagiaApp = () => {
 
     // Get the latest evaluation date
     const getLastEvaluation = () => {
-      const latestTriage = triageHistory[0];
-      if (latestTriage) {
-        return latestTriage.date;
+      const latestRaDI = triageHistory[0];
+      if (latestRaDI) {
+        return latestRaDI.date;
       }
       if (triageData.date) {
         return new Date(triageData.date).toLocaleDateString('pt-BR');
@@ -227,10 +227,10 @@ const DisfagiaApp = () => {
       if (loadingTriageHistory) return [];
       
       if (triageHistory.length > 0) {
-        return triageHistory.slice(0, 7).reverse(); // Show last 7 triages
+        return triageHistory.slice(0, 7).reverse(); // Show last 7 RaDI
       }
       
-      // Fallback to sample data if no triages yet
+      // Fallback to sample data if no RaDI yet
       return dailyRecords.slice(-7);
     };
 
@@ -834,7 +834,7 @@ const DisfagiaApp = () => {
     );
   };
 
-  const TriagemForm = () => {
+  const RaDIForm = () => {
     const [currentQuestion, setCurrentQuestion] = useState(0);
     const [answers, setAnswers] = useState<Record<string, number>>({});
     const { toast } = useToast();
@@ -918,7 +918,7 @@ const DisfagiaApp = () => {
 
         // Save the result to database
         try {
-          // Create triage assessment
+          // Create RaDI assessment
           const { data: assessment, error: assessmentError } = await supabase
             .from('triage_assessments')
             .insert({

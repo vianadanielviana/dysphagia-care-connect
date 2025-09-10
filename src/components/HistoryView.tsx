@@ -102,7 +102,7 @@ const HistoryView: React.FC<HistoryViewProps> = ({ selectedPatient }) => {
       console.error('Erro ao buscar histórico:', error);
       toast({
         title: "Erro",
-        description: "Erro ao carregar histórico de triagens",
+        description: "Erro ao carregar histórico de RaDI",
         variant: "destructive",
       });
     } finally {
@@ -206,7 +206,7 @@ const HistoryView: React.FC<HistoryViewProps> = ({ selectedPatient }) => {
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `historico-triagens-${selectedPatient.nome}.csv`;
+    a.download = `historico-radi-${selectedPatient.nome}.csv`;
     a.click();
     window.URL.revokeObjectURL(url);
 
