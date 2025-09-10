@@ -336,6 +336,13 @@ export type Database = {
             referencedRelation: "pacientes"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "daily_records_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients_secure_view"
+            referencedColumns: ["id"]
+          },
         ]
       }
       document_access_log: {
@@ -648,6 +655,13 @@ export type Database = {
             columns: ["patient_id"]
             isOneToOne: false
             referencedRelation: "pacientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_patient_access_log_patient"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients_secure_view"
             referencedColumns: ["id"]
           },
         ]
@@ -1053,6 +1067,13 @@ export type Database = {
             referencedRelation: "pacientes"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "triage_assessments_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients_secure_view"
+            referencedColumns: ["id"]
+          },
         ]
       }
       users: {
@@ -1171,7 +1192,72 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      patients_secure_view: {
+        Row: {
+          caregiver_id: string | null
+          cpf: string | null
+          created_at: string | null
+          data_nascimento: string | null
+          diagnostico: string | null
+          email: string | null
+          endereco: string | null
+          historico_medico: string | null
+          id: string | null
+          medicamentos_atuais: string | null
+          nome: string | null
+          observacoes: string | null
+          professional_id: string | null
+          responsavel_email: string | null
+          responsavel_nome: string | null
+          responsavel_telefone: string | null
+          status: string | null
+          telefone: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          caregiver_id?: string | null
+          cpf?: never
+          created_at?: string | null
+          data_nascimento?: never
+          diagnostico?: never
+          email?: never
+          endereco?: never
+          historico_medico?: never
+          id?: string | null
+          medicamentos_atuais?: never
+          nome?: string | null
+          observacoes?: string | null
+          professional_id?: string | null
+          responsavel_email?: never
+          responsavel_nome?: string | null
+          responsavel_telefone?: never
+          status?: string | null
+          telefone?: never
+          updated_at?: string | null
+        }
+        Update: {
+          caregiver_id?: string | null
+          cpf?: never
+          created_at?: string | null
+          data_nascimento?: never
+          diagnostico?: never
+          email?: never
+          endereco?: never
+          historico_medico?: never
+          id?: string | null
+          medicamentos_atuais?: never
+          nome?: string | null
+          observacoes?: string | null
+          professional_id?: string | null
+          responsavel_email?: never
+          responsavel_nome?: string | null
+          responsavel_telefone?: never
+          status?: string | null
+          telefone?: never
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       assign_patient_securely: {
