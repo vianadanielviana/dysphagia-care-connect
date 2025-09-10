@@ -16,6 +16,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import PhotoCapture from '@/components/PhotoCapture';
+import TriageForm from '@/components/TriageForm';
 
 interface TriageData {
   totalScore?: number;
@@ -136,7 +137,17 @@ const DisfagiaApp = () => {
         {currentView === 'patient-selection' && <PatientSelection />}
         {currentView === 'patient-selection-view' && <PatientSelectionForView />}
         {currentView === 'patient-selection-registro' && <PatientSelectionForRegistro />}
-        {currentView === 'radi' && <RaDIForm />}
+        {currentView === 'radi' && (
+          <div>
+            {console.log('RENDERIZANDO RADI - selectedPatient:', selectedPatient)}
+            {console.log('RENDERIZANDO RADI - currentView:', currentView)}
+            <TriageForm 
+              patient={selectedPatient}
+              onComplete={() => setCurrentView('dashboard')}
+              onBack={() => setCurrentView('patient-selection')}
+            />
+          </div>
+        )}
         {currentView === 'registro' && <DailyRecordForm />}
         {currentView === 'historico' && <HistoryView />}
         {currentView === 'comunicacao' && <CommunicationView />}
@@ -738,7 +749,9 @@ const DisfagiaApp = () => {
     };
 
     const handleSelectPatient = (patient: any) => {
+      console.log('SELECTING PATIENT:', patient);
       setSelectedPatient(patient);
+      console.log('SETTING CURRENT VIEW TO radi');
       setCurrentView('radi');
     };
 
@@ -841,10 +854,9 @@ const DisfagiaApp = () => {
     );
   };
 
-  const RaDIForm = () => {
-    const [currentQuestion, setCurrentQuestion] = useState(0);
-    const [answers, setAnswers] = useState<Record<string, number>>({});
-    const { toast } = useToast();
+  console.log('Debug: selectedPatient =', selectedPatient);
+  console.log('Debug: currentView =', currentView);
+
 
     if (!selectedPatient) {
       setCurrentView('patient-selection');
