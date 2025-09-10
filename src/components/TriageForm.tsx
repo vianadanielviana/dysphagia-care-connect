@@ -101,9 +101,19 @@ const TriageForm: React.FC<TriageFormProps> = ({ patient, onComplete, onBack }) 
   };
 
   const getRiskLevel = (score: number) => {
-    if (score <= 2) return { level: 'baixo', label: 'Baixo Risco', color: 'text-medical-green' };
-    if (score <= 6) return { level: 'medio', label: 'Médio Risco', color: 'text-medical-amber' };
-    return { level: 'alto', label: 'Alto Risco', color: 'text-medical-red' };
+    if (score === 0) return { 
+      level: 'normal', 
+      label: 'Sem Sintomas', 
+      color: 'text-medical-green',
+      description: 'Nenhum sintoma identificado no momento da avaliação'
+    };
+    
+    return { 
+      level: 'alerta', 
+      label: 'Presença de Sintomas', 
+      color: 'text-medical-amber',
+      description: 'Sintomas identificados. Recomenda-se avaliação adicional e encaminhamento para exames de referência'
+    };
   };
 
   const handleNext = () => {
@@ -182,8 +192,8 @@ const TriageForm: React.FC<TriageFormProps> = ({ patient, onComplete, onBack }) 
       }
 
       toast({
-        title: "Triagem Concluída",
-        description: `Avaliação realizada com sucesso. Nível de risco: ${riskLevel.label}`,
+        title: "RaDI Concluído",
+        description: `Avaliação realizada com sucesso. Status: ${riskLevel.label}`,
       });
 
       onComplete({
@@ -195,7 +205,7 @@ const TriageForm: React.FC<TriageFormProps> = ({ patient, onComplete, onBack }) 
       });
 
     } catch (error: any) {
-      console.error('Erro ao salvar triagem:', error);
+      console.error('Erro ao salvar RaDI:', error);
       toast({
         title: "Erro",
         description: "Erro ao salvar avaliação. Tente novamente.",
@@ -390,17 +400,23 @@ const TriageForm: React.FC<TriageFormProps> = ({ patient, onComplete, onBack }) 
                   <Badge variant="outline">{score} pontos</Badge>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span>Nível de Risco:</span>
+                  <span>Status:</span>
                   <Badge 
                     className={`${
-                      risk.level === 'alto' ? 'bg-medical-red text-medical-red-foreground' :
-                      risk.level === 'medio' ? 'bg-medical-amber text-medical-amber-foreground' :
+                      risk.level === 'alerta' ? 'bg-medical-amber text-medical-amber-foreground' :
                       'bg-medical-green text-medical-green-foreground'
                     }`}
                   >
                     {risk.label}
                   </Badge>
                 </div>
+                {score > 0 && (
+                  <div className="mt-4 p-3 bg-muted/50 rounded-lg">
+                    <p className="text-sm text-muted-foreground">
+                      <strong>Interpretação RaDI:</strong> Quanto maior a pontuação, maior a probabilidade de presença de sintomas relacionados à disfagia orofaríngea. O instrumento não estabelece um ponto de corte fixo universal, mas sugere que qualquer escore positivo seja interpretado como alerta para rastreamento adicional e encaminhamento para exames de referência.
+                    </p>
+                  </div>
+                )}
               </>
             );
           })()}
@@ -414,7 +430,7 @@ const TriageForm: React.FC<TriageFormProps> = ({ patient, onComplete, onBack }) 
       <div className="mb-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-2xl font-bold text-foreground">
-            Triagem de Disfagia - {patient.nome}
+            RaDI de Disfagia - {patient.nome}
           </h2>
           <Badge variant="outline">
             Passo {currentStep} de {totalSteps}
@@ -458,7 +474,7 @@ const TriageForm: React.FC<TriageFormProps> = ({ patient, onComplete, onBack }) 
           ) : currentStep === totalSteps ? (
             <>
               <CheckCircle className="h-4 w-4 mr-2" />
-              Concluir Triagem
+              Concluir RaDI
             </>
           ) : (
             <>

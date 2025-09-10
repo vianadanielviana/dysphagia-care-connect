@@ -111,10 +111,8 @@ const DailyRecordForm: React.FC<DailyRecordFormProps> = ({ patient, onComplete, 
   };
 
   const getRiskLevel = (score: number) => {
-    if (score === 0) return { level: 'baixo', label: 'Sem Sintomas', color: 'text-medical-green' };
-    if (score <= 3) return { level: 'baixo', label: 'Baixo Risco', color: 'text-medical-green' };
-    if (score <= 6) return { level: 'medio', label: 'Médio Risco', color: 'text-medical-amber' };
-    return { level: 'alto', label: 'Alto Risco', color: 'text-medical-red' };
+    if (score === 0) return { level: 'normal', label: 'Sem Sintomas', color: 'text-medical-green' };
+    return { level: 'alerta', label: 'Presença de Sintomas', color: 'text-medical-amber' };
   };
 
   const onSubmit = async (data: DailyRecordData) => {

@@ -107,7 +107,7 @@ const DisfagiaApp = () => {
                 }`}
               >
                 {view === 'dashboard' && 'Resumo'}
-                {view === 'triagem' && 'Triagem'}
+                {view === 'triagem' && 'RaDI'}
                 {view === 'registro' && 'Registro Diário'}
                 {view === 'historico' && 'Histórico'}
                 {view === 'comunicacao' && 'Comunicação'}
@@ -188,9 +188,11 @@ const DisfagiaApp = () => {
       if (!currentRisk) return { level: 'Não avaliado', color: 'text-muted-foreground', icon: AlertTriangle };
       
       const statusMap = {
-        'baixo': { level: 'Baixo Risco', color: 'text-medical-green', icon: CheckCircle },
-        'medio': { level: 'Médio Risco', color: 'text-medical-amber', icon: AlertTriangle },
-        'alto': { level: 'Alto Risco', color: 'text-medical-red', icon: AlertTriangle }
+        'normal': { level: 'Sem Sintomas', color: 'text-medical-green', icon: CheckCircle },
+        'alerta': { level: 'Presença de Sintomas', color: 'text-medical-amber', icon: AlertTriangle },
+        'baixo': { level: 'Sem Sintomas', color: 'text-medical-green', icon: CheckCircle },
+        'medio': { level: 'Presença de Sintomas', color: 'text-medical-amber', icon: AlertTriangle },
+        'alto': { level: 'Presença de Sintomas', color: 'text-medical-amber', icon: AlertTriangle }
       };
       
       return statusMap[triageData.riskLevel] || statusMap['baixo'];
@@ -314,7 +316,7 @@ const DisfagiaApp = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Evolução do Risco (Últimas Triagens)</CardTitle>
+              <CardTitle className="text-base">Evolução de Sintomas (Últimos RaDI)</CardTitle>
             </CardHeader>
             <CardContent>
               {loadingTriageHistory ? (
@@ -328,13 +330,12 @@ const DisfagiaApp = () => {
                     <YAxis domain={[0, 4]} tick={{ fontSize: 10 }} />
                     <Tooltip 
                       formatter={(value: any) => {
-                        const riskLabels: Record<number, string> = { 1: 'Baixo', 2: 'Médio', 3: 'Alto' };
-                        return [riskLabels[value] || value, 'Risco'];
+                        return [value, 'Pontuação'];
                       }}
                     />
                     <Line 
                       type="monotone" 
-                      dataKey="risco" 
+                      dataKey="pontuacao" 
                       stroke="hsl(var(--primary))" 
                       strokeWidth={2} 
                       dot={{ fill: "hsl(var(--primary))", strokeWidth: 2 }}
@@ -343,7 +344,7 @@ const DisfagiaApp = () => {
                 </ResponsiveContainer>
               ) : (
                 <div className="h-32 flex items-center justify-center text-muted-foreground">
-                  <p className="text-sm">Nenhuma triagem realizada ainda</p>
+                  <p className="text-sm">Nenhum RaDI realizado ainda</p>
                 </div>
               )}
             </CardContent>
@@ -361,7 +362,7 @@ const DisfagiaApp = () => {
                   className="h-auto py-4 flex flex-col items-center space-y-2"
                 >
                   <FileText className="h-6 w-6 text-primary" />
-                  <span className="text-sm">Nova Triagem</span>
+                  <span className="text-sm">Novo RaDI</span>
                 </Button>
                 
                 <Button 
@@ -754,7 +755,7 @@ const DisfagiaApp = () => {
                 <User className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
                 <h2 className="text-xl font-semibold text-foreground mb-2">Nenhum paciente cadastrado</h2>
                 <p className="text-muted-foreground mb-6">
-                  Para realizar uma triagem, você precisa cadastrar pelo menos um paciente.
+                  Para realizar um RaDI, você precisa cadastrar pelo menos um paciente.
                 </p>
                 <div className="space-x-4">
                   <Button onClick={() => navigate('/pacientes')}>
@@ -787,8 +788,8 @@ const DisfagiaApp = () => {
               <ArrowLeft className="h-4 w-4 mr-2" />
               Voltar ao Dashboard
             </Button>
-            <h1 className="text-3xl font-bold text-foreground">Selecionar Paciente para Triagem</h1>
-            <p className="text-muted-foreground">Escolha qual paciente deseja realizar a triagem de disfagia</p>
+            <h1 className="text-3xl font-bold text-foreground">Selecionar Paciente para RaDI</h1>
+            <p className="text-muted-foreground">Escolha qual paciente deseja realizar o RaDI de disfagia</p>
           </div>
 
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -818,12 +819,12 @@ const DisfagiaApp = () => {
                     </div>
                   )}
 
-                  <Button 
-                    onClick={() => handleSelectPatient(patient)}
-                    className="w-full"
-                  >
-                    Iniciar Triagem
-                  </Button>
+                      <Button 
+                        onClick={() => handleSelectPatient(patient)}
+                        className="w-full"
+                      >
+                        Iniciar RaDI
+                      </Button>
                 </CardContent>
               </Card>
             ))}
@@ -959,15 +960,15 @@ const DisfagiaApp = () => {
           setTriageData({ totalScore, riskLevel, answers: newAnswers, date: new Date().toISOString(), patient: selectedPatient });
 
           toast({
-            title: "Triagem concluída e salva!",
-            description: `Paciente: ${selectedPatient.nome} - Pontuação: ${totalScore} - Nível de risco: ${riskLevel}`,
+            title: "RaDI concluído e salvo!",
+            description: `Paciente: ${selectedPatient.nome} - Pontuação: ${totalScore}`,
             duration: 4000,
           });
         } catch (error) {
-          console.error('Erro ao salvar triagem:', error);
+          console.error('Erro ao salvar RaDI:', error);
           toast({
             title: "Erro",
-            description: "Erro ao salvar triagem no banco de dados",
+            description: "Erro ao salvar RaDI no banco de dados",
             variant: "destructive",
           });
           return;
@@ -985,7 +986,7 @@ const DisfagiaApp = () => {
                 <div className="mb-6">
                   <div className="flex justify-between items-center mb-4">
                     <div>
-                      <h2 className="text-2xl font-bold text-foreground">Triagem de Disfagia</h2>
+                      <h2 className="text-2xl font-bold text-foreground">RaDI de Disfagia</h2>
                       <p className="text-sm text-muted-foreground mt-1">
                         Paciente: <span className="font-medium">{selectedPatient.nome}</span>
                       </p>
@@ -1103,10 +1104,8 @@ const DisfagiaApp = () => {
     };
 
     const getRiskLevel = (score: number) => {
-      if (score === 0) return { level: 'baixo', label: 'Sem Sintomas', color: 'text-medical-green' };
-      if (score <= 3) return { level: 'baixo', label: 'Baixo Risco', color: 'text-medical-green' };
-      if (score <= 6) return { level: 'medio', label: 'Médio Risco', color: 'text-medical-amber' };
-      return { level: 'alto', label: 'Alto Risco', color: 'text-medical-red' };
+      if (score === 0) return { level: 'normal', label: 'Sem Sintomas', color: 'text-medical-green' };
+      return { level: 'alerta', label: 'Presença de Sintomas', color: 'text-medical-amber' };
     };
 
     const handleSubmit = async () => {
@@ -1434,7 +1433,7 @@ const DisfagiaApp = () => {
 
         if (dailyError) throw dailyError;
 
-        // Buscar avaliações de triagem
+        // Buscar avaliações de RaDI
         const { data: triageData, error: triageError } = await supabase
           .from('triage_assessments')
           .select('*')
@@ -1535,7 +1534,7 @@ const DisfagiaApp = () => {
                 {patientHistoryData.length > 0 || triageHistory.length > 0 ? (
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <div>
-                      <h3 className="text-lg font-medium text-foreground mb-4">Avaliações de Triagem</h3>
+                      <h3 className="text-lg font-medium text-foreground mb-4">Avaliações de RaDI</h3>
                       <ResponsiveContainer width="100%" height={300}>
                         <LineChart data={triageHistory}>
                           <CartesianGrid strokeDasharray="3 3" />
@@ -1595,7 +1594,7 @@ const DisfagiaApp = () => {
                       Nenhum dado histórico encontrado para {selectedHistoryPatient.nome}
                     </p>
                     <p className="text-muted-foreground text-sm mt-2">
-                      Realize avaliações de triagem e registros diários para visualizar o histórico.
+                      Realize avaliações de RaDI e registros diários para visualizar o histórico.
                     </p>
                   </div>
                 )}

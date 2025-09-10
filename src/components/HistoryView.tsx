@@ -54,7 +54,7 @@ const HistoryView: React.FC<HistoryViewProps> = ({ selectedPatient }) => {
   const [loading, setLoading] = useState(true);
   const [selectedRecord, setSelectedRecord] = useState<TriageRecord | null>(null);
   const [selectedDailyRecord, setSelectedDailyRecord] = useState<DailyRecord | null>(null);
-  const [activeTab, setActiveTab] = useState<'triagem' | 'registros'>('triagem');
+  const [activeTab, setActiveTab] = useState<'radi' | 'registros'>('radi');
   const [filters, setFilters] = useState({
     startDate: '',
     endDate: '',
@@ -154,17 +154,17 @@ const HistoryView: React.FC<HistoryViewProps> = ({ selectedPatient }) => {
     const variants = {
       'baixo': { 
         className: 'bg-medical-green text-medical-green-foreground',
-        label: 'Baixo Risco',
+        label: 'Sem Sintomas',
         icon: CheckCircle
       },
       'medio': { 
         className: 'bg-medical-amber text-medical-amber-foreground',
-        label: 'Médio Risco',
+        label: 'Presença de Sintomas',
         icon: AlertTriangle
       },
       'alto': { 
-        className: 'bg-medical-red text-medical-red-foreground',
-        label: 'Alto Risco',
+        className: 'bg-medical-amber text-medical-amber-foreground',
+        label: 'Presença de Sintomas',
         icon: AlertTriangle
       }
     };
@@ -225,9 +225,7 @@ const HistoryView: React.FC<HistoryViewProps> = ({ selectedPatient }) => {
   };
 
   const getDailyRiskBadge = (riskScore: number) => {
-    const riskLevel = riskScore === 0 ? 'baixo' : 
-                     riskScore <= 3 ? 'baixo' : 
-                     riskScore <= 6 ? 'medio' : 'alto';
+    const riskLevel = riskScore === 0 ? 'baixo' : 'medio'; // Qualquer score > 0 indica presença de sintomas
     return getRiskBadge(riskLevel);
   };
 
@@ -256,7 +254,7 @@ const HistoryView: React.FC<HistoryViewProps> = ({ selectedPatient }) => {
       {/* Header */}
       <div className="flex justify-between items-start">
         <div>
-          <h2 className="text-2xl font-bold text-foreground">Histórico de Triagens</h2>
+          <h2 className="text-2xl font-bold text-foreground">Histórico de RaDI</h2>
           <p className="text-muted-foreground">Paciente: {selectedPatient.nome}</p>
         </div>
         <Button onClick={exportToPDF} disabled={records.length === 0}>
@@ -306,9 +304,9 @@ const HistoryView: React.FC<HistoryViewProps> = ({ selectedPatient }) => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Todos</SelectItem>
-                  <SelectItem value="baixo">Baixo Risco</SelectItem>
-                  <SelectItem value="medio">Médio Risco</SelectItem>
-                  <SelectItem value="alto">Alto Risco</SelectItem>
+                  <SelectItem value="baixo">Sem Sintomas</SelectItem>
+                  <SelectItem value="medio">Presença de Sintomas</SelectItem>
+                  <SelectItem value="alto">Presença de Sintomas</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -319,11 +317,11 @@ const HistoryView: React.FC<HistoryViewProps> = ({ selectedPatient }) => {
       {/* Tabs */}
       <div className="flex space-x-2 border-b">
         <Button
-          variant={activeTab === 'triagem' ? 'default' : 'ghost'}
-          onClick={() => setActiveTab('triagem')}
+          variant={activeTab === 'radi' ? 'default' : 'ghost'}
+          onClick={() => setActiveTab('radi')}
           className="rounded-b-none"
         >
-          Triagens ({records.length})
+          RaDI ({records.length})
         </Button>
         <Button
           variant={activeTab === 'registros' ? 'default' : 'ghost'}
@@ -339,10 +337,10 @@ const HistoryView: React.FC<HistoryViewProps> = ({ selectedPatient }) => {
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
             <span>
-              {activeTab === 'triagem' ? 'Triagens Encontradas' : 'Registros Diários Encontrados'}
+              {activeTab === 'radi' ? 'RaDI Encontrados' : 'Registros Diários Encontrados'}
             </span>
             <Badge variant="outline">
-              {activeTab === 'triagem' ? `${records.length} triagens` : `${dailyRecords.length} registros`}
+              {activeTab === 'radi' ? `${records.length} RaDI` : `${dailyRecords.length} registros`}
             </Badge>
           </CardTitle>
         </CardHeader>
@@ -351,11 +349,11 @@ const HistoryView: React.FC<HistoryViewProps> = ({ selectedPatient }) => {
             <div className="flex items-center justify-center h-32">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
             </div>
-          ) : activeTab === 'triagem' ? (
+          ) : activeTab === 'radi' ? (
             records.length === 0 ? (
               <div className="text-center py-8">
                 <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <p className="text-muted-foreground">Nenhuma triagem encontrada</p>
+                <p className="text-muted-foreground">Nenhum RaDI encontrado</p>
               </div>
             ) : (
               <Table>
@@ -492,7 +490,7 @@ const HistoryView: React.FC<HistoryViewProps> = ({ selectedPatient }) => {
         <Dialog open={!!selectedRecord} onOpenChange={() => setSelectedRecord(null)}>
           <DialogContent className="max-w-2xl">
             <DialogHeader>
-              <DialogTitle>Detalhes da Triagem</DialogTitle>
+              <DialogTitle>Detalhes do RaDI</DialogTitle>
             </DialogHeader>
             
             <div className="space-y-4">
@@ -510,10 +508,18 @@ const HistoryView: React.FC<HistoryViewProps> = ({ selectedPatient }) => {
               </div>
 
               <div>
-                <Label className="text-sm font-medium text-muted-foreground">Nível de Risco</Label>
+                <Label className="text-sm font-medium text-muted-foreground">Status</Label>
                 <div className="mt-1">
                   {getRiskBadge(selectedRecord.risk_level)}
                 </div>
+              </div>
+
+              {/* Texto explicativo do RaDI */}
+              <div className="mt-4 p-4 rounded-lg bg-accent/50">
+                <Label className="text-sm font-medium mb-2 block">Sobre o RaDI</Label>
+                <p className="text-sm text-muted-foreground">
+                  <strong>Interpretação:</strong> Quanto maior a pontuação, maior a probabilidade de presença de sintomas relacionados à disfagia orofaríngea. O instrumento não estabelece um ponto de corte fixo universal, mas sugere que qualquer escore positivo seja interpretado como alerta para rastreamento adicional e encaminhamento para exames de referência.
+                </p>
               </div>
 
               {selectedRecord.answers && selectedRecord.answers.length > 0 && (
@@ -532,22 +538,23 @@ const HistoryView: React.FC<HistoryViewProps> = ({ selectedPatient }) => {
                 </div>
               )}
 
-              {/* Orientações baseadas no risco */}
+              {/* Orientações baseadas no status */}
               <div className="mt-6 p-4 rounded-lg bg-muted">
                 <Label className="text-sm font-medium mb-2 block">Orientações</Label>
-                {selectedRecord.risk_level === 'baixo' && (
+                {selectedRecord.total_score === 0 && (
                   <p className="text-sm text-medical-green">
-                    ✅ Continue monitorando. Mantenha as boas práticas de alimentação segura.
+                    ✅ Nenhum sintoma identificado. Continue monitorando e mantenha as boas práticas de alimentação segura.
                   </p>
                 )}
-                {selectedRecord.risk_level === 'medio' && (
+                {selectedRecord.total_score > 0 && (
                   <div className="text-sm text-medical-amber">
-                    ⚠️ <strong>Atenção aumentada necessária.</strong> Considere:
+                    ⚠️ <strong>Sintomas identificados.</strong> Recomendações:
                     <ul className="list-disc list-inside mt-2 space-y-1">
-                      <li>Ambiente calmo durante refeições</li>
-                      <li>Postura ereta ao comer</li>
-                      <li>Pequenos goles e mordidas</li>
-                      <li>Contate o fonoaudiólogo se persistir</li>
+                      <li>Busque avaliação fonoaudiológica especializada</li>
+                      <li>Considere exames complementares se indicados</li>
+                      <li>Mantenha ambiente calmo durante refeições</li>
+                      <li>Adote postura ereta ao comer</li>
+                      <li>Prefira pequenos volumes e consistência adequada</li>
                     </ul>
                   </div>
                 )}
