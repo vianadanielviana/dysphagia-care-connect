@@ -859,70 +859,24 @@ const DisfagiaApp = () => {
     const [photoUrls, setPhotoUrls] = useState<string[]>([]);
     const [loading, setLoading] = useState(false);
     const { toast } = useToast();
-      {
-        id: 'tosse',
-        question: 'O paciente tosse ou engasga durante ou após as refeições?',
-        options: [
-          { value: 0, label: 'Nunca' },
-          { value: 1, label: 'Raramente' },
-          { value: 2, label: 'Às vezes' },
-          { value: 3, label: 'Frequentemente' },
-          { value: 4, label: 'Sempre' }
-        ]
-      },
-      {
-        id: 'voz',
-        question: 'A voz fica molhada ou rouca após comer ou beber?',
-        options: [
-          { value: 0, label: 'Nunca' },
-          { value: 1, label: 'Raramente' },
-          { value: 2, label: 'Às vezes' },
-          { value: 3, label: 'Frequentemente' },
-          { value: 4, label: 'Sempre' }
-        ]
-      },
-      {
-        id: 'escape',
-        question: 'Há escape de alimento ou líquido pela boca durante a alimentação?',
-        options: [
-          { value: 0, label: 'Nunca' },
-          { value: 1, label: 'Raramente' },
-          { value: 2, label: 'Às vezes' },
-          { value: 3, label: 'Frequentemente' },
-          { value: 4, label: 'Sempre' }
-        ]
-      },
-      {
-        id: 'deglutir',
-        question: 'O paciente precisa fazer esforço ou múltiplas tentativas para engolir?',
-        options: [
-          { value: 0, label: 'Nunca' },
-          { value: 1, label: 'Raramente' },
-          { value: 2, label: 'Às vezes' },
-          { value: 3, label: 'Frequentemente' },
-          { value: 4, label: 'Sempre' }
-        ]
-      },
-      {
-        id: 'pneumonia',
-        question: 'O paciente teve pneumonia recorrente nos últimos 6 meses?',
-        options: [
-          { value: 0, label: 'Não' },
-          { value: 4, label: 'Sim' }
-        ]
-      }
+
+    const sintomas = [
+      { id: 'tosse', label: 'Tosse durante alimentação', icon: '🤧' },
+      { id: 'engasgo', label: 'Engasgo', icon: '😵' },
+      { id: 'voz_molhada', label: 'Voz molhada após comer', icon: '🗣️' },
+      { id: 'escape_alimento', label: 'Escape de alimento pela boca', icon: '🍽️' },
+      { id: 'dificuldade_engolir', label: 'Dificuldade para engolir', icon: '⏱️' },
+      { id: 'recusa_alimentar', label: 'Recusa alimentar', icon: '🚫' },
+      { id: 'demora_excessiva', label: 'Demora excessiva para comer', icon: '😴' }
     ];
 
-    const handleAnswer = async (value: number) => {
-      const newAnswers = { ...answers, [questions[currentQuestion].id]: value };
-      setAnswers(newAnswers);
-
-      if (currentQuestion < questions.length - 1) {
-        setCurrentQuestion(currentQuestion + 1);
-      } else {
-        // Calcular score
-        const totalScore = Object.values(newAnswers).reduce((sum, val) => sum + val, 0);
-        let riskLevel: 'baixo' | 'medio' | 'alto' = 'baixo';
+    const opcoes = {
+      consistencias: [
+        { value: 'liquida_fina', label: 'Líquida Fina', icon: '💧' },
+        { value: 'pastosa', label: 'Pastosa', icon: '🥄' },
+        { value: 'normal', label: 'Normal', icon: '🍽️' }
+      ]
+    };
         
         if (totalScore >= 12) {
           riskLevel = 'alto';
@@ -1055,8 +1009,6 @@ const DisfagiaApp = () => {
         </div>
       </div>
     );
-  };
-
   const DailyRecordForm = () => {
     const [formData, setFormData] = useState({
       sintomas: [] as string[],
