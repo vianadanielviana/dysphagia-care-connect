@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import TeamChat from './TeamChat';
+import TriageForm from './TriageForm';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, BarChart, Bar, ResponsiveContainer } from 'recharts';
 import { User, Camera, Upload, MessageCircle, AlertTriangle, CheckCircle, Calendar, TrendingUp, FileText, Phone, LogOut, Settings, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -136,7 +137,16 @@ const DisfagiaApp = () => {
         {currentView === 'patient-selection' && <PatientSelection />}
         {currentView === 'patient-selection-view' && <PatientSelectionForView />}
         {currentView === 'patient-selection-registro' && <PatientSelectionForRegistro />}
-        {currentView === 'radi' && <RaDIForm />}
+        {currentView === 'radi' && selectedPatient && (
+          <TriageForm
+            patient={selectedPatient}
+            onComplete={(data) => {
+              setTriageData(data);
+              setCurrentView('dashboard');
+            }}
+            onBack={() => setCurrentView('patient-selection')}
+          />
+        )}
         {currentView === 'registro' && <DailyRecordForm />}
         {currentView === 'historico' && <HistoryView />}
         {currentView === 'comunicacao' && <CommunicationView />}
@@ -841,214 +851,6 @@ const DisfagiaApp = () => {
     );
   };
 
-  const RaDIForm = () => {
-    const [currentQuestion, setCurrentQuestion] = useState(0);
-    const [answers, setAnswers] = useState<Record<string, number>>({});
-    const { toast } = useToast();
-
-    if (!selectedPatient) {
-      setCurrentView('patient-selection');
-      return null;
-    }
-
-    const questions = [
-      {
-        id: 'tosse',
-        question: 'O paciente tosse ou engasga durante ou após as refeições?',
-        options: [
-          { value: 0, label: 'Nunca' },
-          { value: 1, label: 'Raramente' },
-          { value: 2, label: 'Às vezes' },
-          { value: 3, label: 'Frequentemente' },
-          { value: 4, label: 'Sempre' }
-        ]
-      },
-      {
-        id: 'voz',
-        question: 'A voz fica molhada ou rouca após comer ou beber?',
-        options: [
-          { value: 0, label: 'Nunca' },
-          { value: 1, label: 'Raramente' },
-          { value: 2, label: 'Às vezes' },
-          { value: 3, label: 'Frequentemente' },
-          { value: 4, label: 'Sempre' }
-        ]
-      },
-      {
-        id: 'escape',
-        question: 'Há escape de alimento ou líquido pela boca durante a alimentação?',
-        options: [
-          { value: 0, label: 'Nunca' },
-          { value: 1, label: 'Raramente' },
-          { value: 2, label: 'Às vezes' },
-          { value: 3, label: 'Frequentemente' },
-          { value: 4, label: 'Sempre' }
-        ]
-      },
-      {
-        id: 'deglutir',
-        question: 'O paciente precisa fazer esforço ou múltiplas tentativas para engolir?',
-        options: [
-          { value: 0, label: 'Nunca' },
-          { value: 1, label: 'Raramente' },
-          { value: 2, label: 'Às vezes' },
-          { value: 3, label: 'Frequentemente' },
-          { value: 4, label: 'Sempre' }
-        ]
-      },
-      {
-        id: 'pneumonia',
-        question: 'O paciente teve pneumonia recorrente nos últimos 6 meses?',
-        options: [
-          { value: 0, label: 'Não' },
-          { value: 4, label: 'Sim' }
-        ]
-      }
-    ];
-
-    const handleAnswer = async (value: number) => {
-      const newAnswers = { ...answers, [questions[currentQuestion].id]: value };
-      setAnswers(newAnswers);
-
-      if (currentQuestion < questions.length - 1) {
-        setCurrentQuestion(currentQuestion + 1);
-      } else {
-        // Calcular score
-        const totalScore = Object.values(newAnswers).reduce((sum, val) => sum + val, 0);
-        let riskLevel: 'baixo' | 'medio' | 'alto' = 'baixo';
-        
-        if (totalScore >= 12) {
-          riskLevel = 'alto';
-        } else if (totalScore >= 6) {
-          riskLevel = 'medio';
-        }
-
-        // Save the result to database
-        try {
-          // Create RaDI assessment
-          const { data: assessment, error: assessmentError } = await supabase
-            .from('triage_assessments')
-            .insert({
-              patient_id: selectedPatient.id,
-              caregiver_id: profile?.id,
-              total_score: totalScore,
-              risk_level: riskLevel
-            })
-            .select()
-            .single();
-
-          if (assessmentError) throw assessmentError;
-
-          // Save answers
-          const answersToInsert = Object.entries(newAnswers).map(([question_id, answer_value]) => ({
-            assessment_id: assessment.id,
-            question_id,
-            answer_value
-          }));
-
-          const { error: answersError } = await supabase
-            .from('triage_answers')
-            .insert(answersToInsert);
-
-          if (answersError) throw answersError;
-
-          // Update patient status in pacientes table (fixed to use correct table)
-          try {
-            const { error: patientError } = await supabase
-              .from('pacientes')
-              .update({ status: 'ativo' }) // Update available column
-              .eq('id', selectedPatient.id);
-            
-            if (patientError) console.warn('Could not update patient status:', patientError);
-          } catch (err) {
-            console.warn('Error updating patient status:', err);
-          }
-
-          setTriageData({ totalScore, riskLevel, answers: newAnswers, date: new Date().toISOString(), patient: selectedPatient });
-
-          toast({
-            title: "RaDI concluído e salvo!",
-            description: `Paciente: ${selectedPatient.nome} - Pontuação: ${totalScore}`,
-            duration: 4000,
-          });
-        } catch (error) {
-          console.error('Erro ao salvar RaDI:', error);
-          toast({
-            title: "Erro",
-            description: "Erro ao salvar RaDI no banco de dados",
-            variant: "destructive",
-          });
-          return;
-        }
-        
-        setCurrentView('dashboard');
-      }
-    };
-
-    return (
-      <div className="px-4 py-6 sm:px-0">
-        <div className="max-w-2xl mx-auto">
-            <Card className="shadow-lg">
-              <CardContent className="p-8">
-                <div className="mb-6">
-                  <div className="flex justify-between items-center mb-4">
-                    <div>
-                      <h2 className="text-2xl font-bold text-foreground">RaDI de Disfagia</h2>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        Paciente: <span className="font-medium">{selectedPatient.nome}</span>
-                      </p>
-                    </div>
-                    <span className="text-sm text-muted-foreground">
-                      Pergunta {currentQuestion + 1} de {questions.length}
-                    </span>
-                  </div>
-                  <Progress value={((currentQuestion + 1) / questions.length) * 100} className="h-2" />
-                </div>
-
-              <div className="mb-8">
-                <h3 className="text-lg font-medium text-foreground mb-6">
-                  {questions[currentQuestion].question}
-                </h3>
-                
-                <div className="space-y-3">
-                  {questions[currentQuestion].options.map((option) => (
-                    <Button
-                      key={option.value}
-                      onClick={() => handleAnswer(option.value)}
-                      variant="outline"
-                      className="w-full justify-start h-auto p-4 text-left"
-                    >
-                      {option.label}
-                    </Button>
-                  ))}
-                </div>
-              </div>
-
-              {currentQuestion > 0 && (
-                <Button
-                  onClick={() => setCurrentQuestion(currentQuestion - 1)}
-                  variant="ghost"
-                  className="mr-4"
-                >
-                  ← Pergunta anterior
-                </Button>
-              )}
-              <Button
-                onClick={() => {
-                  setSelectedPatient(null);
-                  setCurrentView('patient-selection');
-                }}
-                variant="outline"
-              >
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Trocar Paciente
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    );
-  };
 
   const DailyRecordForm = () => {
     const [formData, setFormData] = useState({
