@@ -1,16 +1,13 @@
 import React, { useState } from 'react';
-import { useForm } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { ArrowLeft, ArrowRight, Upload, Camera, AlertTriangle, CheckCircle, Clock } from 'lucide-react';
+import { ArrowLeft, ArrowRight, CheckCircle, Clock } from 'lucide-react';
 
 interface TriageFormProps {
   patient: any;
@@ -19,54 +16,40 @@ interface TriageFormProps {
 }
 
 interface TriageAnswers {
-  // Step 1 - Observações durante refeição
-  cough_during_eating: number;
-  frequent_choking: number;
-  wet_voice_after_eating: number;
-  slow_swallowing: number;
-  food_residue_in_mouth: number;
-  
-  // Step 2 - Sintomas gerais  
-  recent_weight_loss: number;
-  pneumonia_last_6_months: number;
-  avoids_foods: number;
-  avoided_foods_description: string;
+  swallow_multiple_times: number;
+  effort_to_swallow: number;
   pain_swallowing: number;
-  
-  // Step 3 - Observações
-  additional_observations: string;
+  weight_loss_difficulty: number;
+  throat_clearing: number;
+  voice_changes: number;
+  choking_after_swallow: number;
+  pneumonia_after_choking: number;
+  fatigue_after_eating: number;
 }
 
 const TriageForm: React.FC<TriageFormProps> = ({ patient, onComplete, onBack }) => {
-  const [currentStep, setCurrentStep] = useState(1);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [answers, setAnswers] = useState<Partial<TriageAnswers>>({
-    avoided_foods_description: '',
-    additional_observations: ''
-  });
+  const [answers, setAnswers] = useState<Partial<TriageAnswers>>({});
   const { toast } = useToast();
 
-  const totalSteps = 3;
-  const progress = (currentStep / totalSteps) * 100;
-
-  // Questões do Step 1
-  const step1Questions = [
-    { key: 'cough_during_eating', label: 'Tosse durante ou após comer?', icon: '🤧' },
-    { key: 'frequent_choking', label: 'Engasgo frequente?', icon: '😵' },
-    { key: 'wet_voice_after_eating', label: 'Voz fica "molhada" após comer?', icon: '🗣️' },
-    { key: 'slow_swallowing', label: 'Demora muito para engolir?', icon: '⏱️' },
-    { key: 'food_residue_in_mouth', label: 'Deixa restos de comida na boca?', icon: '🍽️' }
+  // All 9 RaDI questions
+  const allQuestions = [
+    { key: 'swallow_multiple_times', label: 'Precisa engolir muitas vezes o alimento para fazê-lo descer?' },
+    { key: 'effort_to_swallow', label: 'Faz esforço para engolir?' },
+    { key: 'pain_swallowing', label: 'Sente dor ao engolir?' },
+    { key: 'weight_loss_difficulty', label: 'Perdeu peso por ter dificuldade de engolir?' },
+    { key: 'throat_clearing', label: 'Tem pigarro depois de engolir?' },
+    { key: 'voice_changes', label: 'Sua voz modifica depois de engolir?' },
+    { key: 'choking_after_swallow', label: 'Tem engasgo depois de engolir?' },
+    { key: 'pneumonia_after_choking', label: 'Teve pneumonia depois de algum engasgo?' },
+    { key: 'fatigue_after_eating', label: 'Sente cansaço depois de comer?' }
   ];
 
-  // Questões do Step 2
-  const step2Questions = [
-    { key: 'recent_weight_loss', label: 'Perdeu peso recentemente?', icon: '⚖️', type: 'boolean' },
-    { key: 'pneumonia_last_6_months', label: 'Teve pneumonia nos últimos 6 meses?', icon: '🫁', type: 'boolean' },
-    { key: 'avoids_foods', label: 'Evita alguns alimentos?', icon: '🚫', type: 'boolean' },
-    { key: 'pain_swallowing', label: 'Sente dor ao engolir?', icon: '😣' }
-  ];
+  const totalQuestions = allQuestions.length;
+  const progress = ((currentQuestionIndex + 1) / totalQuestions) * 100;
 
-  const handleAnswerChange = (questionKey: string, value: number | string) => {
+  const handleAnswerChange = (questionKey: string, value: number) => {
     setAnswers(prev => ({
       ...prev,
       [questionKey]: value
@@ -75,78 +58,65 @@ const TriageForm: React.FC<TriageFormProps> = ({ patient, onComplete, onBack }) 
 
   const calculateRiskScore = () => {
     let score = 0;
-    
-    // Step 1 questions (0=Não, 1=Às vezes, 2=Sim)
-    step1Questions.forEach(q => {
-      const answer = answers[q.key as keyof TriageAnswers];
-      if (typeof answer === 'number') {
-        score += answer;
+    Object.values(answers).forEach(answer => {
+      if (typeof answer === 'number' && answer === 1) { // 1 = Sim
+        score += 1;
       }
     });
-
-    // Step 2 questions (except avoids_foods which is handled separately)
-    ['recent_weight_loss', 'pneumonia_last_6_months', 'pain_swallowing'].forEach(key => {
-      const answer = answers[key as keyof TriageAnswers];
-      if (answer === 2 || answer === 1) { // Sim or Às vezes
-        score += key === 'pneumonia_last_6_months' ? 3 : 2; // Pneumonia has higher weight
-      }
-    });
-
-    // Avoids foods
-    if (answers.avoids_foods === 1) { // Sim
-      score += 2;
-    }
-
     return score;
   };
 
   const getRiskLevel = (score: number) => {
-    if (score === 0) return { 
-      level: 'normal', 
-      label: 'Sem Sintomas', 
-      color: 'text-medical-green',
-      description: 'Nenhum sintoma identificado no momento da avaliação'
-    };
-    
-    return { 
-      level: 'alerta', 
-      label: 'Presença de Sintomas', 
-      color: 'text-medical-amber',
-      description: 'Sintomas identificados. Recomenda-se avaliação adicional e encaminhamento para exames de referência'
-    };
+    if (score === 0) {
+      return { 
+        level: 'baixo', 
+        label: 'Sem Sintomas', 
+        color: 'text-green-600',
+        description: 'Nenhum sintoma identificado no momento da avaliação'
+      };
+    } else if (score >= 1 && score <= 3) {
+      return { 
+        level: 'medio', 
+        label: 'Risco Moderado', 
+        color: 'text-yellow-600',
+        description: 'Alguns sintomas identificados. Recomenda-se acompanhamento'
+      };
+    } else {
+      return { 
+        level: 'alto', 
+        label: 'Risco Alto', 
+        color: 'text-red-600',
+        description: 'Múltiplos sintomas identificados. Recomenda-se avaliação especializada urgente'
+      };
+    }
   };
 
   const handleNext = () => {
-    if (currentStep < totalSteps) {
-      setCurrentStep(currentStep + 1);
+    const currentQuestion = allQuestions[currentQuestionIndex];
+    const currentAnswer = answers[currentQuestion.key as keyof TriageAnswers];
+    
+    if (currentAnswer === undefined) {
+      toast({
+        title: "Resposta obrigatória",
+        description: "Por favor, responda a pergunta antes de continuar.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (currentQuestionIndex < totalQuestions - 1) {
+      setCurrentQuestionIndex(currentQuestionIndex + 1);
     } else {
       handleSubmit();
     }
   };
 
   const handleBack = () => {
-    if (currentStep > 1) {
-      setCurrentStep(currentStep - 1);
+    if (currentQuestionIndex > 0) {
+      setCurrentQuestionIndex(currentQuestionIndex - 1);
     } else {
       onBack();
     }
-  };
-
-  const isStepValid = () => {
-    if (currentStep === 1) {
-      return step1Questions.every(q => 
-        answers[q.key as keyof TriageAnswers] !== undefined
-      );
-    }
-    
-    if (currentStep === 2) {
-      const requiredAnswers = ['recent_weight_loss', 'pneumonia_last_6_months', 'avoids_foods', 'pain_swallowing'];
-      return requiredAnswers.every(key => 
-        answers[key as keyof TriageAnswers] !== undefined
-      );
-    }
-    
-    return true; // Step 3 is optional
   };
 
   const handleSubmit = async () => {
@@ -173,10 +143,7 @@ const TriageForm: React.FC<TriageFormProps> = ({ patient, onComplete, onBack }) 
 
       // Save individual answers
       const answersToSave = Object.entries(answers)
-        .filter(([key, value]) => 
-          typeof value === 'number' && 
-          !['avoided_foods_description', 'additional_observations'].includes(key)
-        )
+        .filter(([key, value]) => typeof value === 'number')
         .map(([questionId, answerValue]) => ({
           assessment_id: assessment.id,
           question_id: questionId,
@@ -216,241 +183,80 @@ const TriageForm: React.FC<TriageFormProps> = ({ patient, onComplete, onBack }) 
     }
   };
 
-  const renderStep1 = () => (
-    <div className="space-y-6">
-      <div className="text-center mb-6">
-        <h3 className="text-lg font-semibold text-foreground mb-2">
-          Observações Durante a Refeição
-        </h3>
-        <p className="text-muted-foreground">
-          Avalie os sintomas observados durante as refeições
-        </p>
-      </div>
-
-      {step1Questions.map((question) => (
-        <Card key={question.key} className="p-4">
-          <div className="flex items-start space-x-3 mb-4">
-            <span className="text-2xl">{question.icon}</span>
-            <Label className="text-base font-medium">{question.label}</Label>
-          </div>
-          
-          <RadioGroup
-            value={answers[question.key as keyof TriageAnswers]?.toString() || ''}
-            onValueChange={(value) => handleAnswerChange(question.key, parseInt(value))}
-          >
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="0" id={`${question.key}-0`} />
-              <Label htmlFor={`${question.key}-0`}>Não</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="1" id={`${question.key}-1`} />
-              <Label htmlFor={`${question.key}-1`}>Às vezes</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="2" id={`${question.key}-2`} />
-              <Label htmlFor={`${question.key}-2`}>Sim</Label>
-            </div>
-          </RadioGroup>
-        </Card>
-      ))}
-    </div>
-  );
-
-  const renderStep2 = () => (
-    <div className="space-y-6">
-      <div className="text-center mb-6">
-        <h3 className="text-lg font-semibold text-foreground mb-2">
-          Sintomas Gerais
-        </h3>
-        <p className="text-muted-foreground">
-          Informações sobre o estado geral de saúde
-        </p>
-      </div>
-
-      {step2Questions.map((question) => (
-        <Card key={question.key} className="p-4">
-          <div className="flex items-start space-x-3 mb-4">
-            <span className="text-2xl">{question.icon}</span>
-            <Label className="text-base font-medium">{question.label}</Label>
-          </div>
-          
-          <RadioGroup
-            value={answers[question.key as keyof TriageAnswers]?.toString() || ''}
-            onValueChange={(value) => handleAnswerChange(question.key, parseInt(value))}
-          >
-            {question.type === 'boolean' ? (
-              <>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="0" id={`${question.key}-0`} />
-                  <Label htmlFor={`${question.key}-0`}>Não</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="1" id={`${question.key}-1`} />
-                  <Label htmlFor={`${question.key}-1`}>Sim</Label>
-                </div>
-              </>
-            ) : (
-              <>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="0" id={`${question.key}-0`} />
-                  <Label htmlFor={`${question.key}-0`}>Não</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="1" id={`${question.key}-1`} />
-                  <Label htmlFor={`${question.key}-1`}>Às vezes</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="2" id={`${question.key}-2`} />
-                  <Label htmlFor={`${question.key}-2`}>Sim</Label>
-                </div>
-              </>
-            )}
-          </RadioGroup>
-
-          {question.key === 'avoids_foods' && answers.avoids_foods === 1 && (
-            <div className="mt-4">
-              <Label htmlFor="avoided-foods" className="text-sm font-medium">
-                Quais alimentos evita?
-              </Label>
-              <Textarea
-                id="avoided-foods"
-                placeholder="Descreva quais alimentos são evitados e por quê..."
-                value={answers.avoided_foods_description || ''}
-                onChange={(e) => handleAnswerChange('avoided_foods_description', e.target.value)}
-                className="mt-2"
-              />
-            </div>
-          )}
-        </Card>
-      ))}
-    </div>
-  );
-
-  const renderStep3 = () => (
-    <div className="space-y-6">
-      <div className="text-center mb-6">
-        <h3 className="text-lg font-semibold text-foreground mb-2">
-          Evidências e Observações
-        </h3>
-        <p className="text-muted-foreground">
-          Upload de arquivos e observações adicionais (opcional)
-        </p>
-      </div>
-
-      <Card className="p-6">
-        <div className="space-y-4">
-          <div>
-            <Label className="text-base font-medium mb-3 block">
-              📷 Upload de Foto do Prato (opcional)
-            </Label>
-            <div className="border-2 border-dashed border-muted rounded-lg p-6 text-center">
-              <Camera className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-              <p className="text-sm text-muted-foreground mb-2">
-                Tire uma foto do prato antes/depois da refeição
-              </p>
-              <Button variant="outline" size="sm">
-                <Upload className="h-4 w-4 mr-2" />
-                Selecionar Foto
-              </Button>
-            </div>
-          </div>
-
-          <div>
-            <Label className="text-base font-medium mb-3 block">
-              🎥 Upload de Vídeo (opcional, máx. 30 segundos)
-            </Label>
-            <div className="border-2 border-dashed border-muted rounded-lg p-6 text-center">
-              <Upload className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-              <p className="text-sm text-muted-foreground mb-2">
-                Grave um vídeo curto da alimentação
-              </p>
-              <Button variant="outline" size="sm">
-                <Upload className="h-4 w-4 mr-2" />
-                Selecionar Vídeo
-              </Button>
-            </div>
-          </div>
-
-          <div>
-            <Label htmlFor="observations" className="text-base font-medium">
-              📝 Observações Adicionais
-            </Label>
-            <Textarea
-              id="observations"
-              placeholder="Descreva qualquer observação adicional sobre a alimentação, comportamento, ambiente, etc..."
-              value={answers.additional_observations || ''}
-              onChange={(e) => handleAnswerChange('additional_observations', e.target.value)}
-              className="mt-2 min-h-[100px]"
-            />
-          </div>
-        </div>
-      </Card>
-
-      {/* Preview do resultado */}
-      <Card className="p-6">
-        <h4 className="font-medium mb-4">📊 Preview do Resultado</h4>
-        <div className="space-y-3">
-          {(() => {
-            const score = calculateRiskScore();
-            const risk = getRiskLevel(score);
-            return (
-              <>
-                <div className="flex items-center justify-between">
-                  <span>Pontuação Total:</span>
-                  <Badge variant="outline">{score} pontos</Badge>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span>Status:</span>
-                  <Badge 
-                    className={`${
-                      risk.level === 'alerta' ? 'bg-medical-amber text-medical-amber-foreground' :
-                      'bg-medical-green text-medical-green-foreground'
-                    }`}
-                  >
-                    {risk.label}
-                  </Badge>
-                </div>
-                {score > 0 && (
-                  <div className="mt-4 p-3 bg-muted/50 rounded-lg">
-                    <p className="text-sm text-muted-foreground">
-                      <strong>Interpretação RaDI:</strong> Quanto maior a pontuação, maior a probabilidade de presença de sintomas relacionados à disfagia orofaríngea. O instrumento não estabelece um ponto de corte fixo universal, mas sugere que qualquer escore positivo seja interpretado como alerta para rastreamento adicional e encaminhamento para exames de referência.
-                    </p>
-                  </div>
-                )}
-              </>
-            );
-          })()}
-        </div>
-      </Card>
-    </div>
-  );
+  const currentQuestion = allQuestions[currentQuestionIndex];
+  const currentAnswer = answers[currentQuestion.key as keyof TriageAnswers];
 
   return (
     <div className="max-w-4xl mx-auto p-6">
       <div className="mb-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-2xl font-bold text-foreground">
-            RaDI de Disfagia - {patient.nome}
+            Triagem de Disfagia - {patient.nome}
           </h2>
           <Badge variant="outline">
-            Passo {currentStep} de {totalSteps}
+            Pergunta {currentQuestionIndex + 1} de {totalQuestions}
           </Badge>
         </div>
         
         <Progress value={progress} className="h-2" />
         
-        <div className="flex justify-between text-sm text-muted-foreground mt-2">
-          <span>Observações</span>
-          <span>Sintomas</span>
-          <span>Evidências</span>
+        <div className="text-sm text-muted-foreground mt-2">
+          Progresso: {Math.round(progress)}%
         </div>
       </div>
 
-      <div className="mb-8">
-        {currentStep === 1 && renderStep1()}
-        {currentStep === 2 && renderStep2()}
-        {currentStep === 3 && renderStep3()}
-      </div>
+      <Card className="p-6 mb-8">
+        <div className="text-center mb-6">
+          <h3 className="text-xl font-semibold text-foreground mb-4">
+            {currentQuestion.label}
+          </h3>
+        </div>
+
+        <div className="flex justify-center">
+          <RadioGroup
+            value={currentAnswer?.toString() || ''}
+            onValueChange={(value) => handleAnswerChange(currentQuestion.key, parseInt(value))}
+            className="flex gap-8"
+          >
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="0" id="no" />
+              <Label htmlFor="no" className="text-lg font-medium cursor-pointer">
+                Não
+              </Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="1" id="yes" />
+              <Label htmlFor="yes" className="text-lg font-medium cursor-pointer">
+                Sim
+              </Label>
+            </div>
+          </RadioGroup>
+        </div>
+
+        {currentQuestionIndex === totalQuestions - 1 && Object.keys(answers).length === totalQuestions && (
+          <div className="mt-8 p-4 bg-muted/50 rounded-lg">
+            <h4 className="font-medium mb-2">📊 Preview do Resultado:</h4>
+            {(() => {
+              const score = calculateRiskScore();
+              const risk = getRiskLevel(score);
+              return (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span>Respostas "Sim":</span>
+                    <Badge variant="outline">{score} de {totalQuestions}</Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span>Nível de Risco:</span>
+                    <Badge className={risk.color}>
+                      {risk.label}
+                    </Badge>
+                  </div>
+                </div>
+              );
+            })()}
+          </div>
+        )}
+      </Card>
 
       <div className="flex justify-between">
         <Button
@@ -459,26 +265,26 @@ const TriageForm: React.FC<TriageFormProps> = ({ patient, onComplete, onBack }) 
           disabled={loading}
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
-          {currentStep === 1 ? 'Voltar' : 'Anterior'}
+          {currentQuestionIndex === 0 ? 'Voltar' : 'Anterior'}
         </Button>
 
         <Button
           onClick={handleNext}
-          disabled={loading || (currentStep < 3 && !isStepValid())}
+          disabled={loading || currentAnswer === undefined}
         >
           {loading ? (
             <>
               <Clock className="h-4 w-4 mr-2 animate-spin" />
               Salvando...
             </>
-          ) : currentStep === totalSteps ? (
+          ) : currentQuestionIndex === totalQuestions - 1 ? (
             <>
               <CheckCircle className="h-4 w-4 mr-2" />
-              Concluir RaDI
+              Concluir Triagem
             </>
           ) : (
             <>
-              Próximo
+              Próxima
               <ArrowRight className="h-4 w-4 ml-2" />
             </>
           )}
