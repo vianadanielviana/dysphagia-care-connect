@@ -652,6 +652,96 @@ export type Database = {
           },
         ]
       }
+      patient_assignment_approvals: {
+        Row: {
+          assignment_type: string
+          created_at: string | null
+          expires_at: string | null
+          id: string
+          justification: string
+          metadata: Json | null
+          patient_id: string
+          requested_assignee_id: string
+          requested_by: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string | null
+        }
+        Insert: {
+          assignment_type: string
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          justification: string
+          metadata?: Json | null
+          patient_id: string
+          requested_assignee_id: string
+          requested_by: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string | null
+        }
+        Update: {
+          assignment_type?: string
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          justification?: string
+          metadata?: Json | null
+          patient_id?: string
+          requested_assignee_id?: string
+          requested_by?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string | null
+        }
+        Relationships: []
+      }
+      patient_assignment_audit: {
+        Row: {
+          approval_status: string | null
+          approved_at: string | null
+          approved_by: string | null
+          assigned_by: string
+          assignment_reason: string | null
+          assignment_type: string
+          created_at: string | null
+          id: string
+          metadata: Json | null
+          new_assignee_id: string | null
+          old_assignee_id: string | null
+          patient_id: string
+        }
+        Insert: {
+          approval_status?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
+          assigned_by: string
+          assignment_reason?: string | null
+          assignment_type: string
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          new_assignee_id?: string | null
+          old_assignee_id?: string | null
+          patient_id: string
+        }
+        Update: {
+          approval_status?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
+          assigned_by?: string
+          assignment_reason?: string | null
+          assignment_type?: string
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          new_assignee_id?: string | null
+          old_assignee_id?: string | null
+          patient_id?: string
+        }
+        Relationships: []
+      }
       patients: {
         Row: {
           age: number
@@ -708,6 +798,7 @@ export type Database = {
           is_admin: boolean | null
           is_approved: boolean
           nome: string | null
+          senha: string | null
           tipo_usuario: string
           updated_at: string
         }
@@ -718,6 +809,7 @@ export type Database = {
           is_admin?: boolean | null
           is_approved?: boolean
           nome?: string | null
+          senha?: string | null
           tipo_usuario: string
           updated_at?: string
         }
@@ -728,6 +820,7 @@ export type Database = {
           is_admin?: boolean | null
           is_approved?: boolean
           nome?: string | null
+          senha?: string | null
           tipo_usuario?: string
           updated_at?: string
         }
@@ -1081,6 +1174,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      assign_patient_securely: {
+        Args: {
+          assignee_id: string
+          assignment_type: string
+          justification?: string
+          patient_uuid: string
+        }
+        Returns: Json
+      }
       binary_quantize: {
         Args: { "": string } | { "": unknown }
         Returns: unknown
@@ -1096,6 +1198,10 @@ export type Database = {
       can_view_patients_list: {
         Args: Record<PropertyKey, never>
         Returns: boolean
+      }
+      get_assignment_security_status: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
       }
       get_available_users_for_assignment: {
         Args: Record<PropertyKey, never>
@@ -1200,6 +1306,10 @@ export type Database = {
         Args: { "": unknown[] }
         Returns: number
       }
+      has_legitimate_patient_access: {
+        Args: { patient_uuid: string }
+        Returns: boolean
+      }
       hnsw_bit_support: {
         Args: { "": unknown }
         Returns: unknown
@@ -1299,6 +1409,14 @@ export type Database = {
       sparsevec_typmod_in: {
         Args: { "": unknown[] }
         Returns: number
+      }
+      validate_patient_assignment_security: {
+        Args: {
+          assignee_id: string
+          assignment_type: string
+          patient_uuid: string
+        }
+        Returns: boolean
       }
       vector_avg: {
         Args: { "": number[] }
