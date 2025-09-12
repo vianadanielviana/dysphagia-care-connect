@@ -178,6 +178,42 @@ export function useAuth() {
     }
   };
 
+  const requestPasswordReset = async (email: string) => {
+    try {
+      const redirectUrl = `${window.location.origin}/reset-password`;
+      
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: redirectUrl,
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      return { error: null };
+    } catch (error: any) {
+      console.error('Erro ao solicitar reset de senha:', error);
+      return { error };
+    }
+  };
+
+  const updatePassword = async (newPassword: string) => {
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      return { error: null };
+    } catch (error: any) {
+      console.error('Erro ao atualizar senha:', error);
+      return { error };
+    }
+  };
+
   return {
     user,
     session,
@@ -186,6 +222,8 @@ export function useAuth() {
     signIn,
     signUp,
     signOut,
+    requestPasswordReset,
+    updatePassword,
     isAuthenticated: !!user,
     isApproved: profile?.is_approved ?? false,
     isAdmin: user?.email === 'viana.vianadaniel@outlook.com'

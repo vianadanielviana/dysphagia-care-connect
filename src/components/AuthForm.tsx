@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { signInSchema, signUpSchema, SignInFormData, SignUpFormData } from '@/lib/schemas';
+import { signInSchema, signUpSchema, forgotPasswordSchema, SignInFormData, SignUpFormData, ForgotPasswordFormData } from '@/lib/schemas';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/components/ui/use-toast';
@@ -15,8 +16,9 @@ import { Loader2, User, Stethoscope, Heart } from 'lucide-react';
 
 const AuthForm = () => {
   const [isSignUp, setIsSignUp] = useState(false);
+  const [isForgotPasswordOpen, setIsForgotPasswordOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { signIn, signUp, isAdmin } = useAuth();
+  const { signIn, signUp, requestPasswordReset, isAdmin } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -41,7 +43,12 @@ const AuthForm = () => {
     mode: 'onSubmit',
   });
 
-  
+  const forgotPasswordForm = useForm<ForgotPasswordFormData>({
+    resolver: zodResolver(forgotPasswordSchema),
+    defaultValues: {
+      email: ''
+    }
+  });
 
   const handleSignIn = async (data: SignInFormData) => {
     setLoading(true);
@@ -76,6 +83,38 @@ const AuthForm = () => {
         title: "Erro no Cadastro",
         description: error.message || "Erro ao criar conta",
         variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleForgotPassword = async (data: ForgotPasswordFormData) => {
+    setLoading(true);
+    try {
+      const { error } = await requestPasswordReset(data.email);
+      
+      if (error) {
+        toast({
+          title: "Erro ao enviar email",
+          description: error.message,
+          variant: "destructive"
+        });
+        return;
+      }
+
+      toast({
+        title: "Email enviado!",
+        description: "Verifique seu email para redefinir sua senha.",
+      });
+      
+      setIsForgotPasswordOpen(false);
+      forgotPasswordForm.reset();
+    } catch (error: any) {
+      toast({
+        title: "Erro inesperado",
+        description: "Ocorreu um erro ao enviar o email. Tente novamente.",
+        variant: "destructive"
       });
     } finally {
       setLoading(false);
@@ -132,64 +171,106 @@ const AuthForm = () => {
 
         <CardContent>
           {!isSignUp ? (
-            <Form {...signInForm}>
-              <form onSubmit={signInForm.handleSubmit(handleSignIn)} className="space-y-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-foreground">Email</label>
-                  <input
-                    type="email"
-                    placeholder="seu@email.com"
-                    autoComplete="email"
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
-                    value={signInForm.watch('email') || ''}
-                    onChange={(e) => {
-                      console.log('Login Email onChange:', e.target.value);
-                      signInForm.setValue('email', e.target.value, { 
-                        shouldValidate: false,
-                        shouldDirty: true 
-                      });
-                    }}
-                  />
-                  {signInForm.formState.errors.email && (
-                    <p className="text-sm font-medium text-destructive">
-                      {signInForm.formState.errors.email.message}
-                    </p>
-                  )}
-                </div>
+            <>
+              <Form {...signInForm}>
+                <form onSubmit={signInForm.handleSubmit(handleSignIn)} className="space-y-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-foreground">Email</label>
+                    <input
+                      type="email"
+                      placeholder="seu@email.com"
+                      autoComplete="email"
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+                      value={signInForm.watch('email') || ''}
+                      onChange={(e) => {
+                        console.log('Login Email onChange:', e.target.value);
+                        signInForm.setValue('email', e.target.value, { 
+                          shouldValidate: false,
+                          shouldDirty: true 
+                        });
+                      }}
+                    />
+                    {signInForm.formState.errors.email && (
+                      <p className="text-sm font-medium text-destructive">
+                        {signInForm.formState.errors.email.message}
+                      </p>
+                    )}
+                  </div>
 
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-foreground">Senha</label>
-                  <input
-                    type="password"
-                    placeholder="Sua senha"
-                    autoComplete="current-password"
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
-                    value={signInForm.watch('password') || ''}
-                    onChange={(e) => {
-                      console.log('Login Password onChange:', e.target.value);
-                      signInForm.setValue('password', e.target.value, { 
-                        shouldValidate: false,
-                        shouldDirty: true 
-                      });
-                    }}
-                  />
-                  {signInForm.formState.errors.password && (
-                    <p className="text-sm font-medium text-destructive">
-                      {signInForm.formState.errors.password.message}
-                    </p>
-                  )}
-                </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-foreground">Senha</label>
+                    <input
+                      type="password"
+                      placeholder="Sua senha"
+                      autoComplete="current-password"
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+                      value={signInForm.watch('password') || ''}
+                      onChange={(e) => {
+                        console.log('Login Password onChange:', e.target.value);
+                        signInForm.setValue('password', e.target.value, { 
+                          shouldValidate: false,
+                          shouldDirty: true 
+                        });
+                      }}
+                    />
+                    {signInForm.formState.errors.password && (
+                      <p className="text-sm font-medium text-destructive">
+                        {signInForm.formState.errors.password.message}
+                      </p>
+                    )}
+                  </div>
 
-                <Button 
-                  type="submit" 
-                  className="w-full" 
-                  disabled={loading}
-                >
-                  {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Entrar
-                </Button>
-              </form>
-            </Form>
+                  <Button 
+                    type="submit" 
+                    className="w-full" 
+                    disabled={loading}
+                  >
+                    {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    Entrar
+                  </Button>
+                </form>
+              </Form>
+
+              <div className="mt-4 text-center">
+                <Dialog open={isForgotPasswordOpen} onOpenChange={setIsForgotPasswordOpen}>
+                  <DialogTrigger asChild>
+                    <Button variant="link" className="text-sm text-muted-foreground">
+                      Esqueci minha senha
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Redefinir Senha</DialogTitle>
+                    </DialogHeader>
+                    <Form {...forgotPasswordForm}>
+                      <form onSubmit={forgotPasswordForm.handleSubmit(handleForgotPassword)} className="space-y-4">
+                        <FormField
+                          control={forgotPasswordForm.control}
+                          name="email"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Email</FormLabel>
+                              <FormControl>
+                                <Input
+                                  type="email"
+                                  placeholder="Digite seu email"
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <Button type="submit" className="w-full" disabled={loading}>
+                          {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                          Enviar Email de Reset
+                        </Button>
+                      </form>
+                    </Form>
+                  </DialogContent>
+                </Dialog>
+              </div>
+            </>
           ) : (
             <Form {...signUpForm}>
               <form onSubmit={signUpForm.handleSubmit(handleSignUp)} className="space-y-4">
@@ -303,7 +384,6 @@ const AuthForm = () => {
                   )}
                 />
 
-                
                 <Button 
                   type="submit" 
                   className="w-full" 

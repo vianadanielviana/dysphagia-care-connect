@@ -74,6 +74,22 @@ export const pacienteSchema = z.object({
   caregiver_id: z.string().optional()
 });
 
+// Schema para reset de senha
+export const resetPasswordSchema = z.object({
+  password: passwordSchema,
+  confirmPassword: passwordSchema,
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "As senhas não coincidem",
+  path: ["confirmPassword"],
+});
+
+// Schema para solicitar reset de senha
+export const forgotPasswordSchema = z.object({
+  email: emailSchema,
+});
+
 export type SignUpFormData = z.infer<typeof signUpSchema>;
 export type SignInFormData = z.infer<typeof signInSchema>;
 export type PacienteFormData = z.infer<typeof pacienteSchema>;
+export type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;
+export type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
