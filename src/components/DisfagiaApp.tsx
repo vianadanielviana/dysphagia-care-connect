@@ -1014,8 +1014,9 @@ const DisfagiaApp = () => {
     const riskLevel = getRiskLevel(riskScore);
 
     return (
-      <div className="px-4 py-6 sm:px-0">
-        <div className="max-w-3xl mx-auto">
+      <div className="min-h-screen flex flex-col">
+        <div className="px-4 py-6 sm:px-0 flex-1 pb-20 md:pb-6">
+          <div className="max-w-3xl mx-auto">
           <Card className="shadow-lg">
             <CardHeader>
               <div className="flex justify-between items-start">
@@ -1145,7 +1146,8 @@ const DisfagiaApp = () => {
                 </Card>
               )}
 
-              <div className="flex justify-between space-x-4">
+              {/* Desktop buttons */}
+              <div className="hidden md:flex justify-between space-x-4">
                 <Button
                   onClick={() => {
                     setSelectedPatient(null);
@@ -1185,6 +1187,49 @@ const DisfagiaApp = () => {
               </div>
             </CardContent>
           </Card>
+        </div>
+        
+        {/* Mobile fixed buttons */}
+        <div className="md:hidden fixed bottom-0 left-0 right-0 bg-background border-t p-4 space-y-3">
+          <Button
+            onClick={handleSubmit}
+            disabled={loading || !selectedPatient}
+            className="w-full"
+            size="lg"
+          >
+            {loading ? (
+              <>
+                <div className="h-4 w-4 mr-2 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                Salvando...
+              </>
+            ) : (
+              <>
+                <CheckCircle className="h-4 w-4 mr-2" />
+                Salvar Registro
+              </>
+            )}
+          </Button>
+          <div className="flex space-x-2">
+            <Button
+              onClick={() => setCurrentView('dashboard')}
+              variant="outline"
+              disabled={loading}
+              className="flex-1"
+            >
+              Cancelar
+            </Button>
+            <Button
+              onClick={() => {
+                setSelectedPatient(null);
+                setCurrentView('patient-selection-view');
+              }}
+              variant="outline"
+              className="flex-1"
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Trocar
+            </Button>
+          </div>
         </div>
       </div>
     );
