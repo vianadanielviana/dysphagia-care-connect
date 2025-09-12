@@ -1353,6 +1353,15 @@ export type Database = {
         Args: { action_type: string; patient_id: string }
         Returns: undefined
       }
+      log_security_violation: {
+        Args: {
+          attempted_action: string
+          metadata?: Json
+          table_name: string
+          violation_type: string
+        }
+        Returns: undefined
+      }
       mark_message_as_read: {
         Args: { message_uuid: string; user_uuid: string }
         Returns: boolean
