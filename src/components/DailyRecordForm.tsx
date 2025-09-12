@@ -182,160 +182,165 @@ const DailyRecordForm: React.FC<DailyRecordFormProps> = ({ patient, onComplete, 
   const riskLevel = getRiskLevel(riskScore);
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold text-foreground mb-2">
-          Registro Diário - {patient.nome}
-        </h2>
-        <p className="text-muted-foreground">
-          Registre as observações sobre a alimentação do dia
-        </p>
-      </div>
+    <div className="min-h-screen flex flex-col">
+      <div className="flex-1 max-w-4xl mx-auto p-4 md:p-6 pb-20 md:pb-6">
+        <div className="mb-6">
+          <h2 className="text-2xl font-bold text-foreground mb-2">
+            Registro Diário - {patient.nome}
+          </h2>
+          <p className="text-muted-foreground">
+            Registre as observações sobre a alimentação do dia
+          </p>
+        </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-        {/* Date and Food Consistency */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          {/* Date and Food Consistency */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Calendar className="h-5 w-5 mr-2" />
+                  Data do Registro
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <input
+                  type="date"
+                  {...register('record_date', { required: 'Data é obrigatória' })}
+                  className="w-full p-2 border rounded-md"
+                />
+                {errors.record_date && (
+                  <p className="text-sm text-destructive mt-1">{errors.record_date.message}</p>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Consistência da Alimentação</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <RadioGroup 
+                  value={watch('food_consistency')} 
+                  {...register('food_consistency')}
+                >
+                  {consistencyOptions.map((option) => (
+                    <div key={option.value} className="flex items-center space-x-2">
+                      <RadioGroupItem value={option.value} id={option.value} />
+                      <Label htmlFor={option.value} className="flex-1">
+                        <div className="flex items-center justify-between">
+                          <span className="font-medium">{option.label}</span>
+                          <Badge className={option.color}>{option.description}</Badge>
+                        </div>
+                      </Label>
+                    </div>
+                  ))}
+                </RadioGroup>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Symptoms */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center">
-                <Calendar className="h-5 w-5 mr-2" />
-                Data do Registro
-              </CardTitle>
+              <CardTitle>Sintomas Observados</CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Marque todos os sintomas observados durante a alimentação
+              </p>
             </CardHeader>
             <CardContent>
-              <input
-                type="date"
-                {...register('record_date', { required: 'Data é obrigatória' })}
-                className="w-full p-2 border rounded-md"
-              />
-              {errors.record_date && (
-                <p className="text-sm text-destructive mt-1">{errors.record_date.message}</p>
-              )}
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Consistência da Alimentação</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <RadioGroup 
-                value={watch('food_consistency')} 
-                {...register('food_consistency')}
-              >
-                {consistencyOptions.map((option) => (
-                  <div key={option.value} className="flex items-center space-x-2">
-                    <RadioGroupItem value={option.value} id={option.value} />
-                    <Label htmlFor={option.value} className="flex-1">
-                      <div className="flex items-center justify-between">
-                        <span className="font-medium">{option.label}</span>
-                        <Badge className={option.color}>{option.description}</Badge>
-                      </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {symptoms.map((symptom) => (
+                  <div key={symptom.id} className="flex items-center space-x-3">
+                    <Checkbox
+                      id={symptom.id}
+                      checked={selectedSymptoms.includes(symptom.id)}
+                      onCheckedChange={(checked) => 
+                        handleSymptomChange(symptom.id, checked as boolean)
+                      }
+                    />
+                    <Label htmlFor={symptom.id} className="flex items-center space-x-2 cursor-pointer">
+                      <span className="text-lg">{symptom.icon}</span>
+                      <span>{symptom.label}</span>
                     </Label>
                   </div>
                 ))}
-              </RadioGroup>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Symptoms */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Sintomas Observados</CardTitle>
-            <p className="text-sm text-muted-foreground">
-              Marque todos os sintomas observados durante a alimentação
-            </p>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {symptoms.map((symptom) => (
-                <div key={symptom.id} className="flex items-center space-x-3">
-                  <Checkbox
-                    id={symptom.id}
-                    checked={selectedSymptoms.includes(symptom.id)}
-                    onCheckedChange={(checked) => 
-                      handleSymptomChange(symptom.id, checked as boolean)
-                    }
-                  />
-                  <Label htmlFor={symptom.id} className="flex items-center space-x-2 cursor-pointer">
-                    <span className="text-lg">{symptom.icon}</span>
-                    <span>{symptom.label}</span>
-                  </Label>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Observations */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Observações Adicionais</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Textarea
-              {...register('observations')}
-              placeholder="Descreva detalhes sobre a alimentação, comportamento, ambiente, medicamentos, etc..."
-              className="min-h-[120px]"
-            />
-          </CardContent>
-        </Card>
-
-        {/* Photo Capture */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <Camera className="h-5 w-5 mr-2" />
-              Fotos da Alimentação (Opcional)
-            </CardTitle>
-            <p className="text-sm text-muted-foreground">
-              Capture ou carregue fotos que possam ajudar na avaliação
-            </p>
-          </CardHeader>
-          <CardContent>
-            <PhotoCapture 
-              onPhotosChange={setPhotoUrls}
-              maxPhotos={3}
-            />
-          </CardContent>
-        </Card>
-
-        {/* Risk Preview */}
-        {(selectedSymptoms.length > 0 || riskScore > 0) && (
-          <Card className={`border-l-4 ${
-            riskLevel.level === 'alto' ? 'border-l-red-500 bg-red-50' :
-            riskLevel.level === 'medio' ? 'border-l-yellow-500 bg-yellow-50' :
-            'border-l-green-500 bg-green-50'
-          }`}>
-            <CardContent className="pt-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h4 className="font-medium">Avaliação de Risco</h4>
-                  <p className={`text-lg font-semibold ${riskLevel.color}`}>
-                    {riskLevel.label}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    Pontuação: {riskScore} pontos
-                  </p>
-                </div>
-                <div className="text-right">
-                  {riskLevel.level === 'alto' && <AlertTriangle className="h-8 w-8 text-red-500" />}
-                  {riskLevel.level === 'medio' && <AlertTriangle className="h-8 w-8 text-yellow-500" />}
-                  {riskLevel.level === 'baixo' && <CheckCircle className="h-8 w-8 text-green-500" />}
-                </div>
               </div>
             </CardContent>
           </Card>
-        )}
 
-        {/* Actions */}
-        <div className="flex justify-between">
+          {/* Observations */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Observações Adicionais</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Textarea
+                {...register('observations')}
+                placeholder="Descreva detalhes sobre a alimentação, comportamento, ambiente, medicamentos, etc..."
+                className="min-h-[120px]"
+              />
+            </CardContent>
+          </Card>
+
+          {/* Photo Capture */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Camera className="h-5 w-5 mr-2" />
+                Fotos da Alimentação (Opcional)
+              </CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Capture ou carregue fotos que possam ajudar na avaliação
+              </p>
+            </CardHeader>
+            <CardContent>
+              <PhotoCapture 
+                onPhotosChange={setPhotoUrls}
+                maxPhotos={3}
+              />
+            </CardContent>
+          </Card>
+
+          {/* Risk Preview */}
+          {(selectedSymptoms.length > 0 || riskScore > 0) && (
+            <Card className={`border-l-4 ${
+              riskLevel.level === 'alto' ? 'border-l-red-500 bg-red-50' :
+              riskLevel.level === 'medio' ? 'border-l-yellow-500 bg-yellow-50' :
+              'border-l-green-500 bg-green-50'
+            }`}>
+              <CardContent className="pt-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="font-medium">Avaliação de Risco</h4>
+                    <p className={`text-lg font-semibold ${riskLevel.color}`}>
+                      {riskLevel.label}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      Pontuação: {riskScore} pontos
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    {riskLevel.level === 'alto' && <AlertTriangle className="h-8 w-8 text-red-500" />}
+                    {riskLevel.level === 'medio' && <AlertTriangle className="h-8 w-8 text-yellow-500" />}
+                    {riskLevel.level === 'baixo' && <CheckCircle className="h-8 w-8 text-green-500" />}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </form>
+      </div>
+      
+      {/* Fixed Actions for Mobile */}
+      <div className="fixed bottom-0 left-0 right-0 bg-background border-t p-4 md:hidden">
+        <div className="flex justify-between gap-4">
           <Button
             type="button"
             variant="outline"
             onClick={onBack}
             disabled={loading}
+            className="flex-1"
           >
             Voltar
           </Button>
@@ -343,6 +348,8 @@ const DailyRecordForm: React.FC<DailyRecordFormProps> = ({ patient, onComplete, 
           <Button
             type="submit"
             disabled={loading}
+            className="flex-1"
+            onClick={handleSubmit(onSubmit)}
           >
             {loading ? (
               <>
@@ -357,7 +364,39 @@ const DailyRecordForm: React.FC<DailyRecordFormProps> = ({ patient, onComplete, 
             )}
           </Button>
         </div>
-      </form>
+      </div>
+
+      {/* Actions for Desktop */}
+      <div className="hidden md:block max-w-4xl mx-auto px-6 pb-6">
+        <div className="flex justify-between">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onBack}
+            disabled={loading}
+          >
+            Voltar
+          </Button>
+
+          <Button
+            type="submit"
+            disabled={loading}
+            onClick={handleSubmit(onSubmit)}
+          >
+            {loading ? (
+              <>
+                <Clock className="h-4 w-4 mr-2 animate-spin" />
+                Salvando...
+              </>
+            ) : (
+              <>
+                <Save className="h-4 w-4 mr-2" />
+                Salvar Registro
+              </>
+            )}
+          </Button>
+        </div>
+      </div>
     </div>
   );
 };
