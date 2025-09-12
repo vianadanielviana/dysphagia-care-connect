@@ -34,16 +34,21 @@ export const signInSchema = z.object({
 
 export const pacienteSchema = z.object({
   nome: nomeSchema,
-  cpf: z.string().optional().refine(val => !val || val.length === 0 || /^\d{3}\.\d{3}\.\d{3}-\d{2}$/.test(val), {
+  cpf: z.string().optional().refine(val => {
+    if (!val) return true;
+    const digits = val.replace(/\D/g, '');
+    return digits.length === 0 || digits.length === 11;
+  }, {
     message: 'CPF deve estar no formato xxx.xxx.xxx-xx'
   }),
   email: z.string().optional().refine(val => !val || val.length === 0 || z.string().email().safeParse(val).success, {
     message: 'Email inválido'
   }),
   telefone: z.string().optional().refine(val => {
-    if (!val || val.length === 0) return true;
-    // Accept both formats: (xx) xxxxx-xxxx or xxxxxxxxxxx
-    return /^\(\d{2}\)\s\d{4,5}-\d{4}$/.test(val) || /^\d{10,11}$/.test(val);
+    if (!val) return true;
+    const digits = val.replace(/\D/g, '');
+    if (digits.length === 0) return true; // masked placeholder treated as empty
+    return digits.length === 10 || digits.length === 11;
   }, {
     message: 'Telefone deve estar no formato (xx) xxxxx-xxxx'
   }),
@@ -64,9 +69,10 @@ export const pacienteSchema = z.object({
     message: 'Email inválido'
   }),
   responsavel_telefone: z.string().optional().refine(val => {
-    if (!val || val.length === 0) return true;
-    // Accept both formats: (xx) xxxxx-xxxx or xxxxxxxxxxx
-    return /^\(\d{2}\)\s\d{4,5}-\d{4}$/.test(val) || /^\d{10,11}$/.test(val);
+    if (!val) return true;
+    const digits = val.replace(/\D/g, '');
+    if (digits.length === 0) return true;
+    return digits.length === 10 || digits.length === 11;
   }, {
     message: 'Telefone deve estar no formato (xx) xxxxx-xxxx'
   }),
