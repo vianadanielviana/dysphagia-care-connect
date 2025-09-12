@@ -9,6 +9,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { resetPasswordSchema, type ResetPasswordFormData } from '@/lib/schemas';
+import { supabase } from '@/integrations/supabase/client';
 import { Loader2 } from 'lucide-react';
 
 const ResetPassword = () => {
@@ -26,20 +27,35 @@ const ResetPassword = () => {
   });
 
   useEffect(() => {
-    const token = searchParams.get('token');
-    const type = searchParams.get('type');
+    // Check for recovery session from Supabase auth state
+    const checkRecoverySession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      // Check URL fragments for Supabase recovery parameters
+      const hash = window.location.hash;
+      const hashParams = new URLSearchParams(hash.substring(1));
+      const type = hashParams.get('type');
+      
+      // Check query params as fallback
+      const queryType = searchParams.get('type');
+      const queryToken = searchParams.get('token');
+      
+      const isRecovery = type === 'recovery' || queryType === 'recovery' || queryToken;
+      
+      if (!isRecovery && !session) {
+        toast({
+          title: "Link inválido",
+          description: "O link de reset de senha é inválido ou expirou.",
+          variant: "destructive",
+        });
+        navigate('/auth');
+        return;
+      }
+      
+      setIsValidToken(true);
+    };
     
-    if (!token || type !== 'recovery') {
-      toast({
-        title: "Link inválido",
-        description: "O link de reset de senha é inválido ou expirou.",
-        variant: "destructive",
-      });
-      navigate('/auth');
-      return;
-    }
-    
-    setIsValidToken(true);
+    checkRecoverySession();
   }, [searchParams, navigate]);
 
   const handleSubmit = async (data: ResetPasswordFormData) => {
