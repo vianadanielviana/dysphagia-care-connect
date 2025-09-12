@@ -1182,6 +1182,10 @@ export type Database = {
         Args: { "": string } | { "": unknown }
         Returns: unknown
       }
+      can_access_contact: {
+        Args: { contact_user_id: string }
+        Returns: boolean
+      }
       can_access_patient: {
         Args: { patient_uuid: string }
         Returns: boolean
@@ -1218,6 +1222,19 @@ export type Database = {
       get_comprehensive_security_status: {
         Args: Record<PropertyKey, never>
         Returns: Json
+      }
+      get_contacts_secure: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          access_level: string
+          categoria: string
+          created_at: string
+          email: string
+          id: number
+          nome: string
+          status: string
+          telefone: string
+        }[]
       }
       get_current_user_role: {
         Args: Record<PropertyKey, never>
@@ -1440,6 +1457,10 @@ export type Database = {
       l2_normalize: {
         Args: { "": string } | { "": unknown } | { "": unknown }
         Returns: unknown
+      }
+      log_contact_access: {
+        Args: { action_type: string; contact_id: number }
+        Returns: undefined
       }
       log_patient_access_simple: {
         Args: { action_type: string; patient_id: string }
