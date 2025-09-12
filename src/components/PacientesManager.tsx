@@ -155,6 +155,11 @@ const PacientesManager = () => {
 
       console.log('Sending cleaned data:', cleanedData);
 
+      // Auto-assign professional_id if current user is fonoaudiólogo and none selected
+      if (profile?.tipo_usuario === 'fonoaudiologo' && !cleanedData.professional_id) {
+        cleanedData.professional_id = profile.id;
+      }
+
       let response;
       if (editingPaciente) {
         // Update existing patient
@@ -214,7 +219,16 @@ const PacientesManager = () => {
       
       toast({
         title: "Erro",
-        description: error.message || "Erro ao salvar paciente. Verifique os dados e tente novamente.",
+        description: (() => {
+          const msg = (error?.message || '').toLowerCase();
+          if (msg.includes('row-level security') || msg.includes('rls')) {
+            return 'Permissão negada. É necessário ser um fonoaudiólogo ou admin aprovado para cadastrar pacientes.';
+          }
+          if (msg.includes('security_error') || msg.includes('invalid professional assignment') || msg.includes('assign')) {
+            return 'Defina um Profissional ou um Cuidador responsável antes de salvar.';
+          }
+          return error.message || 'Erro ao salvar paciente. Verifique os dados e tente novamente.';
+        })(),
         variant: "destructive",
       });
     }

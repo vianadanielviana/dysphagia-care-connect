@@ -933,24 +933,32 @@ const DisfagiaApp = () => {
         const riskScore = calculateRiskScore();
         const riskLevel = getRiskLevel(riskScore);
 
-        // Save daily record
-        const { data: record, error: recordError } = await supabase
+        // Save or update daily record (prevent duplicate per paciente+data)
+        const { data: authData } = await supabase.auth.getUser();
+        const userId = authData.user?.id;
+
+        const { data: record, error: upsertError } = await supabase
           .from('daily_records')
-          .insert({
-            patient_id: selectedPatient.id,
-            caregiver_id: (await supabase.auth.getUser()).data.user?.id,
-            record_date: new Date().toISOString().split('T')[0],
-            food_consistency: formData.consistencia,
-            observations: formData.observacoes,
-            risk_score: riskScore,
-            photo_urls: photoUrls
-          })
+          .upsert(
+            {
+              patient_id: selectedPatient.id,
+              caregiver_id: userId,
+              record_date: new Date().toISOString().split('T')[0],
+              food_consistency: formData.consistencia,
+              observations: formData.observacoes,
+              risk_score: riskScore,
+              photo_urls: photoUrls
+            },
+            { onConflict: 'patient_id,record_date' }
+          )
           .select()
           .single();
 
-        if (recordError) throw recordError;
+        if (upsertError) throw upsertError;
 
-        // Save symptoms
+        // Replace symptoms for this record (clear then insert selected)
+        await supabase.from('daily_record_symptoms').delete().eq('daily_record_id', record.id);
+
         if (formData.sintomas.length > 0) {
           const symptomsToSave = formData.sintomas.map(symptomId => ({
             daily_record_id: record.id,

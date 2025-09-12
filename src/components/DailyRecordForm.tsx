@@ -122,24 +122,32 @@ const DailyRecordForm: React.FC<DailyRecordFormProps> = ({ patient, onComplete, 
       const riskScore = calculateRiskScore();
       const riskLevel = getRiskLevel(riskScore);
 
-      // Save daily record
-      const { data: record, error: recordError } = await supabase
+      // Save or update daily record (prevent duplicate per paciente+data)
+      const { data: authData } = await supabase.auth.getUser();
+      const userId = authData.user?.id;
+
+      const { data: record, error: upsertError } = await supabase
         .from('daily_records')
-        .insert({
-          patient_id: patient.id,
-          caregiver_id: (await supabase.auth.getUser()).data.user?.id,
-          record_date: data.record_date,
-          food_consistency: data.food_consistency,
-          observations: data.observations,
-          risk_score: riskScore,
-          photo_urls: photoUrls
-        })
+        .upsert(
+          {
+            patient_id: patient.id,
+            caregiver_id: userId,
+            record_date: data.record_date,
+            food_consistency: data.food_consistency,
+            observations: data.observations,
+            risk_score: riskScore,
+            photo_urls: photoUrls
+          },
+          { onConflict: 'patient_id,record_date' }
+        )
         .select()
         .single();
 
-      if (recordError) throw recordError;
+      if (upsertError) throw upsertError;
 
-      // Save symptoms
+      // Replace symptoms for this record (clear then insert selected)
+      await supabase.from('daily_record_symptoms').delete().eq('daily_record_id', record.id);
+
       if (selectedSymptoms.length > 0) {
         const symptomsToSave = selectedSymptoms.map(symptomId => ({
           daily_record_id: record.id,
