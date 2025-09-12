@@ -1016,8 +1016,8 @@ const DisfagiaApp = () => {
     return (
       <div className="min-h-screen flex flex-col">
         <div className="px-4 py-6 sm:px-0 flex-1 pb-20 md:pb-6">
-          <div className="max-w-3xl mx-auto">
-          <Card className="shadow-lg">
+           <div className="max-w-3xl mx-auto">
+            <Card className="shadow-lg">
             <CardHeader>
               <div className="flex justify-between items-start">
                 <div>
@@ -1186,7 +1186,8 @@ const DisfagiaApp = () => {
                 </div>
               </div>
             </CardContent>
-          </Card>
+            </Card>
+          </div>
         </div>
         
         {/* Mobile fixed buttons */}
