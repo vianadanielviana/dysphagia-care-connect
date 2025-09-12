@@ -645,6 +645,59 @@ export type Database = {
           },
         ]
       }
+      patient_access_permissions: {
+        Row: {
+          access_level: Database["public"]["Enums"]["patient_access_level"]
+          created_at: string
+          expires_at: string | null
+          granted_at: string
+          granted_by: string | null
+          id: string
+          is_active: boolean
+          justification: string | null
+          metadata: Json | null
+          patient_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          access_level?: Database["public"]["Enums"]["patient_access_level"]
+          created_at?: string
+          expires_at?: string | null
+          granted_at?: string
+          granted_by?: string | null
+          id?: string
+          is_active?: boolean
+          justification?: string | null
+          metadata?: Json | null
+          patient_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          access_level?: Database["public"]["Enums"]["patient_access_level"]
+          created_at?: string
+          expires_at?: string | null
+          granted_at?: string
+          granted_by?: string | null
+          id?: string
+          is_active?: boolean
+          justification?: string | null
+          metadata?: Json | null
+          patient_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "patient_access_permissions_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "pacientes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       patient_assignment_approvals: {
         Row: {
           assignment_type: string
@@ -1261,6 +1314,31 @@ export type Database = {
           updated_at: string
         }[]
       }
+      get_patient_secure_with_audit: {
+        Args: { patient_uuid: string }
+        Returns: {
+          caregiver_id: string
+          cpf: string
+          created_at: string
+          data_nascimento: string
+          diagnostico: string
+          email: string
+          endereco: string
+          historico_medico: string
+          id: string
+          medicamentos_atuais: string
+          nome: string
+          observacoes: string
+          professional_id: string
+          responsavel_email: string
+          responsavel_nome: string
+          responsavel_telefone: string
+          status: string
+          telefone: string
+          updated_at: string
+          user_access_level: string
+        }[]
+      }
       get_security_status: {
         Args: Record<PropertyKey, never>
         Returns: Json
@@ -1268,6 +1346,10 @@ export type Database = {
       get_unread_messages_count: {
         Args: { user_uuid: string }
         Returns: number
+      }
+      get_user_patient_access_level: {
+        Args: { target_patient_id: string; target_user_id: string }
+        Returns: Database["public"]["Enums"]["patient_access_level"]
       }
       get_users_contact_safe: {
         Args: Record<PropertyKey, never>
@@ -1280,6 +1362,16 @@ export type Database = {
           registration_number: string
           user_type: Database["public"]["Enums"]["user_type"]
         }[]
+      }
+      grant_patient_access: {
+        Args: {
+          access_level: Database["public"]["Enums"]["patient_access_level"]
+          expires_in_hours?: number
+          justification?: string
+          target_patient_id: string
+          target_user_id: string
+        }
+        Returns: boolean
       }
       halfvec_avg: {
         Args: { "": number[] }
@@ -1466,6 +1558,7 @@ export type Database = {
         | "liquida_modificada"
         | "pastosa"
         | "normal"
+      patient_access_level: "none" | "basic" | "medical" | "full"
       risk_level: "baixo" | "medio" | "alto"
       tipo:
         | "Mercado"
@@ -1615,6 +1708,7 @@ export const Constants = {
         "pastosa",
         "normal",
       ],
+      patient_access_level: ["none", "basic", "medical", "full"],
       risk_level: ["baixo", "medio", "alto"],
       tipo: [
         "Mercado",
