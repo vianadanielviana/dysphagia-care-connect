@@ -1194,6 +1194,10 @@ export type Database = {
         Args: { patient_uuid: string }
         Returns: boolean
       }
+      can_access_patient_strict: {
+        Args: { patient_uuid: string }
+        Returns: boolean
+      }
       can_create_patients: {
         Args: Record<PropertyKey, never>
         Returns: boolean
@@ -1426,8 +1430,16 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }
+      is_authorized_caregiver: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
       is_authorized_for_patient: {
         Args: { patient_uuid: string }
+        Returns: boolean
+      }
+      is_authorized_healthcare_professional: {
+        Args: Record<PropertyKey, never>
         Returns: boolean
       }
       is_system_admin: {
@@ -1456,7 +1468,7 @@ export type Database = {
       }
       l2_normalize: {
         Args: { "": string } | { "": unknown } | { "": unknown }
-        Returns: unknown
+        Returns: string
       }
       log_contact_access: {
         Args: { action_type: string; contact_id: number }
@@ -1566,6 +1578,14 @@ export type Database = {
       vector_typmod_in: {
         Args: { "": unknown[] }
         Returns: number
+      }
+      verify_patient_security: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          details: string
+          security_check: string
+          status: string
+        }[]
       }
     }
     Enums: {
