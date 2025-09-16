@@ -1547,6 +1547,14 @@ export type Database = {
         Args: { "": unknown[] }
         Returns: number
       }
+      test_patient_access_security: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          details: string
+          result: string
+          test_name: string
+        }[]
+      }
       validate_patient_assignment_security: {
         Args: {
           assignee_id: string
