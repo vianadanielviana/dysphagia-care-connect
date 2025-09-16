@@ -17,6 +17,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import PhotoCapture from '@/components/PhotoCapture';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 interface TriageData {
   totalScore?: number;
@@ -76,6 +77,7 @@ const DisfagiaApp = () => {
                   <span className="hidden sm:ml-2 sm:inline">Admin</span>
                 </Button>
               )}
+              <ThemeToggle />
               <Button 
                 onClick={signOut}
                 variant="ghost"
