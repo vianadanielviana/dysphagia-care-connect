@@ -117,7 +117,9 @@ export function useAuth() {
           .eq('id', data.user.id)
           .single();
 
-        if (profileData && !profileData.is_approved && email !== 'viana.vianadaniel@outlook.com') {
+      if (profileData && !profileData.is_approved && 
+          email !== 'viana.vianadaniel@outlook.com' && 
+          email !== 'Adrianepaesdagama@gmail.com') {
           await supabase.auth.signOut();
           throw new Error('Sua conta ainda não foi aprovada. Aguarde a aprovação de um administrador.');
         }
@@ -226,6 +228,6 @@ export function useAuth() {
     updatePassword,
     isAuthenticated: !!user,
     isApproved: profile?.is_approved ?? false,
-    isAdmin: user?.email === 'viana.vianadaniel@outlook.com'
+    isAdmin: user?.email === 'viana.vianadaniel@outlook.com' || user?.email === 'Adrianepaesdagama@gmail.com'
   };
 }
