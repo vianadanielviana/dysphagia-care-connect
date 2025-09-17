@@ -117,9 +117,9 @@ export function useAuth() {
           .eq('id', data.user.id)
           .single();
 
-      if (profileData && !profileData.is_approved && 
-          email !== 'viana.vianadaniel@outlook.com' && 
-          email !== 'Adrianepaesdagama@gmail.com') {
+        if (profileData && !profileData.is_approved && 
+            email.toLowerCase() !== 'viana.vianadaniel@outlook.com' && 
+            email.toLowerCase() !== 'adrianepaesdagama@gmail.com') {
           await supabase.auth.signOut();
           throw new Error('Sua conta ainda não foi aprovada. Aguarde a aprovação de um administrador.');
         }
@@ -216,6 +216,17 @@ export function useAuth() {
     }
   };
 
+  const isAdmin = user?.email?.toLowerCase() === 'viana.vianadaniel@outlook.com' || 
+                  user?.email?.toLowerCase() === 'adrianepaesdagama@gmail.com';
+  
+  // Debug log for admin check
+  console.log('Admin check:', { 
+    userEmail: user?.email, 
+    userEmailLower: user?.email?.toLowerCase(),
+    isAdmin,
+    expectedEmails: ['viana.vianadaniel@outlook.com', 'adrianepaesdagama@gmail.com']
+  });
+
   return {
     user,
     session,
@@ -228,6 +239,6 @@ export function useAuth() {
     updatePassword,
     isAuthenticated: !!user,
     isApproved: profile?.is_approved ?? false,
-    isAdmin: user?.email === 'viana.vianadaniel@outlook.com' || user?.email === 'Adrianepaesdagama@gmail.com'
+    isAdmin
   };
 }
