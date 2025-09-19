@@ -32,6 +32,7 @@ const PhotoCapture: React.FC<PhotoCaptureProps> = ({
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const isMobile = useIsMobile();
   const [inIframe, setInIframe] = useState(false);
@@ -128,11 +129,8 @@ const PhotoCapture: React.FC<PhotoCaptureProps> = ({
 
   // Abre a câmera nativa via input file como fallback em mobile/iOS/iframes
   const openSystemCameraPicker = () => {
-    if (fileInputRef.current) {
-      try {
-        fileInputRef.current.setAttribute('capture', 'environment');
-      } catch {}
-      fileInputRef.current.click();
+    if (cameraInputRef.current) {
+      cameraInputRef.current.click();
     }
   };
 
@@ -381,7 +379,19 @@ const PhotoCapture: React.FC<PhotoCaptureProps> = ({
                   console.log('🎥 CLIQUE NO BOTÃO CÂMERA DETECTADO!');
                   console.log('Estado atual - fotos:', photos.length, 'maxPhotos:', maxPhotos);
                   console.log('Botão disabled?', photos.length >= maxPhotos);
-                  startCamera();
+                  if (photos.length >= maxPhotos) return;
+
+                  // Tentar getUserMedia primeiro, se falhar usar input nativo
+                  const inIframeNow = (() => { try { return window.self !== window.top } catch { return true } })();
+                  const isiOSNow = /iPad|iPhone|iPod/i.test(navigator.userAgent);
+                  
+                  if (inIframeNow || isiOSNow) {
+                    console.log('Ambiente com restrição (iframe/iOS). Usando câmera nativa.');
+                    openSystemCameraPicker();
+                  } else {
+                    console.log('Tentando getUserMedia...');
+                    startCamera();
+                  }
                 }}
                 variant="outline"
                 size="sm"
@@ -404,12 +414,7 @@ const PhotoCapture: React.FC<PhotoCaptureProps> = ({
                   e.stopPropagation();
                   console.log('📁 CLIQUE NO BOTÃO UPLOAD DETECTADO!');
                   console.log('Input ref existe?', !!fileInputRef.current);
-                  if (isMobile && inIframe) {
-                    console.log('Em iframe no mobile, abrindo seletor nativo...');
-                    openSystemCameraPicker();
-                  } else {
-                    fileInputRef.current?.click();
-                  }
+                  fileInputRef.current?.click();
                 }}
                 variant="outline"
                 size="sm"
@@ -419,14 +424,26 @@ const PhotoCapture: React.FC<PhotoCaptureProps> = ({
                 <Upload className="h-4 w-4 mr-2" />
                 Selecionar Foto
               </Button>
+              {/* Input para galeria (sem capture) */}
               <input
                 ref={fileInputRef}
                 type="file"
                 accept="image/*"
-                capture="environment"
                 multiple
                 onChange={(e) => {
-                  console.log('📷 INPUT FILE CHANGED:', e.target.files?.length, 'arquivos');
+                  console.log('📷 GALERIA INPUT CHANGED:', e.target.files?.length, 'arquivos');
+                  handleFileUpload(e);
+                }}
+                className="hidden"
+              />
+              {/* Input para câmera (com capture) */}
+              <input
+                ref={cameraInputRef}
+                type="file"
+                accept="image/*"
+                capture="environment"
+                onChange={(e) => {
+                  console.log('📷 CÂMERA INPUT CHANGED:', e.target.files?.length, 'arquivos');
                   handleFileUpload(e);
                 }}
                 className="hidden"
