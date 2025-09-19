@@ -30,6 +30,14 @@ const PhotoCapture: React.FC<PhotoCaptureProps> = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
+  // Log de debug para verificar se o componente está sendo renderizado
+  React.useEffect(() => {
+    console.log('PhotoCapture montado! MaxPhotos:', maxPhotos);
+    console.log('Navegador suporta getUserMedia?', !!navigator.mediaDevices?.getUserMedia);
+    console.log('Protocolo atual:', window.location.protocol);
+    console.log('Host atual:', window.location.host);
+  }, [maxPhotos]);
+
   const startCamera = async () => {
     try {
       // Verificar se o navegador suporta getUserMedia
@@ -318,13 +326,18 @@ const PhotoCapture: React.FC<PhotoCaptureProps> = ({
               <Camera className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
               <p className="text-sm text-muted-foreground mb-3">Tirar foto</p>
               <Button
-                onClick={() => {
-                  console.log('Botão "Abrir Câmera" clicado');
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  console.log('🎥 CLIQUE NO BOTÃO CÂMERA DETECTADO!');
+                  console.log('Estado atual - fotos:', photos.length, 'maxPhotos:', maxPhotos);
+                  console.log('Botão disabled?', photos.length >= maxPhotos);
                   startCamera();
                 }}
                 variant="outline"
                 size="sm"
                 disabled={photos.length >= maxPhotos}
+                className="bg-blue-50 hover:bg-blue-100"
               >
                 <Camera className="h-4 w-4 mr-2" />
                 Abrir Câmera
@@ -337,13 +350,17 @@ const PhotoCapture: React.FC<PhotoCaptureProps> = ({
               <Upload className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
               <p className="text-sm text-muted-foreground mb-3">Carregar da galeria</p>
               <Button
-                onClick={() => {
-                  console.log('Botão "Selecionar Foto" clicado');
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  console.log('📁 CLIQUE NO BOTÃO UPLOAD DETECTADO!');
+                  console.log('Input ref existe?', !!fileInputRef.current);
                   fileInputRef.current?.click();
                 }}
                 variant="outline"
                 size="sm"
                 disabled={photos.length >= maxPhotos}
+                className="bg-green-50 hover:bg-green-100"
               >
                 <Upload className="h-4 w-4 mr-2" />
                 Selecionar Foto
@@ -353,7 +370,10 @@ const PhotoCapture: React.FC<PhotoCaptureProps> = ({
                 type="file"
                 accept="image/*"
                 multiple
-                onChange={handleFileUpload}
+                onChange={(e) => {
+                  console.log('📷 INPUT FILE CHANGED:', e.target.files?.length, 'arquivos');
+                  handleFileUpload(e);
+                }}
                 className="hidden"
               />
             </CardContent>
