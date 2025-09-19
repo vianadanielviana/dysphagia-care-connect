@@ -9,8 +9,12 @@ import {
   X, 
   RotateCcw,
   Check,
-  Loader2
+  Loader2,
+  ExternalLink,
+  Info
 } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 
 interface PhotoCaptureProps {
   onPhotosChange: (photoUrls: string[]) => void;
@@ -29,6 +33,12 @@ const PhotoCapture: React.FC<PhotoCaptureProps> = ({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+  const isMobile = useIsMobile();
+  const [inIframe, setInIframe] = useState(false);
+  React.useEffect(() => {
+    try { setInIframe(window.self !== window.top); } catch { setInIframe(false); }
+  }, []);
+  const isiOS = /iPad|iPhone|iPod/i.test(navigator.userAgent);
 
   // Log de debug para verificar se o componente está sendo renderizado
   React.useEffect(() => {
@@ -299,10 +309,24 @@ const PhotoCapture: React.FC<PhotoCaptureProps> = ({
     }
   };
 
-  return (
-    <div className="space-y-4">
-      {/* Camera View */}
-      {isCameraOpen && (
+      return (
+        <div className="space-y-4">
+          {isMobile && inIframe && (
+            <Alert>
+              <AlertTitle>Pré-visualização limita a câmera</AlertTitle>
+              <AlertDescription>
+                Alguns navegadores bloqueiam a câmera dentro do preview. Abra em nova aba para permitir a câmera do dispositivo.
+              </AlertDescription>
+              <div className="mt-3">
+                <Button variant="outline" size="sm" onClick={() => window.open(window.location.href, '_blank')}>
+                  <ExternalLink className="h-4 w-4 mr-2" />
+                  Abrir fora do preview
+                </Button>
+              </div>
+            </Alert>
+          )}
+          {/* Camera View */}
+          {isCameraOpen && (
         <Card>
           <CardContent className="p-4">
             <div className="relative">
@@ -380,7 +404,12 @@ const PhotoCapture: React.FC<PhotoCaptureProps> = ({
                   e.stopPropagation();
                   console.log('📁 CLIQUE NO BOTÃO UPLOAD DETECTADO!');
                   console.log('Input ref existe?', !!fileInputRef.current);
-                  fileInputRef.current?.click();
+                  if (isMobile && inIframe) {
+                    console.log('Em iframe no mobile, abrindo seletor nativo...');
+                    openSystemCameraPicker();
+                  } else {
+                    fileInputRef.current?.click();
+                  }
                 }}
                 variant="outline"
                 size="sm"
