@@ -381,17 +381,16 @@ const PhotoCapture: React.FC<PhotoCaptureProps> = ({
                   console.log('Botão disabled?', photos.length >= maxPhotos);
                   if (photos.length >= maxPhotos) return;
 
-                  // Tentar getUserMedia primeiro, se falhar usar input nativo
-                  const inIframeNow = (() => { try { return window.self !== window.top } catch { return true } })();
-                  const isiOSNow = /iPad|iPhone|iPod/i.test(navigator.userAgent);
-                  
-                  if (inIframeNow || isiOSNow) {
-                    console.log('Ambiente com restrição (iframe/iOS). Usando câmera nativa.');
+                  // No mobile, sempre abrir câmera nativa para máxima compatibilidade (Android/iOS)
+                  const isMobileNow = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || window.matchMedia('(max-width: 767px)').matches;
+                  if (isMobileNow) {
+                    console.log('Mobile detectado. Abrindo câmera nativa via input.');
                     openSystemCameraPicker();
-                  } else {
-                    console.log('Tentando getUserMedia...');
-                    startCamera();
+                    return;
                   }
+
+                  console.log('Desktop detectado. Tentando getUserMedia...');
+                  startCamera();
                 }}
                 variant="outline"
                 size="sm"
@@ -440,7 +439,7 @@ const PhotoCapture: React.FC<PhotoCaptureProps> = ({
               <input
                 ref={cameraInputRef}
                 type="file"
-                accept="image/*"
+                accept="image/*;capture=camera"
                 capture="environment"
                 onChange={(e) => {
                   console.log('📷 CÂMERA INPUT CHANGED:', e.target.files?.length, 'arquivos');
