@@ -231,9 +231,11 @@ const HistoryView: React.FC<HistoryViewProps> = ({ selectedPatient }) => {
 
   const getConsistencyLabel = (consistency: string) => {
     const labels: { [key: string]: string } = {
-      'liquida_fina': 'Líquido',
+      'normal': 'Normal',
+      'facil_mastigar': 'Fácil de Mastigar',
+      'umidificados': 'Umidificados',
       'pastosa': 'Pastoso',
-      'normal': 'Normal'
+      'liquida_fina': 'Líquido' // manter para compatibilidade
     };
     return labels[consistency] || consistency;
   };

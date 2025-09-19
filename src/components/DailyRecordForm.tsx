@@ -28,7 +28,9 @@ interface DailyRecordFormProps {
 
 interface DailyRecordData {
   record_date: string;
-  food_consistency: 'liquida_fina' | 'pastosa' | 'normal';
+  food_consistency: 'liquida_fina' | 'pastosa' | 'normal' | 'facil_mastigar' | 'umidificados';
+  liquid_consistency: 'normal' | 'espessado';
+  liquid_consistency_description: string;
   observations: string;
   symptoms: string[];
 }
@@ -43,6 +45,8 @@ const DailyRecordForm: React.FC<DailyRecordFormProps> = ({ patient, onComplete, 
     defaultValues: {
       record_date: new Date().toISOString().split('T')[0],
       food_consistency: 'normal',
+      liquid_consistency: 'normal',
+      liquid_consistency_description: '',
       observations: '',
     }
   });
@@ -60,22 +64,41 @@ const DailyRecordForm: React.FC<DailyRecordFormProps> = ({ patient, onComplete, 
 
   const consistencyOptions = [
     { 
-      value: 'liquida_fina', 
-      label: 'Líquido', 
-      description: 'Água, sucos, chás',
-      color: 'bg-blue-100 text-blue-800'
-    },
-    { 
-      value: 'pastosa', 
-      label: 'Pastoso', 
-      description: 'Purês, vitaminas, sopas',
-      color: 'bg-orange-100 text-orange-800'
-    },
-    { 
       value: 'normal', 
       label: 'Normal', 
       description: 'Sólidos, dieta regular',
       color: 'bg-green-100 text-green-800'
+    },
+    { 
+      value: 'facil_mastigar', 
+      label: 'Fácil de Mastigar', 
+      description: 'Alimentos macios, purês, vitaminas, sopas',
+      color: 'bg-blue-100 text-blue-800'
+    },
+    { 
+      value: 'umidificados', 
+      label: 'Umidificados', 
+      description: 'Alimentos com acréscimo de molhos e caldos',
+      color: 'bg-cyan-100 text-cyan-800'
+    },
+    { 
+      value: 'pastosa', 
+      label: 'Pastoso', 
+      description: 'Alimento triturado/liquidificado',
+      color: 'bg-orange-100 text-orange-800'
+    }
+  ];
+
+  const liquidConsistencyOptions = [
+    { 
+      value: 'normal', 
+      label: 'Normal', 
+      description: 'Líquidos sem espessamento'
+    },
+    { 
+      value: 'espessado', 
+      label: 'Espessado', 
+      description: 'Líquidos com espessante'
     }
   ];
 
@@ -105,7 +128,7 @@ const DailyRecordForm: React.FC<DailyRecordFormProps> = ({ patient, onComplete, 
 
     // Adjust based on consistency
     const consistency = watch('food_consistency');
-    if (consistency === 'liquida_fina') score += 1;
+    if (consistency === 'pastosa') score += 1;
 
     return score;
   };
@@ -134,6 +157,8 @@ const DailyRecordForm: React.FC<DailyRecordFormProps> = ({ patient, onComplete, 
             caregiver_id: userId,
             record_date: data.record_date,
             food_consistency: data.food_consistency,
+            liquid_consistency: data.liquid_consistency,
+            liquid_consistency_description: data.liquid_consistency_description,
             observations: data.observations,
             risk_score: riskScore,
             photo_urls: photoUrls
@@ -202,48 +227,87 @@ const DailyRecordForm: React.FC<DailyRecordFormProps> = ({ patient, onComplete, 
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          {/* Date and Food Consistency */}
+          {/* Date */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Calendar className="h-5 w-5 mr-2" />
+                Data do Registro
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <input
+                type="date"
+                {...register('record_date', { required: 'Data é obrigatória' })}
+                className="w-full p-2 border rounded-md"
+              />
+              {errors.record_date && (
+                <p className="text-sm text-destructive mt-1">{errors.record_date.message}</p>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Food Consistency */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Consistência dos Alimentos Oferecidos</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <RadioGroup 
+                value={watch('food_consistency')} 
+                {...register('food_consistency')}
+              >
+                {consistencyOptions.map((option) => (
+                  <div key={option.value} className="flex items-center space-x-2">
+                    <RadioGroupItem value={option.value} id={option.value} />
+                    <Label htmlFor={option.value} className="flex-1">
+                      <div className="flex items-center justify-between">
+                        <span className="font-medium">{option.label}</span>
+                        <Badge className={option.color}>{option.description}</Badge>
+                      </div>
+                    </Label>
+                  </div>
+                ))}
+              </RadioGroup>
+            </CardContent>
+          </Card>
+
+          {/* Liquid Consistency */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Calendar className="h-5 w-5 mr-2" />
-                  Data do Registro
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <input
-                  type="date"
-                  {...register('record_date', { required: 'Data é obrigatória' })}
-                  className="w-full p-2 border rounded-md"
-                />
-                {errors.record_date && (
-                  <p className="text-sm text-destructive mt-1">{errors.record_date.message}</p>
-                )}
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Consistência da Alimentação</CardTitle>
+                <CardTitle>Consistência dos Líquidos Oferecidos</CardTitle>
               </CardHeader>
               <CardContent>
                 <RadioGroup 
-                  value={watch('food_consistency')} 
-                  {...register('food_consistency')}
+                  value={watch('liquid_consistency')} 
+                  {...register('liquid_consistency')}
                 >
-                  {consistencyOptions.map((option) => (
+                  {liquidConsistencyOptions.map((option) => (
                     <div key={option.value} className="flex items-center space-x-2">
-                      <RadioGroupItem value={option.value} id={option.value} />
-                      <Label htmlFor={option.value} className="flex-1">
+                      <RadioGroupItem value={option.value} id={`liquid_${option.value}`} />
+                      <Label htmlFor={`liquid_${option.value}`} className="flex-1">
                         <div className="flex items-center justify-between">
                           <span className="font-medium">{option.label}</span>
-                          <Badge className={option.color}>{option.description}</Badge>
+                          <span className="text-sm text-muted-foreground">{option.description}</span>
                         </div>
                       </Label>
                     </div>
                   ))}
                 </RadioGroup>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Descreva marca e indicação de Consistência de líquidos</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Textarea
+                  {...register('liquid_consistency_description')}
+                  placeholder="Ex: Espessante ThickenUp Clear - 1 colher de chá para 200ml de líquido"
+                  className="min-h-[100px]"
+                />
               </CardContent>
             </Card>
           </div>

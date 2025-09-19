@@ -283,6 +283,10 @@ export type Database = {
           created_at: string | null
           food_consistency: Database["public"]["Enums"]["food_consistency"]
           id: string
+          liquid_consistency:
+            | Database["public"]["Enums"]["liquid_consistency"]
+            | null
+          liquid_consistency_description: string | null
           observations: string | null
           patient_id: string | null
           photo_urls: string[] | null
@@ -295,6 +299,10 @@ export type Database = {
           created_at?: string | null
           food_consistency: Database["public"]["Enums"]["food_consistency"]
           id?: string
+          liquid_consistency?:
+            | Database["public"]["Enums"]["liquid_consistency"]
+            | null
+          liquid_consistency_description?: string | null
           observations?: string | null
           patient_id?: string | null
           photo_urls?: string[] | null
@@ -307,6 +315,10 @@ export type Database = {
           created_at?: string | null
           food_consistency?: Database["public"]["Enums"]["food_consistency"]
           id?: string
+          liquid_consistency?:
+            | Database["public"]["Enums"]["liquid_consistency"]
+            | null
+          liquid_consistency_description?: string | null
           observations?: string | null
           patient_id?: string | null
           photo_urls?: string[] | null
@@ -1606,11 +1618,14 @@ export type Database = {
         | "pastosa"
         | "liquida_modificada"
         | "liquida_fina"
+        | "facil_mastigar"
+        | "umidificados"
       food_consistency_type:
         | "liquida_fina"
         | "liquida_modificada"
         | "pastosa"
         | "normal"
+      liquid_consistency: "normal" | "espessado"
       patient_access_level: "none" | "basic" | "medical" | "full"
       risk_level: "baixo" | "medio" | "alto"
       tipo:
@@ -1754,6 +1769,8 @@ export const Constants = {
         "pastosa",
         "liquida_modificada",
         "liquida_fina",
+        "facil_mastigar",
+        "umidificados",
       ],
       food_consistency_type: [
         "liquida_fina",
@@ -1761,6 +1778,7 @@ export const Constants = {
         "pastosa",
         "normal",
       ],
+      liquid_consistency: ["normal", "espessado"],
       patient_access_level: ["none", "basic", "medical", "full"],
       risk_level: ["baixo", "medio", "alto"],
       tipo: [
