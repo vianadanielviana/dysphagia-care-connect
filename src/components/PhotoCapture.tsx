@@ -74,7 +74,7 @@ const PhotoCapture: React.FC<PhotoCaptureProps> = ({
       let errorMessage = "Não foi possível acessar a câmera.";
       
       if (error.name === 'NotAllowedError') {
-        errorMessage = "Permissão de câmera negada. Por favor, permita o acesso à câmera.";
+        errorMessage = "Permissão de câmera negada ou dispensada. Por favor, permita o acesso à câmera.";
       } else if (error.name === 'NotFoundError') {
         errorMessage = "Nenhuma câmera encontrada no dispositivo.";
       } else if (error.name === 'NotSupportedError') {
@@ -90,6 +90,21 @@ const PhotoCapture: React.FC<PhotoCaptureProps> = ({
         description: errorMessage,
         variant: "destructive",
       });
+
+      // Fallback: abrir a câmera do sistema via input file (mais compatível em mobile/iOS/iframes)
+      try {
+        const dismissed = error?.name === 'NotAllowedError' && /dismissed|denied|not allowed/i.test(error?.message || '');
+        const insecure = window.location.protocol !== 'https:';
+        const inIframe = window.self !== window.top;
+
+        if (dismissed || insecure || inIframe) {
+          openSystemCameraPicker();
+          toast({
+            title: "Usando câmera do dispositivo",
+            description: "Abrimos o seletor de câmera nativo como alternativa.",
+          });
+        }
+      } catch {}
     }
   };
 
@@ -99,6 +114,16 @@ const PhotoCapture: React.FC<PhotoCaptureProps> = ({
       setStream(null);
     }
     setIsCameraOpen(false);
+  };
+
+  // Abre a câmera nativa via input file como fallback em mobile/iOS/iframes
+  const openSystemCameraPicker = () => {
+    if (fileInputRef.current) {
+      try {
+        fileInputRef.current.setAttribute('capture', 'environment');
+      } catch {}
+      fileInputRef.current.click();
+    }
   };
 
   const capturePhoto = useCallback(async () => {
@@ -369,6 +394,7 @@ const PhotoCapture: React.FC<PhotoCaptureProps> = ({
                 ref={fileInputRef}
                 type="file"
                 accept="image/*"
+                capture="environment"
                 multiple
                 onChange={(e) => {
                   console.log('📷 INPUT FILE CHANGED:', e.target.files?.length, 'arquivos');
