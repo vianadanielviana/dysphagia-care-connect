@@ -1372,6 +1372,17 @@ export type Database = {
           user_access_level: string
         }[]
       }
+      get_pending_followups: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          created_at: string
+          days_since_creation: number
+          id: string
+          name: string
+          next_followup: string
+          phone: string
+        }[]
+      }
       get_security_status: {
         Args: Record<PropertyKey, never>
         Returns: Json
