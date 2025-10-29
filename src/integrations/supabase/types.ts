@@ -714,22 +714,7 @@ export type Database = {
           user_id?: string | null
           user_type?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "fk_patient_access_log_patient"
-            columns: ["patient_id"]
-            isOneToOne: false
-            referencedRelation: "pacientes"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "patient_access_log_patient_id_fkey"
-            columns: ["patient_id"]
-            isOneToOne: false
-            referencedRelation: "pacientes"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       patient_access_permissions: {
         Row: {
