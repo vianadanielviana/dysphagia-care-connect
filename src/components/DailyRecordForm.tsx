@@ -274,50 +274,46 @@ const DailyRecordForm: React.FC<DailyRecordFormProps> = ({
             <CardHeader>
               <CardTitle>Consistência das Ingestas Orais Oferecidas</CardTitle>
             </CardHeader>
-            <CardContent>
-              <RadioGroup value={watch('food_consistency')} {...register('food_consistency')}>
-                {consistencyOptions.map((option, index) => {
-                const badgeConfig = [{
-                  number: 7,
-                  color: 'bg-black text-white'
-                }, {
-                  number: 7,
-                  color: 'bg-black text-white'
-                }, {
-                  number: 6,
-                  color: 'bg-blue-500 text-white'
-                }, {
-                  number: 5,
-                  color: 'bg-orange-500 text-white'
-                }, {
-                  number: 4,
-                  color: 'bg-green-500 text-white'
-                }, {
-                  number: 3,
-                  color: 'bg-yellow-500 text-black'
-                }];
-                const badge = badgeConfig[index];
-                return <div key={option.value} className="flex items-center space-x-2">
-                    <RadioGroupItem value={option.value} id={option.value} />
-                    <Label htmlFor={option.value} className="flex-1">
-                      <div className="flex items-center justify-between">
-                        <span className="font-medium">{option.label}</span>
-                        <Badge className={badge.color}>{badge.number}</Badge>
-                      </div>
-                    </Label>
-                  </div>;
-              })}
-              </RadioGroup>
-            </CardContent>
-          </Card>
+            <CardContent className="space-y-6">
+              <div>
+                <h3 className="font-semibold mb-3">Alimento</h3>
+                <RadioGroup value={watch('food_consistency')} {...register('food_consistency')}>
+                  {consistencyOptions.map((option, index) => {
+                  const badgeConfig = [{
+                    number: 7,
+                    color: 'bg-black text-white'
+                  }, {
+                    number: 7,
+                    color: 'bg-black text-white'
+                  }, {
+                    number: 6,
+                    color: 'bg-blue-500 text-white'
+                  }, {
+                    number: 5,
+                    color: 'bg-orange-500 text-white'
+                  }, {
+                    number: 4,
+                    color: 'bg-green-500 text-white'
+                  }, {
+                    number: 3,
+                    color: 'bg-yellow-500 text-black'
+                  }];
+                  const badge = badgeConfig[index];
+                  return <div key={option.value} className="flex items-center space-x-2">
+                      <RadioGroupItem value={option.value} id={option.value} />
+                      <Label htmlFor={option.value} className="flex-1">
+                        <div className="flex items-center justify-between">
+                          <span className="font-medium">{option.label}</span>
+                          <Badge className={badge.color}>{badge.number}</Badge>
+                        </div>
+                      </Label>
+                    </div>;
+                })}
+                </RadioGroup>
+              </div>
 
-          {/* Liquid Consistency */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Líquidos</CardTitle>
-              </CardHeader>
-              <CardContent>
+              <div>
+                <h3 className="font-semibold mb-3">Líquidos</h3>
                 <RadioGroup value={watch('liquid_consistency')} {...register('liquid_consistency')}>
                   {liquidConsistencyOptions.map(option => <div key={option.value} className="flex items-center space-x-2">
                       <RadioGroupItem value={option.value} id={`liquid_${option.value}`} />
@@ -329,18 +325,19 @@ const DailyRecordForm: React.FC<DailyRecordFormProps> = ({
                       </Label>
                     </div>)}
                 </RadioGroup>
-              </CardContent>
-            </Card>
+              </div>
+            </CardContent>
+          </Card>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Descreva marca e indicação de Consistência de líquidos</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Textarea {...register('liquid_consistency_description')} placeholder="1 colher medida ou sachê para 100 ml de líquido fino" className="min-h-[100px]" />
-              </CardContent>
-            </Card>
-          </div>
+          {/* Liquid Consistency Description */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Descreva marca e indicação de Consistência de líquidos</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Textarea {...register('liquid_consistency_description')} placeholder="Ex: 1 colher medida ou sachê para 100 ml de líquido fino" className="min-h-[100px]" />
+            </CardContent>
+          </Card>
 
           {/* Symptoms */}
           <Card>
