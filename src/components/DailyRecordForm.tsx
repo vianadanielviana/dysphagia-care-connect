@@ -272,7 +272,7 @@ const DailyRecordForm: React.FC<DailyRecordFormProps> = ({
           {/* Food Consistency */}
           <Card>
             <CardHeader>
-              <CardTitle>Consistência das Ingestas Orais Oferecidas
+              <CardTitle>Consistência das Ingestas Orais Oferecidas 
 
 
 Alimentos</CardTitle>
