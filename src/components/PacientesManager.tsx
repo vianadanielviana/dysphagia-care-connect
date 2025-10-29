@@ -273,11 +273,14 @@ const PacientesManager = () => {
         title: "Sucesso",
         description: "Paciente excluído com sucesso",
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro ao excluir paciente:', error);
+      const errorMsg = error?.message?.toLowerCase() || '';
       toast({
         title: "Erro",
-        description: "Erro ao excluir paciente",
+        description: errorMsg.includes('row-level security') || errorMsg.includes('policy')
+          ? "Apenas administradores do sistema podem excluir pacientes"
+          : "Erro ao excluir paciente. Tente novamente.",
         variant: "destructive",
       });
     }
