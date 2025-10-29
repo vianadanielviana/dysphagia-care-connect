@@ -259,12 +259,12 @@ const DailyRecordForm: React.FC<DailyRecordFormProps> = ({
             </CardHeader>
             <CardContent>
               <RadioGroup value={watch('food_consistency')} {...register('food_consistency')}>
-                {consistencyOptions.map(option => <div key={option.value} className="flex items-center space-x-2">
+                {consistencyOptions.map((option, index) => <div key={option.value} className="flex items-center space-x-2">
                     <RadioGroupItem value={option.value} id={option.value} />
                     <Label htmlFor={option.value} className="flex-1">
                       <div className="flex items-center justify-between">
                         <span className="font-medium">{option.label}</span>
-                        <Badge className={option.color}>{option.description}</Badge>
+                        <Badge className="bg-black text-white">{index + 1}</Badge>
                       </div>
                     </Label>
                   </div>)}
