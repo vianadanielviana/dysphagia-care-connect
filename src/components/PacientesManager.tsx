@@ -79,6 +79,8 @@ const PacientesManager = () => {
   });
 
   useEffect(() => {
+    console.log('Profile on mount:', profile);
+    console.log('IsAdmin on mount:', isAdmin);
     fetchPacientes();
     fetchUsuarios();
   }, []);
@@ -126,6 +128,8 @@ const PacientesManager = () => {
   const onSubmit = async (data: PacienteFormData) => {
     try {
       console.log('Form data received:', data);
+      console.log('User profile:', profile);
+      console.log('Is admin:', isAdmin);
 
       // Convert and clean data for submission
       const cleanedData = {
@@ -221,11 +225,17 @@ const PacientesManager = () => {
         title: "Erro",
         description: (() => {
           const msg = (error?.message || '').toLowerCase();
-          if (msg.includes('row-level security') || msg.includes('rls')) {
-            return 'Permissão negada. É necessário ser um fonoaudiólogo ou admin aprovado para cadastrar pacientes.';
-          }
-          if (msg.includes('security_error') || msg.includes('invalid professional assignment') || msg.includes('assign')) {
-            return 'Defina um Profissional ou um Cuidador responsável antes de salvar.';
+          // Debug info in console
+          console.log('Profile info:', { 
+            profile, 
+            isAdmin, 
+            userEmail: profile?.email,
+            userType: profile?.tipo_usuario,
+            isApproved: profile?.is_approved 
+          });
+          
+          if (msg.includes('row-level security') || msg.includes('rls') || msg.includes('policy')) {
+            return `Erro de permissão - Usuário: ${profile?.email}, Tipo: ${profile?.tipo_usuario}, Aprovado: ${profile?.is_approved}`;
           }
           return error.message || 'Erro ao salvar paciente. Verifique os dados e tente novamente.';
         })(),
