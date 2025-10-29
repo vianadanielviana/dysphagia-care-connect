@@ -54,7 +54,7 @@ const PacientesManager = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingPaciente, setEditingPaciente] = useState<Paciente | null>(null);
   const { toast } = useToast();
-  const { profile } = useAuth();
+  const { profile, isAdmin } = useAuth();
 
   const form = useForm<PacienteFormData>({
     resolver: zodResolver(pacienteSchema),
@@ -258,7 +258,16 @@ const PacientesManager = () => {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Tem certeza que deseja excluir este paciente?')) return;
+    if (!(isAdmin || profile?.tipo_usuario === 'admin')) {
+      toast({
+        title: "Permissão negada",
+        description: "Apenas administradores do sistema podem excluir pacientes",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!confirm('Tem certeza que deseja excluir este paciente? Esta ação não pode ser desfeita.')) return;
 
     try {
       const { error } = await supabase
@@ -275,12 +284,16 @@ const PacientesManager = () => {
       });
     } catch (error: any) {
       console.error('Erro ao excluir paciente:', error);
-      const errorMsg = error?.message?.toLowerCase() || '';
+      const message = (error?.message || '').toLowerCase();
+      const code = error?.code;
       toast({
-        title: "Erro",
-        description: errorMsg.includes('row-level security') || errorMsg.includes('policy')
-          ? "Apenas administradores do sistema podem excluir pacientes"
-          : "Erro ao excluir paciente. Tente novamente.",
+        title: "Erro ao excluir",
+        description:
+          code === '23503' || message.includes('foreign key') || message.includes('still referenced')
+            ? 'Existem registros relacionados (ex.: avaliações de triagem) vinculados a este paciente. Exclua-os antes ou solicite exclusão em cascata.'
+            : (message.includes('row-level security') || message.includes('policy') || message.includes('permission denied'))
+              ? 'Apenas administradores do sistema podem excluir pacientes'
+              : 'Ocorreu um erro ao excluir o paciente. Tente novamente.',
         variant: "destructive",
       });
     }
@@ -741,14 +754,16 @@ const PacientesManager = () => {
                     >
                       <Edit className="h-4 w-4" />
                     </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleDelete(paciente.id)}
-                      className="text-destructive hover:text-destructive"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    {(isAdmin || profile?.tipo_usuario === 'admin') && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleDelete(paciente.id)}
+                        className="text-destructive hover:text-destructive"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    )}
                   </div>
                 </div>
               </CardContent>
