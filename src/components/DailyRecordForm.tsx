@@ -327,7 +327,7 @@ const DailyRecordForm: React.FC<DailyRecordFormProps> = ({
                 <CardTitle>Descreva marca e indicação de Consistência de líquidos</CardTitle>
               </CardHeader>
               <CardContent>
-                <Textarea {...register('liquid_consistency_description')} placeholder="1 colher medida ou sachê para 100 ml de líquido fino" className="min-h-[100px]" />
+                <Textarea {...register('liquid_consistency_description')} placeholder="Ex: 1 colher medida ou sachê para 100 ml de líquido fino" className="min-h-[100px]" />
               </CardContent>
             </Card>
           </div>
