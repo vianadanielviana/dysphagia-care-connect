@@ -46,7 +46,7 @@ export type Database = {
           accessed_at: string | null
           action: string
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           message_id: number | null
           metadata: Json | null
           session_id: string
@@ -58,7 +58,7 @@ export type Database = {
           accessed_at?: string | null
           action: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           message_id?: number | null
           metadata?: Json | null
           session_id: string
@@ -70,7 +70,7 @@ export type Database = {
           accessed_at?: string | null
           action?: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           message_id?: number | null
           metadata?: Json | null
           session_id?: string
@@ -172,6 +172,13 @@ export type Database = {
           sender_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "communications_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "pacientes"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "communications_receiver_id_fkey"
             columns: ["receiver_id"]
@@ -349,7 +356,7 @@ export type Database = {
           action: string
           document_id: number
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           metadata: Json | null
           user_agent: string | null
           user_id: string
@@ -360,7 +367,7 @@ export type Database = {
           action: string
           document_id: number
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           metadata?: Json | null
           user_agent?: string | null
           user_id: string
@@ -371,7 +378,7 @@ export type Database = {
           action?: string
           document_id?: number
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           metadata?: Json | null
           user_agent?: string | null
           user_id?: string
@@ -400,42 +407,69 @@ export type Database = {
         }
         Relationships: []
       }
+      follow_up: {
+        Row: {
+          created_at: string
+          estagio: string | null
+          id: number
+          id_instancia: string | null
+          numero: string | null
+          time_out_redis: string | null
+        }
+        Insert: {
+          created_at?: string
+          estagio?: string | null
+          id?: number
+          id_instancia?: string | null
+          numero?: string | null
+          time_out_redis?: string | null
+        }
+        Update: {
+          created_at?: string
+          estagio?: string | null
+          id?: number
+          id_instancia?: string | null
+          numero?: string | null
+          time_out_redis?: string | null
+        }
+        Relationships: []
+      }
       followup_logs: {
         Row: {
           categoria: string | null
           contact_id: number | null
           created_at: string | null
           erro: string | null
-          id: number
+          id: string
           mensagem_enviada: string | null
           nome: string | null
           resposta_api: string | null
           status: string | null
-          telefone: string | null
+          telefone: number | null
         }
         Insert: {
           categoria?: string | null
           contact_id?: number | null
           created_at?: string | null
           erro?: string | null
-          id?: number
+          id: string
           mensagem_enviada?: string | null
           nome?: string | null
           resposta_api?: string | null
           status?: string | null
-          telefone?: string | null
+          telefone?: number | null
         }
         Update: {
           categoria?: string | null
           contact_id?: number | null
           created_at?: string | null
           erro?: string | null
-          id?: number
+          id?: string
           mensagem_enviada?: string | null
           nome?: string | null
           resposta_api?: string | null
           status?: string | null
-          telefone?: string | null
+          telefone?: number | null
         }
         Relationships: [
           {
@@ -446,6 +480,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      interacoes: {
+        Row: {
+          canal: string | null
+          confianca: number | null
+          criado_em: string | null
+          id: number
+          sucesso: boolean | null
+          tempo_resposta_ms: number | null
+          tipo_problema: string | null
+          usuario_id: string | null
+        }
+        Insert: {
+          canal?: string | null
+          confianca?: number | null
+          criado_em?: string | null
+          id?: number
+          sucesso?: boolean | null
+          tempo_resposta_ms?: number | null
+          tipo_problema?: string | null
+          usuario_id?: string | null
+        }
+        Update: {
+          canal?: string | null
+          confianca?: number | null
+          criado_em?: string | null
+          id?: number
+          sucesso?: boolean | null
+          tempo_resposta_ms?: number | null
+          tipo_problema?: string | null
+          usuario_id?: string | null
+        }
+        Relationships: []
       }
       media_files: {
         Row: {
@@ -616,7 +683,7 @@ export type Database = {
           accessed_fields: string[] | null
           action: string
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           metadata: Json | null
           patient_id: string | null
           user_agent: string | null
@@ -628,7 +695,7 @@ export type Database = {
           accessed_fields?: string[] | null
           action: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           metadata?: Json | null
           patient_id?: string | null
           user_agent?: string | null
@@ -640,7 +707,7 @@ export type Database = {
           accessed_fields?: string[] | null
           action?: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           metadata?: Json | null
           patient_id?: string | null
           user_agent?: string | null
@@ -650,6 +717,13 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "fk_patient_access_log_patient"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "pacientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "patient_access_log_patient_id_fkey"
             columns: ["patient_id"]
             isOneToOne: false
             referencedRelation: "pacientes"
@@ -753,7 +827,15 @@ export type Database = {
           reviewed_by?: string | null
           status?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "patient_assignment_approvals_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "pacientes"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       patient_assignment_audit: {
         Row: {
@@ -798,7 +880,15 @@ export type Database = {
           old_assignee_id?: string | null
           patient_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "patient_assignment_audit_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "pacientes"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -913,7 +1003,7 @@ export type Database = {
           accessed_at: string | null
           action: string
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           message_id: string | null
           user_agent: string | null
           user_id: string
@@ -923,7 +1013,7 @@ export type Database = {
           accessed_at?: string | null
           action: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           message_id?: string | null
           user_agent?: string | null
           user_id: string
@@ -933,7 +1023,7 @@ export type Database = {
           accessed_at?: string | null
           action?: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           message_id?: string | null
           user_agent?: string | null
           user_id?: string
@@ -987,6 +1077,54 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      tickets: {
+        Row: {
+          atendente_id: string | null
+          atendido_em: string | null
+          atualizado_em: string | null
+          canal: string | null
+          contexto: Json | null
+          criado_em: string | null
+          id: number
+          mensagem: string | null
+          prioridade: string | null
+          sentimento: string | null
+          status: string | null
+          tipo: string | null
+          usuario_id: string | null
+        }
+        Insert: {
+          atendente_id?: string | null
+          atendido_em?: string | null
+          atualizado_em?: string | null
+          canal?: string | null
+          contexto?: Json | null
+          criado_em?: string | null
+          id?: number
+          mensagem?: string | null
+          prioridade?: string | null
+          sentimento?: string | null
+          status?: string | null
+          tipo?: string | null
+          usuario_id?: string | null
+        }
+        Update: {
+          atendente_id?: string | null
+          atendido_em?: string | null
+          atualizado_em?: string | null
+          canal?: string | null
+          contexto?: Json | null
+          criado_em?: string | null
+          id?: number
+          mensagem?: string | null
+          prioridade?: string | null
+          sentimento?: string | null
+          status?: string | null
+          tipo?: string | null
+          usuario_id?: string | null
+        }
+        Relationships: []
       }
       triage_answers: {
         Row: {
@@ -1101,7 +1239,7 @@ export type Database = {
           action: string
           document_id: number | null
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           metadata: Json | null
           search_query: string | null
           user_agent: string | null
@@ -1113,7 +1251,7 @@ export type Database = {
           action: string
           document_id?: number | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           metadata?: Json | null
           search_query?: string | null
           user_agent?: string | null
@@ -1125,7 +1263,7 @@ export type Database = {
           action?: string
           document_id?: number | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           metadata?: Json | null
           search_query?: string | null
           user_agent?: string | null
@@ -1178,7 +1316,17 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      analytics_atendimento: {
+        Row: {
+          canal: string | null
+          data: string | null
+          taxa_sucesso: number | null
+          tempo_medio: number | null
+          tipo_problema: string | null
+          total: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       assign_patient_securely: {
@@ -1190,18 +1338,11 @@ export type Database = {
         }
         Returns: Json
       }
-      binary_quantize: {
-        Args: { "": string } | { "": unknown }
-        Returns: unknown
-      }
       can_access_contact: {
         Args: { contact_user_id: string }
         Returns: boolean
       }
-      can_access_patient: {
-        Args: { patient_uuid: string }
-        Returns: boolean
-      }
+      can_access_patient: { Args: { patient_uuid: string }; Returns: boolean }
       can_access_patient_secure: {
         Args: { patient_uuid: string }
         Returns: boolean
@@ -1210,24 +1351,12 @@ export type Database = {
         Args: { patient_uuid: string }
         Returns: boolean
       }
-      can_create_patients: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
-      can_view_patients_list: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
-      emergency_security_check: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
-      get_assignment_security_status: {
-        Args: Record<PropertyKey, never>
-        Returns: Json
-      }
+      can_create_patients: { Args: never; Returns: boolean }
+      can_view_patients_list: { Args: never; Returns: boolean }
+      emergency_security_check: { Args: never; Returns: boolean }
+      get_assignment_security_status: { Args: never; Returns: Json }
       get_available_users_for_assignment: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           email: string
           id: string
@@ -1235,12 +1364,9 @@ export type Database = {
           tipo_usuario: string
         }[]
       }
-      get_comprehensive_security_status: {
-        Args: Record<PropertyKey, never>
-        Returns: Json
-      }
+      get_comprehensive_security_status: { Args: never; Returns: Json }
       get_contacts_secure: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           access_level: string
           categoria: string
@@ -1252,16 +1378,10 @@ export type Database = {
           telefone: string
         }[]
       }
-      get_current_user_role: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
-      get_current_user_type: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
+      get_current_user_role: { Args: never; Returns: string }
+      get_current_user_type: { Args: never; Returns: string }
       get_pacientes_safe: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           caregiver_id: string
           cpf: string
@@ -1286,7 +1406,7 @@ export type Database = {
         }[]
       }
       get_pacientes_secure_list: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           access_level: string
           cpf: string
@@ -1373,7 +1493,7 @@ export type Database = {
         }[]
       }
       get_pending_followups: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           created_at: string
           days_since_creation: number
@@ -1383,10 +1503,7 @@ export type Database = {
           phone: string
         }[]
       }
-      get_security_status: {
-        Args: Record<PropertyKey, never>
-        Returns: Json
-      }
+      get_security_status: { Args: never; Returns: Json }
       get_unread_messages_count: {
         Args: { user_uuid: string }
         Returns: number
@@ -1396,7 +1513,7 @@ export type Database = {
         Returns: Database["public"]["Enums"]["patient_access_level"]
       }
       get_users_contact_safe: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           created_at: string
           email: string
@@ -1417,86 +1534,16 @@ export type Database = {
         }
         Returns: boolean
       }
-      halfvec_avg: {
-        Args: { "": number[] }
-        Returns: unknown
-      }
-      halfvec_out: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      halfvec_send: {
-        Args: { "": unknown }
-        Returns: string
-      }
-      halfvec_typmod_in: {
-        Args: { "": unknown[] }
-        Returns: number
-      }
-      hnsw_bit_support: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      hnsw_halfvec_support: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      hnsw_sparsevec_support: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      hnswhandler: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      is_admin_email: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
-      is_approved_user: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
-      is_authorized_caregiver: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
+      is_admin_email: { Args: never; Returns: boolean }
+      is_approved_user: { Args: never; Returns: boolean }
+      is_authorized_caregiver: { Args: never; Returns: boolean }
       is_authorized_for_patient: {
         Args: { patient_uuid: string }
         Returns: boolean
       }
-      is_authorized_healthcare_professional: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
-      is_system_admin: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
-      is_system_admin_secure: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
-      ivfflat_bit_support: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      ivfflat_halfvec_support: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      ivfflathandler: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      l2_norm: {
-        Args: { "": unknown } | { "": unknown }
-        Returns: number
-      }
-      l2_normalize: {
-        Args: { "": string } | { "": unknown } | { "": unknown }
-        Returns: string
-      }
+      is_authorized_healthcare_professional: { Args: never; Returns: boolean }
+      is_system_admin: { Args: never; Returns: boolean }
+      is_system_admin_secure: { Args: never; Returns: boolean }
       log_contact_access: {
         Args: { action_type: string; contact_id: number }
         Returns: undefined
@@ -1544,10 +1591,7 @@ export type Database = {
           similarity: number
         }[]
       }
-      monitor_patient_security_violations: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
+      monitor_patient_security_violations: { Args: never; Returns: undefined }
       secure_match_vector_documents: {
         Args: {
           filter?: Json
@@ -1562,20 +1606,8 @@ export type Database = {
           similarity: number
         }[]
       }
-      sparsevec_out: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      sparsevec_send: {
-        Args: { "": unknown }
-        Returns: string
-      }
-      sparsevec_typmod_in: {
-        Args: { "": unknown[] }
-        Returns: number
-      }
       test_patient_access_security: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           details: string
           result: string
@@ -1590,32 +1622,8 @@ export type Database = {
         }
         Returns: boolean
       }
-      vector_avg: {
-        Args: { "": number[] }
-        Returns: string
-      }
-      vector_dims: {
-        Args: { "": string } | { "": unknown }
-        Returns: number
-      }
-      vector_norm: {
-        Args: { "": string }
-        Returns: number
-      }
-      vector_out: {
-        Args: { "": string }
-        Returns: unknown
-      }
-      vector_send: {
-        Args: { "": string }
-        Returns: string
-      }
-      vector_typmod_in: {
-        Args: { "": unknown[] }
-        Returns: number
-      }
       verify_patient_security: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           details: string
           security_check: string
