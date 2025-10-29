@@ -180,18 +180,18 @@ const PacientesManager = () => {
 
         response = { data: updatedPaciente, error: null };
       } else {
-        // Create new patient
-        const { data: newPaciente, error: insertError } = await supabase
+        // Create new patient (avoid return=representation to bypass SELECT RLS on insert)
+        const { error: insertError } = await supabase
           .from('pacientes')
-          .insert(cleanedData)
-          .select()
-          .single();
+          .insert(cleanedData);
 
         if (insertError) {
           throw insertError;
         }
 
-        response = { data: newPaciente, error: null };
+        // Refetch to include the new record respecting SELECT policies
+        await fetchPacientes();
+        response = { data: null, error: null };
       }
 
       console.log('API Response:', response);
@@ -208,7 +208,7 @@ const PacientesManager = () => {
           description: "Paciente atualizado com sucesso",
         });
       } else {
-        setPacientes(prev => [response.data, ...prev]);
+        // Lista já foi atualizada via fetchPacientes()
         toast({
           title: "Sucesso",
           description: "Paciente cadastrado com sucesso",
