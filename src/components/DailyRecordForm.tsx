@@ -91,7 +91,7 @@ const DailyRecordForm: React.FC<DailyRecordFormProps> = ({
     color: 'bg-green-100 text-green-800'
   }, {
     value: 'facil_mastigar',
-    label: 'Fácil de Mastigar',
+    label: 'Macio e Picado',
     description: 'Alimentos macios, purês, vitaminas, sopas',
     color: 'bg-blue-100 text-blue-800'
   }, {
