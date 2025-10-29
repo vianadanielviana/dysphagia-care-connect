@@ -276,7 +276,7 @@ const DailyRecordForm: React.FC<DailyRecordFormProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
-                <CardTitle>Consistência dos Líquidos Oferecidos</CardTitle>
+                <CardTitle>Líquidos</CardTitle>
               </CardHeader>
               <CardContent>
                 <RadioGroup value={watch('liquid_consistency')} {...register('liquid_consistency')}>
