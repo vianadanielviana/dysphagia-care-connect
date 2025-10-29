@@ -92,18 +92,28 @@ const DailyRecordForm: React.FC<DailyRecordFormProps> = ({
   }, {
     value: 'facil_mastigar',
     label: 'Fácil de Mastigar',
-    description: 'Alimentos macios, purês, vitaminas, sopas',
+    description: 'Alimentos macios',
     color: 'bg-blue-100 text-blue-800'
   }, {
-    value: 'umidificados',
-    label: 'Umidificados',
-    description: 'Alimentos com acréscimo de molhos e caldos',
+    value: 'macio_picado',
+    label: 'Macio e Picado',
+    description: 'Alimentos macios cortados em pedaços pequenos',
     color: 'bg-cyan-100 text-cyan-800'
+  }, {
+    value: 'moido_umido',
+    label: 'Moído e Úmido',
+    description: 'Alimentos moídos com molhos e caldos',
+    color: 'bg-indigo-100 text-indigo-800'
   }, {
     value: 'pastosa',
     label: 'Pastoso',
-    description: 'Alimento triturado/liquidificado',
+    description: 'Alimento triturado',
     color: 'bg-orange-100 text-orange-800'
+  }, {
+    value: 'liquidificado',
+    label: 'Liquidificado',
+    description: 'Alimento completamente liquidificado',
+    color: 'bg-purple-100 text-purple-800'
   }];
   const liquidConsistencyOptions = [{
     value: 'normal',
