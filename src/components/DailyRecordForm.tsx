@@ -116,13 +116,30 @@ const DailyRecordForm: React.FC<DailyRecordFormProps> = ({
     color: 'bg-purple-100 text-purple-800'
   }];
   const liquidConsistencyOptions = [{
-    value: 'normal',
-    label: 'Normal',
-    description: 'Líquidos sem espessamento'
+    value: 'extremamente_espessado',
+    label: 'Extremamente Espessado',
+    number: 4,
+    color: 'bg-green-500 text-white'
   }, {
-    value: 'espessado',
-    label: 'Espessado',
-    description: 'Líquidos com espessante'
+    value: 'moderadamente_espessado',
+    label: 'Moderadamente Espessado',
+    number: 3,
+    color: 'bg-yellow-500 text-black'
+  }, {
+    value: 'levemente_espessado',
+    label: 'Levemente Espessado',
+    number: 2,
+    color: 'bg-blue-500 text-white'
+  }, {
+    value: 'muito_levemente_espessado',
+    label: 'Muito Levemente Espessado',
+    number: 1,
+    color: 'bg-gray-500 text-white'
+  }, {
+    value: 'liquido_fino',
+    label: 'Líquido Fino',
+    number: 0,
+    color: 'bg-black text-white'
   }];
   const handleSymptomChange = (symptomId: string, checked: boolean) => {
     setSelectedSymptoms(prev => checked ? [...prev, symptomId] : prev.filter(id => id !== symptomId));
@@ -297,7 +314,7 @@ const DailyRecordForm: React.FC<DailyRecordFormProps> = ({
                       <Label htmlFor={`liquid_${option.value}`} className="flex-1">
                         <div className="flex items-center justify-between">
                           <span className="font-medium">{option.label}</span>
-                          <span className="text-sm text-muted-foreground">{option.description}</span>
+                          <Badge className={option.color}>{option.number}</Badge>
                         </div>
                       </Label>
                     </div>)}
