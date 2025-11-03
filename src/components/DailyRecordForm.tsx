@@ -168,15 +168,16 @@ const DailyRecordForm: React.FC<DailyRecordFormProps> = ({
       const riskScore = calculateRiskScore();
       const riskLevel = getRiskLevel(riskScore);
 
-      // Save or update daily record (prevent duplicate per paciente+data)
+      // Save daily record (sempre cria novo registro)
       const {
         data: authData
       } = await supabase.auth.getUser();
       const userId = authData.user?.id;
+      
       const {
         data: record,
-        error: upsertError
-      } = await supabase.from('daily_records').upsert({
+        error: insertError
+      } = await supabase.from('daily_records').insert({
         patient_id: patient.id,
         caregiver_id: userId,
         record_date: data.record_date,
@@ -186,22 +187,24 @@ const DailyRecordForm: React.FC<DailyRecordFormProps> = ({
         observations: data.observations,
         risk_score: riskScore,
         photo_urls: photoUrls
-      }, {
-        onConflict: 'patient_id,record_date'
       }).select().single();
-      if (upsertError) throw upsertError;
+      
+      if (insertError) throw insertError;
 
       // Replace symptoms for this record (clear then insert selected)
-      await supabase.from('daily_record_symptoms').delete().eq('daily_record_id', record.id);
-      if (selectedSymptoms.length > 0) {
-        const symptomsToSave = selectedSymptoms.map(symptomId => ({
-          daily_record_id: record.id,
-          symptom_name: symptoms.find(s => s.id === symptomId)?.label || symptomId
-        }));
-        const {
-          error: symptomsError
-        } = await supabase.from('daily_record_symptoms').insert(symptomsToSave);
-        if (symptomsError) throw symptomsError;
+      if (record?.id) {
+        await supabase.from('daily_record_symptoms').delete().eq('daily_record_id', record.id);
+        
+        if (selectedSymptoms.length > 0) {
+          const symptomsToSave = selectedSymptoms.map(symptomId => ({
+            daily_record_id: record.id,
+            symptom_name: symptoms.find(s => s.id === symptomId)?.label || symptomId
+          }));
+          const {
+            error: symptomsError
+          } = await supabase.from('daily_record_symptoms').insert(symptomsToSave);
+          if (symptomsError) throw symptomsError;
+        }
       }
       toast({
         title: "Registro Salvo",
