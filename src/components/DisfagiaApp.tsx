@@ -162,7 +162,7 @@ const DisfagiaApp = () => {
             onBack={() => setCurrentView('dashboard')}
           />
         )}
-        {currentView === 'historico' && <HistoryView />}
+        {currentView === 'historico' && <HistoryView selectedPatient={selectedPatient} />}
         {currentView === 'comunicacao' && <CommunicationView />}
       </main>
     </div>
@@ -865,7 +865,7 @@ const DisfagiaApp = () => {
     );
   };
 
-  const HistoryView = () => {
+  const HistoryCharts = () => {
     const [availablePatients, setAvailablePatients] = useState([]);
     const [selectedHistoryPatient, setSelectedHistoryPatient] = useState(null);
     const [patientHistoryData, setPatientHistoryData] = useState([]);

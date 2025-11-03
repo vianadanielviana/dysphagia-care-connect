@@ -498,36 +498,41 @@ const HistoryView: React.FC<HistoryViewProps> = ({ selectedPatient }) => {
                         </div>
                       </div>
                       
-                      {record.observations && (
+                      {/* Observações Adicionais sempre aparecem se preenchidas */}
+                      {record.observations && record.observations.trim() !== '' && (
                         <div className="bg-muted/50 p-3 rounded-lg">
-                          <p className="text-sm font-medium mb-1">💬 Observações:</p>
-                          <p className="text-sm">{record.observations}</p>
+                          <p className="text-sm font-medium mb-1">💬 Observações Adicionais:</p>
+                          <p className="text-sm whitespace-pre-wrap">{record.observations}</p>
                         </div>
                       )}
 
+                      {/* Sintomas Observados */}
                       {(() => {
                         const symptomsList = (record as any).symptoms || (record as any).daily_record_symptoms || [];
-                        return symptomsList.length > 0 ? (
-                          <div className="bg-medical-amber/10 p-3 rounded-lg">
-                            <p className="text-sm font-medium mb-2">⚠️ Sintomas observados:</p>
-                            <div className="flex flex-wrap gap-2">
-                              {symptomsList.map((symptom: any, index: number) => (
-                                <Badge key={index} variant="secondary" className="text-xs">
-                                  {symptom.symptom_name}
-                                </Badge>
-                              ))}
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="bg-medical-green/10 p-3 rounded-lg">
-                            <p className="text-sm font-medium">✅ Nenhum sintoma observado</p>
+                        return (
+                          <div className="bg-orange-50 dark:bg-orange-950/20 p-3 rounded-lg">
+                            <p className="text-sm font-medium mb-2 text-orange-800 dark:text-orange-200">
+                              ⚠️ Sintomas Observados:
+                            </p>
+                            {symptomsList.length > 0 ? (
+                              <div className="flex flex-wrap gap-2">
+                                {symptomsList.map((symptom: any, index: number) => (
+                                  <Badge key={index} variant="secondary" className="text-xs bg-orange-200 text-orange-800">
+                                    {symptom.symptom_name}
+                                  </Badge>
+                                ))}
+                              </div>
+                            ) : (
+                              <p className="text-sm text-green-700 dark:text-green-300">✅ Nenhum sintoma observado</p>
+                            )}
                           </div>
                         );
                       })()}
 
+                      {/* Fotos da alimentação */}
                       {record.photo_urls && record.photo_urls.length > 0 && (
-                        <div className="pt-3 border-t">
-                          <p className="text-sm font-medium mb-2">📸 Fotos do registro:</p>
+                        <div className="bg-gray-50 dark:bg-gray-950/20 p-3 rounded-lg">
+                          <p className="text-sm font-medium mb-2 text-gray-800 dark:text-gray-200">📸 Fotos da Alimentação:</p>
                           <div className="flex gap-2 overflow-x-auto pb-2">
                             {record.photo_urls.map((photoUrl: string, photoIndex: number) => (
                               <img
