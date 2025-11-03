@@ -19,7 +19,7 @@ interface DailyRecordFormProps {
 interface DailyRecordData {
   record_date: string;
   food_consistency: 'normal' | 'pastosa' | 'liquida_modificada' | 'liquida_fina' | 'facil_mastigar' | 'umidificados';
-  liquid_consistency: 'normal' | 'espessado';
+  liquid_consistency: 'extremamente_espessado' | 'moderadamente_espessado' | 'levemente_espessado' | 'muito_levemente_espessado' | 'liquido_fino';
   liquid_consistency_description: string;
   observations: string;
   symptoms: string[];
@@ -47,7 +47,7 @@ const DailyRecordForm: React.FC<DailyRecordFormProps> = ({
     defaultValues: {
       record_date: new Date().toISOString().split('T')[0],
       food_consistency: 'normal',
-      liquid_consistency: 'normal',
+      liquid_consistency: 'liquido_fino',
       liquid_consistency_description: '',
       observations: ''
     }
@@ -117,15 +117,20 @@ const DailyRecordForm: React.FC<DailyRecordFormProps> = ({
     color: 'bg-purple-100 text-purple-800'
   }];
   const liquidConsistencyOptions = [{
-    value: 'espessado',
-    label: 'Espessado',
-    description: 'Líquidos com espessante',
-    color: 'bg-blue-500 text-white'
+    value: 'extremamente_espessado',
+    label: 'Extremamente Espessado'
   }, {
-    value: 'normal',
-    label: 'Normal',
-    description: 'Líquidos finos sem modificação',
-    color: 'bg-green-500 text-white'
+    value: 'moderadamente_espessado',
+    label: 'Moderadamente Espessado'
+  }, {
+    value: 'levemente_espessado',
+    label: 'Levemente Espessado'
+  }, {
+    value: 'muito_levemente_espessado',
+    label: 'Muito Levemente Espessado'
+  }, {
+    value: 'liquido_fino',
+    label: 'Líquido Fino'
   }];
   const handleSymptomChange = (symptomId: string, checked: boolean) => {
     setSelectedSymptoms(prev => checked ? [...prev, symptomId] : prev.filter(id => id !== symptomId));
@@ -316,17 +321,36 @@ const DailyRecordForm: React.FC<DailyRecordFormProps> = ({
                   control={control}
                   render={({ field }) => (
                     <RadioGroup value={field.value} onValueChange={field.onChange}>
-                      {liquidConsistencyOptions.map(option => (
-                        <div key={option.value} className="flex items-center space-x-2">
-                          <RadioGroupItem value={option.value} id={`liquid_${option.value}`} />
-                          <Label htmlFor={`liquid_${option.value}`} className="flex-1 cursor-pointer">
-                            <div className="flex flex-col">
-                              <span className="font-medium">{option.label}</span>
-                              <span className="text-sm text-muted-foreground">{option.description}</span>
-                            </div>
-                          </Label>
-                        </div>
-                      ))}
+                      {liquidConsistencyOptions.map((option, index) => {
+                        const badgeConfig = [{
+                          number: 4,
+                          color: 'bg-green-500 text-white'
+                        }, {
+                          number: 3,
+                          color: 'bg-yellow-500 text-black'
+                        }, {
+                          number: 2,
+                          color: 'bg-blue-500 text-white'
+                        }, {
+                          number: 1,
+                          color: 'bg-gray-500 text-white'
+                        }, {
+                          number: 0,
+                          color: 'bg-black text-white'
+                        }];
+                        const badge = badgeConfig[index];
+                        return (
+                          <div key={option.value} className="flex items-center space-x-2">
+                            <RadioGroupItem value={option.value} id={`liquid_${option.value}`} />
+                            <Label htmlFor={`liquid_${option.value}`} className="flex-1 cursor-pointer">
+                              <div className="flex items-center justify-between">
+                                <span className="font-medium">{option.label}</span>
+                                <Badge className={badge.color}>{badge.number}</Badge>
+                              </div>
+                            </Label>
+                          </div>
+                        );
+                      })}
                     </RadioGroup>
                   )}
                 />
