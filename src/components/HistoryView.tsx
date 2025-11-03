@@ -444,108 +444,74 @@ const HistoryView: React.FC<HistoryViewProps> = ({ selectedPatient }) => {
                 <p className="text-muted-foreground">Nenhum registro diário encontrado</p>
               </div>
             ) : (
-              <div className="space-y-6">
+              <div className="space-y-4">
                 {dailyRecords.map((record) => (
-                  <Card key={record.id} className="hover:shadow-md transition-shadow border-2">
-                    <CardContent className="pt-6 space-y-4">
-                      <div className="flex justify-between items-start pb-3 border-b">
-                        <div className="flex-1">
-                          <h4 className="font-semibold text-lg mb-3">
-                            📅 {new Date(record.record_date).toLocaleDateString('pt-BR')}
-                          </h4>
-                          
-                          {/* Seção: Consistência das Ingestas Orais Oferecidas */}
-                          <div className="bg-blue-50 dark:bg-blue-950/20 p-4 rounded-lg mb-4">
-                            <h5 className="font-semibold text-blue-800 dark:text-blue-200 mb-3">
-                              🍽️ Consistência das Ingestas Orais Oferecidas
-                            </h5>
-                            
-                            {/* Alimento */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
-                              <div className="bg-white dark:bg-gray-800 p-3 rounded border">
-                                <p className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">ALIMENTO</p>
-                                <p className="font-semibold text-blue-700 dark:text-blue-300">
-                                  {getConsistencyLabel(record.food_consistency)}
-                                </p>
-                              </div>
-                              
-                              {/* Líquidos */}
-                              <div className="bg-white dark:bg-gray-800 p-3 rounded border">
-                                <p className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">LÍQUIDOS</p>
-                                <p className="font-semibold text-blue-700 dark:text-blue-300">
-                                  {record.liquid_consistency === 'espessado' ? 'Espessado' : 'Normal'}
-                                </p>
-                              </div>
-                            </div>
-                            
-                            {/* Marca/Indicação de Consistência de líquidos */}
-                            {record.liquid_consistency_description && (
-                              <div className="bg-white dark:bg-gray-800 p-3 rounded border">
-                                <p className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
-                                  MARCA E INDICAÇÃO DE CONSISTÊNCIA DE LÍQUIDOS
-                                </p>
-                                <p className="text-sm">{record.liquid_consistency_description}</p>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                        
-                        <div className="text-right ml-4">
-                          {getDailyRiskBadge(record.risk_score || 0)}
-                          <p className="text-sm text-muted-foreground mt-1">
-                            {record.risk_score} pontos
-                          </p>
-                        </div>
+                  <Card key={record.id}>
+                    <CardContent className="pt-6 space-y-3">
+                      <div className="flex justify-between items-start border-b pb-3">
+                        <h4 className="font-semibold">
+                          {new Date(record.record_date).toLocaleDateString('pt-BR')}
+                        </h4>
+                        {getDailyRiskBadge(record.risk_score || 0)}
                       </div>
                       
-                      {/* Observações Adicionais sempre aparecem se preenchidas */}
-                      {record.observations && record.observations.trim() !== '' && (
-                        <div className="bg-muted/50 p-3 rounded-lg">
-                          <p className="text-sm font-medium mb-1">💬 Observações Adicionais:</p>
-                          <p className="text-sm whitespace-pre-wrap">{record.observations}</p>
+                      <div className="space-y-2 text-sm">
+                        <div>
+                          <span className="font-medium">Consistência de Alimento: </span>
+                          <span>{getConsistencyLabel(record.food_consistency)}</span>
                         </div>
-                      )}
-
-                      {/* Sintomas Observados */}
-                      {(() => {
-                        const symptomsList = (record as any).symptoms || (record as any).daily_record_symptoms || [];
-                        return (
-                          <div className="bg-orange-50 dark:bg-orange-950/20 p-3 rounded-lg">
-                            <p className="text-sm font-medium mb-2 text-orange-800 dark:text-orange-200">
-                              ⚠️ Sintomas Observados:
-                            </p>
-                            {symptomsList.length > 0 ? (
-                              <div className="flex flex-wrap gap-2">
-                                {symptomsList.map((symptom: any, index: number) => (
-                                  <Badge key={index} variant="secondary" className="text-xs bg-orange-200 text-orange-800">
-                                    {symptom.symptom_name}
-                                  </Badge>
-                                ))}
-                              </div>
-                            ) : (
-                              <p className="text-sm text-green-700 dark:text-green-300">✅ Nenhum sintoma observado</p>
-                            )}
-                          </div>
-                        );
-                      })()}
-
-                      {/* Fotos da alimentação */}
-                      {record.photo_urls && record.photo_urls.length > 0 && (
-                        <div className="bg-gray-50 dark:bg-gray-950/20 p-3 rounded-lg">
-                          <p className="text-sm font-medium mb-2 text-gray-800 dark:text-gray-200">📸 Fotos da Alimentação:</p>
-                          <div className="flex gap-2 overflow-x-auto pb-2">
-                            {record.photo_urls.map((photoUrl: string, photoIndex: number) => (
-                              <img
-                                key={photoIndex}
-                                src={photoUrl}
-                                alt={`Foto ${photoIndex + 1}`}
-                                className="w-20 h-20 object-cover rounded-lg cursor-pointer hover:scale-110 transition-transform flex-shrink-0 border-2 border-border"
-                                onClick={() => window.open(photoUrl, '_blank')}
-                              />
-                            ))}
-                          </div>
+                        
+                        <div>
+                          <span className="font-medium">Consistência de Líquidos: </span>
+                          <span>{record.liquid_consistency === 'espessado' ? 'Espessado' : 'Normal'}</span>
                         </div>
-                      )}
+                        
+                        {record.liquid_consistency_description && (
+                          <div>
+                            <span className="font-medium">Marca e Indicação: </span>
+                            <span>{record.liquid_consistency_description}</span>
+                          </div>
+                        )}
+                        
+                        {record.observations && record.observations.trim() !== '' && (
+                          <div>
+                            <span className="font-medium">Observações: </span>
+                            <span>{record.observations}</span>
+                          </div>
+                        )}
+
+                        {(() => {
+                          const symptomsList = (record as any).symptoms || (record as any).daily_record_symptoms || [];
+                          return symptomsList.length > 0 ? (
+                            <div>
+                              <span className="font-medium">Sintomas: </span>
+                              <span>{symptomsList.map((s: any) => s.symptom_name).join(', ')}</span>
+                            </div>
+                          ) : (
+                            <div>
+                              <span className="font-medium">Sintomas: </span>
+                              <span>Nenhum</span>
+                            </div>
+                          );
+                        })()}
+
+                        {record.photo_urls && record.photo_urls.length > 0 && (
+                          <div>
+                            <span className="font-medium">Fotos: </span>
+                            <div className="flex gap-2 mt-2">
+                              {record.photo_urls.map((photoUrl: string, photoIndex: number) => (
+                                <img
+                                  key={photoIndex}
+                                  src={photoUrl}
+                                  alt={`Foto ${photoIndex + 1}`}
+                                  className="w-16 h-16 object-cover rounded cursor-pointer"
+                                  onClick={() => window.open(photoUrl, '_blank')}
+                                />
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
 
                       <div className="flex justify-end pt-2 border-t">
                         <Button
@@ -553,8 +519,7 @@ const HistoryView: React.FC<HistoryViewProps> = ({ selectedPatient }) => {
                           size="sm"
                           onClick={() => viewDailyDetails(record)}
                         >
-                          <Eye className="h-4 w-4 mr-2" />
-                          Ver Detalhes Completos
+                          Ver Detalhes
                         </Button>
                       </div>
                     </CardContent>
