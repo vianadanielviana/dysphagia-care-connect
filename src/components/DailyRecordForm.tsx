@@ -18,7 +18,7 @@ interface DailyRecordFormProps {
 }
 interface DailyRecordData {
   record_date: string;
-  food_consistency: 'liquida_fina' | 'pastosa' | 'normal' | 'facil_mastigar' | 'umidificados';
+  food_consistency: 'normal' | 'pastosa' | 'liquida_modificada' | 'liquida_fina' | 'facil_mastigar' | 'umidificados';
   liquid_consistency: 'normal' | 'espessado';
   liquid_consistency_description: string;
   observations: string;
@@ -96,51 +96,36 @@ const DailyRecordForm: React.FC<DailyRecordFormProps> = ({
     description: 'Alimentos macios',
     color: 'bg-blue-100 text-blue-800'
   }, {
-    value: 'macio_picado',
-    label: 'Macio e Picado',
-    description: 'Alimentos macios cortados em pedaços pequenos',
+    value: 'umidificados',
+    label: 'Umidificados',
+    description: 'Alimentos macios com líquidos',
     color: 'bg-cyan-100 text-cyan-800'
-  }, {
-    value: 'moido_umido',
-    label: 'Moído e Úmido',
-    description: 'Alimentos moídos com molhos e caldos',
-    color: 'bg-indigo-100 text-indigo-800'
   }, {
     value: 'pastosa',
     label: 'Pastoso',
     description: 'Alimento triturado',
     color: 'bg-orange-100 text-orange-800'
   }, {
-    value: 'liquidificado',
-    label: 'Liquidificado',
-    description: 'Alimento completamente liquidificado',
+    value: 'liquida_modificada',
+    label: 'Líquida Modificada',
+    description: 'Líquidos espessados ou modificados',
+    color: 'bg-indigo-100 text-indigo-800'
+  }, {
+    value: 'liquida_fina',
+    label: 'Líquida Fina',
+    description: 'Líquidos normais sem modificação',
     color: 'bg-purple-100 text-purple-800'
   }];
   const liquidConsistencyOptions = [{
-    value: 'extremamente_espessado',
-    label: 'Extremamente Espessado',
-    number: 4,
-    color: 'bg-green-500 text-white'
-  }, {
-    value: 'moderadamente_espessado',
-    label: 'Moderadamente Espessado',
-    number: 3,
-    color: 'bg-yellow-500 text-black'
-  }, {
-    value: 'levemente_espessado',
-    label: 'Levemente Espessado',
-    number: 2,
+    value: 'espessado',
+    label: 'Espessado',
+    description: 'Líquidos com espessante',
     color: 'bg-blue-500 text-white'
   }, {
-    value: 'muito_levemente_espessado',
-    label: 'Muito Levemente Espessado',
-    number: 1,
-    color: 'bg-gray-500 text-white'
-  }, {
-    value: 'liquido_fino',
-    label: 'Líquido Fino',
-    number: 0,
-    color: 'bg-black text-white'
+    value: 'normal',
+    label: 'Normal',
+    description: 'Líquidos finos sem modificação',
+    color: 'bg-green-500 text-white'
   }];
   const handleSymptomChange = (symptomId: string, checked: boolean) => {
     setSelectedSymptoms(prev => checked ? [...prev, symptomId] : prev.filter(id => id !== symptomId));
@@ -332,9 +317,9 @@ const DailyRecordForm: React.FC<DailyRecordFormProps> = ({
                         <div key={option.value} className="flex items-center space-x-2">
                           <RadioGroupItem value={option.value} id={`liquid_${option.value}`} />
                           <Label htmlFor={`liquid_${option.value}`} className="flex-1 cursor-pointer">
-                            <div className="flex items-center justify-between">
+                            <div className="flex flex-col">
                               <span className="font-medium">{option.label}</span>
-                              <Badge className={option.color}>{option.number}</Badge>
+                              <span className="text-sm text-muted-foreground">{option.description}</span>
                             </div>
                           </Label>
                         </div>
