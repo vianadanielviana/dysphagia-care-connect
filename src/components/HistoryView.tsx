@@ -121,7 +121,9 @@ const HistoryView: React.FC<HistoryViewProps> = ({ selectedPatient }) => {
         .from('daily_records')
         .select(`
           *,
-          daily_record_symptoms(*)
+          daily_record_symptoms(
+            symptom_name
+          )
         `)
         .eq('patient_id', selectedPatient.id)
         .order('record_date', { ascending: false });
