@@ -80,6 +80,7 @@ const HistoryView: React.FC<HistoryViewProps> = ({ selectedPatient }) => {
 
   useEffect(() => {
     if (selectedPatient) {
+      console.log('Carregando histórico para paciente:', selectedPatient.nome);
       fetchTriageHistory();
       fetchDailyRecords();
     }
@@ -112,7 +113,12 @@ const HistoryView: React.FC<HistoryViewProps> = ({ selectedPatient }) => {
 
       const { data, error } = await query;
 
-      if (error) throw error;
+      if (error) {
+        console.error('Erro ao buscar RaDI:', error);
+        throw error;
+      }
+      
+      console.log('RaDI records carregados:', data);
       setRecords(data || []);
     } catch (error) {
       console.error('Erro ao buscar histórico:', error);
@@ -139,7 +145,7 @@ const HistoryView: React.FC<HistoryViewProps> = ({ selectedPatient }) => {
           )
         `)
         .eq('patient_id', selectedPatient.id)
-        .order('record_date', { ascending: false });
+        .order('created_at', { ascending: false });
 
       // Apply filters
       if (filters.startDate) {
@@ -156,7 +162,12 @@ const HistoryView: React.FC<HistoryViewProps> = ({ selectedPatient }) => {
 
       const { data, error } = await query;
 
-      if (error) throw error;
+      if (error) {
+        console.error('Erro ao buscar registros diários:', error);
+        throw error;
+      }
+      
+      console.log('Daily records carregados:', data);
       setDailyRecords(data || []);
     } catch (error) {
       console.error('Erro ao buscar registros diários:', error);
@@ -263,6 +274,7 @@ const HistoryView: React.FC<HistoryViewProps> = ({ selectedPatient }) => {
     if (value === 'normal') return 'Líquidos: Normal';
     return 'Líquidos: não informado';
   };
+
   if (!selectedPatient) {
     return (
       <div className="flex items-center justify-center h-64">
