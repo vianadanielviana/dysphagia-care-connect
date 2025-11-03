@@ -438,25 +438,46 @@ const HistoryView: React.FC<HistoryViewProps> = ({ selectedPatient }) => {
                     <CardContent className="pt-6 space-y-4">
                       <div className="flex justify-between items-start pb-3 border-b">
                         <div className="flex-1">
-                          <h4 className="font-semibold text-lg mb-2">
+                          <h4 className="font-semibold text-lg mb-3">
                             📅 {new Date(record.record_date).toLocaleDateString('pt-BR')}
                           </h4>
-                          <div className="space-y-1">
-                            <p className="text-sm text-muted-foreground">
-                              <strong>Alimento:</strong> {getConsistencyLabel(record.food_consistency)}
-                            </p>
-                            {record.liquid_consistency && (
-                              <p className="text-sm text-muted-foreground">
-                                <strong>{getLiquidConsistencyLabel(record.liquid_consistency)}</strong>
-                              </p>
-                            )}
+                          
+                          {/* Seção: Consistência das Ingestas Orais Oferecidas */}
+                          <div className="bg-blue-50 dark:bg-blue-950/20 p-4 rounded-lg mb-4">
+                            <h5 className="font-semibold text-blue-800 dark:text-blue-200 mb-3">
+                              🍽️ Consistência das Ingestas Orais Oferecidas
+                            </h5>
+                            
+                            {/* Alimento */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                              <div className="bg-white dark:bg-gray-800 p-3 rounded border">
+                                <p className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">ALIMENTO</p>
+                                <p className="font-semibold text-blue-700 dark:text-blue-300">
+                                  {getConsistencyLabel(record.food_consistency)}
+                                </p>
+                              </div>
+                              
+                              {/* Líquidos */}
+                              <div className="bg-white dark:bg-gray-800 p-3 rounded border">
+                                <p className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">LÍQUIDOS</p>
+                                <p className="font-semibold text-blue-700 dark:text-blue-300">
+                                  {record.liquid_consistency === 'espessado' ? 'Espessado' : 'Normal'}
+                                </p>
+                              </div>
+                            </div>
+                            
+                            {/* Marca/Indicação de Consistência de líquidos */}
                             {record.liquid_consistency_description && (
-                              <p className="text-sm text-muted-foreground">
-                                <strong>Marca/Indicação:</strong> {record.liquid_consistency_description}
-                              </p>
+                              <div className="bg-white dark:bg-gray-800 p-3 rounded border">
+                                <p className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
+                                  MARCA E INDICAÇÃO DE CONSISTÊNCIA DE LÍQUIDOS
+                                </p>
+                                <p className="text-sm">{record.liquid_consistency_description}</p>
+                              </div>
                             )}
                           </div>
                         </div>
+                        
                         <div className="text-right ml-4">
                           {getDailyRiskBadge(record.risk_score || 0)}
                           <p className="text-sm text-muted-foreground mt-1">
