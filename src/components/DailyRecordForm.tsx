@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -39,6 +39,7 @@ const DailyRecordForm: React.FC<DailyRecordFormProps> = ({
     register,
     handleSubmit,
     watch,
+    control,
     formState: {
       errors
     }
@@ -277,54 +278,70 @@ const DailyRecordForm: React.FC<DailyRecordFormProps> = ({
             <CardContent className="space-y-6">
               <div>
                 <h3 className="font-semibold mb-3">Alimento</h3>
-                <RadioGroup value={watch('food_consistency')} {...register('food_consistency')}>
-                  {consistencyOptions.map((option, index) => {
-                  const badgeConfig = [{
-                    number: 7,
-                    color: 'bg-black text-white'
-                  }, {
-                    number: 7,
-                    color: 'bg-black text-white'
-                  }, {
-                    number: 6,
-                    color: 'bg-blue-500 text-white'
-                  }, {
-                    number: 5,
-                    color: 'bg-orange-500 text-white'
-                  }, {
-                    number: 4,
-                    color: 'bg-green-500 text-white'
-                  }, {
-                    number: 3,
-                    color: 'bg-yellow-500 text-black'
-                  }];
-                  const badge = badgeConfig[index];
-                  return <div key={option.value} className="flex items-center space-x-2">
-                      <RadioGroupItem value={option.value} id={option.value} />
-                      <Label htmlFor={option.value} className="flex-1">
-                        <div className="flex items-center justify-between">
-                          <span className="font-medium">{option.label}</span>
-                          <Badge className={badge.color}>{badge.number}</Badge>
-                        </div>
-                      </Label>
-                    </div>;
-                })}
-                </RadioGroup>
+                <Controller
+                  name="food_consistency"
+                  control={control}
+                  render={({ field }) => (
+                    <RadioGroup value={field.value} onValueChange={field.onChange}>
+                      {consistencyOptions.map((option, index) => {
+                        const badgeConfig = [{
+                          number: 7,
+                          color: 'bg-black text-white'
+                        }, {
+                          number: 7,
+                          color: 'bg-black text-white'
+                        }, {
+                          number: 6,
+                          color: 'bg-blue-500 text-white'
+                        }, {
+                          number: 5,
+                          color: 'bg-orange-500 text-white'
+                        }, {
+                          number: 4,
+                          color: 'bg-green-500 text-white'
+                        }, {
+                          number: 3,
+                          color: 'bg-yellow-500 text-black'
+                        }];
+                        const badge = badgeConfig[index];
+                        return (
+                          <div key={option.value} className="flex items-center space-x-2">
+                            <RadioGroupItem value={option.value} id={option.value} />
+                            <Label htmlFor={option.value} className="flex-1 cursor-pointer">
+                              <div className="flex items-center justify-between">
+                                <span className="font-medium">{option.label}</span>
+                                <Badge className={badge.color}>{badge.number}</Badge>
+                              </div>
+                            </Label>
+                          </div>
+                        );
+                      })}
+                    </RadioGroup>
+                  )}
+                />
               </div>
 
               <div>
                 <h3 className="font-semibold mb-3">Líquidos</h3>
-                <RadioGroup value={watch('liquid_consistency')} {...register('liquid_consistency')}>
-                  {liquidConsistencyOptions.map(option => <div key={option.value} className="flex items-center space-x-2">
-                      <RadioGroupItem value={option.value} id={`liquid_${option.value}`} />
-                      <Label htmlFor={`liquid_${option.value}`} className="flex-1">
-                        <div className="flex items-center justify-between">
-                          <span className="font-medium">{option.label}</span>
-                          <Badge className={option.color}>{option.number}</Badge>
+                <Controller
+                  name="liquid_consistency"
+                  control={control}
+                  render={({ field }) => (
+                    <RadioGroup value={field.value} onValueChange={field.onChange}>
+                      {liquidConsistencyOptions.map(option => (
+                        <div key={option.value} className="flex items-center space-x-2">
+                          <RadioGroupItem value={option.value} id={`liquid_${option.value}`} />
+                          <Label htmlFor={`liquid_${option.value}`} className="flex-1 cursor-pointer">
+                            <div className="flex items-center justify-between">
+                              <span className="font-medium">{option.label}</span>
+                              <Badge className={option.color}>{option.number}</Badge>
+                            </div>
+                          </Label>
                         </div>
-                      </Label>
-                    </div>)}
-                </RadioGroup>
+                      ))}
+                    </RadioGroup>
+                  )}
+                />
               </div>
             </CardContent>
           </Card>
