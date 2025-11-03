@@ -39,7 +39,7 @@ interface DailyRecord {
   id: string;
   record_date: string;
   food_consistency: string;
-  liquid_consistency?: 'normal' | 'espessado';
+  liquid_consistency?: string;
   liquid_consistency_description?: string | null;
   observations: string;
   risk_score: number;
@@ -270,11 +270,19 @@ const HistoryView: React.FC<HistoryViewProps> = ({ selectedPatient }) => {
   };
   
   const getLiquidConsistencyLabel = (value?: string) => {
-    if (value === 'espessado') return 'Líquidos: Espessado';
-    if (value === 'normal') return 'Líquidos: Normal';
-    return 'Líquidos: não informado';
+    const map: Record<string, string> = {
+      'extremamente_espessado': 'Extremamente Espessado',
+      'moderadamente_espessado': 'Moderadamente Espessado',
+      'levemente_espessado': 'Levemente Espessado',
+      'muito_levemente_espessado': 'Muito Levemente Espessado',
+      'liquido_fino': 'Líquido Fino',
+      // Legado
+      'espessado': 'Espessado',
+      'normal': 'Normal',
+    };
+    if (!value) return 'não informado';
+    return map[value] || value;
   };
-
   if (!selectedPatient) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -463,7 +471,7 @@ const HistoryView: React.FC<HistoryViewProps> = ({ selectedPatient }) => {
                         
                         <div>
                           <span className="font-medium">Consistência de Líquidos: </span>
-                          <span>{record.liquid_consistency === 'espessado' ? 'Espessado' : 'Normal'}</span>
+                          <span>{getLiquidConsistencyLabel(record.liquid_consistency)}</span>
                         </div>
                         
                         {record.liquid_consistency_description && (

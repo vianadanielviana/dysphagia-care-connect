@@ -179,10 +179,7 @@ const DailyRecordForm: React.FC<DailyRecordFormProps> = ({
       } = await supabase.auth.getUser();
       const userId = authData.user?.id;
       
-      const {
-        data: record,
-        error: insertError
-      } = await supabase.from('daily_records').insert({
+      const payload = {
         patient_id: patient.id,
         caregiver_id: userId,
         record_date: data.record_date,
@@ -192,7 +189,15 @@ const DailyRecordForm: React.FC<DailyRecordFormProps> = ({
         observations: data.observations,
         risk_score: riskScore,
         photo_urls: photoUrls
-      }).select().single();
+      };
+      const {
+        data: record,
+        error: insertError
+      } = await supabase
+        .from('daily_records')
+        .insert<any>(payload)
+        .select()
+        .single();
       
       if (insertError) throw insertError;
 

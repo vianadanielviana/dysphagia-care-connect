@@ -1629,7 +1629,12 @@ export type Database = {
         | "liquida_modificada"
         | "pastosa"
         | "normal"
-      liquid_consistency: "normal" | "espessado"
+      liquid_consistency:
+        | "extremamente_espessado"
+        | "moderadamente_espessado"
+        | "levemente_espessado"
+        | "muito_levemente_espessado"
+        | "liquido_fino"
       patient_access_level: "none" | "basic" | "medical" | "full"
       risk_level: "baixo" | "medio" | "alto"
       tipo:
@@ -1782,7 +1787,13 @@ export const Constants = {
         "pastosa",
         "normal",
       ],
-      liquid_consistency: ["normal", "espessado"],
+      liquid_consistency: [
+        "extremamente_espessado",
+        "moderadamente_espessado",
+        "levemente_espessado",
+        "muito_levemente_espessado",
+        "liquido_fino",
+      ],
       patient_access_level: ["none", "basic", "medical", "full"],
       risk_level: ["baixo", "medio", "alto"],
       tipo: [
