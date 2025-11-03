@@ -65,6 +65,19 @@ const HistoryView: React.FC<HistoryViewProps> = ({ selectedPatient }) => {
   });
   const { toast } = useToast();
 
+  // Mapeamento das perguntas do RaDI
+  const radiQuestions: { [key: string]: string } = {
+    'swallow_multiple_times': 'Precisa engolir muitas vezes o alimento para fazê-lo descer?',
+    'effort_to_swallow': 'Faz esforço para engolir?',
+    'pain_swallowing': 'Sente dor ao engolir?',
+    'weight_loss_difficulty': 'Perdeu peso por ter dificuldade de engolir?',
+    'throat_clearing': 'Tem pigarro depois de engolir?',
+    'voice_changes': 'Sua voz modifica depois de engolir?',
+    'choking_after_swallow': 'Tem engasgo depois de engolir?',
+    'pneumonia_after_choking': 'Teve pneumonia depois de algum engasgo?',
+    'fatigue_after_eating': 'Sente cansaço depois de comer?'
+  };
+
   useEffect(() => {
     if (selectedPatient) {
       fetchTriageHistory();
@@ -419,32 +432,32 @@ const HistoryView: React.FC<HistoryViewProps> = ({ selectedPatient }) => {
                 <p className="text-muted-foreground">Nenhum registro diário encontrado</p>
               </div>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-6">
                 {dailyRecords.map((record) => (
-                  <Card key={record.id} className="hover:shadow-md transition-shadow">
-                    <CardContent className="pt-4">
-                      <div className="flex justify-between items-start mb-3">
-                        <div>
-                          <h4 className="font-semibold text-lg">
-                            {new Date(record.record_date).toLocaleDateString('pt-BR')}
+                  <Card key={record.id} className="hover:shadow-md transition-shadow border-2">
+                    <CardContent className="pt-6 space-y-4">
+                      <div className="flex justify-between items-start pb-3 border-b">
+                        <div className="flex-1">
+                          <h4 className="font-semibold text-lg mb-2">
+                            📅 {new Date(record.record_date).toLocaleDateString('pt-BR')}
                           </h4>
-                          <p className="text-sm text-muted-foreground">
-                            Consistência: {getConsistencyLabel(record.food_consistency)}
-                          </p>
-                          {(record.liquid_consistency || record.liquid_consistency_description) && (
-                            <>
+                          <div className="space-y-1">
+                            <p className="text-sm text-muted-foreground">
+                              <strong>Alimento:</strong> {getConsistencyLabel(record.food_consistency)}
+                            </p>
+                            {record.liquid_consistency && (
                               <p className="text-sm text-muted-foreground">
-                                {getLiquidConsistencyLabel(record.liquid_consistency as string | undefined)}
+                                <strong>{getLiquidConsistencyLabel(record.liquid_consistency)}</strong>
                               </p>
-                              {record.liquid_consistency_description && (
-                                <p className="text-sm text-muted-foreground">
-                                  Marca/Indicação: {record.liquid_consistency_description}
-                                </p>
-                              )}
-                            </>
-                          )}
+                            )}
+                            {record.liquid_consistency_description && (
+                              <p className="text-sm text-muted-foreground">
+                                <strong>Marca/Indicação:</strong> {record.liquid_consistency_description}
+                              </p>
+                            )}
+                          </div>
                         </div>
-                        <div className="text-right">
+                        <div className="text-right ml-4">
                           {getDailyRiskBadge(record.risk_score || 0)}
                           <p className="text-sm text-muted-foreground mt-1">
                             {record.risk_score} pontos
@@ -453,18 +466,18 @@ const HistoryView: React.FC<HistoryViewProps> = ({ selectedPatient }) => {
                       </div>
                       
                       {record.observations && (
-                        <div className="mb-3">
-                          <p className="text-sm font-medium mb-1">Observações:</p>
-                          <p className="text-sm text-muted-foreground">{record.observations}</p>
+                        <div className="bg-muted/50 p-3 rounded-lg">
+                          <p className="text-sm font-medium mb-1">💬 Observações:</p>
+                          <p className="text-sm">{record.observations}</p>
                         </div>
                       )}
 
                       {(() => {
                         const symptomsList = (record as any).symptoms || (record as any).daily_record_symptoms || [];
                         return symptomsList.length > 0 ? (
-                          <div className="mb-3">
-                            <p className="text-sm font-medium mb-2">Sintomas observados:</p>
-                            <div className="flex flex-wrap gap-1">
+                          <div className="bg-medical-amber/10 p-3 rounded-lg">
+                            <p className="text-sm font-medium mb-2">⚠️ Sintomas observados:</p>
+                            <div className="flex flex-wrap gap-2">
                               {symptomsList.map((symptom: any, index: number) => (
                                 <Badge key={index} variant="secondary" className="text-xs">
                                   {symptom.symptom_name}
@@ -472,20 +485,23 @@ const HistoryView: React.FC<HistoryViewProps> = ({ selectedPatient }) => {
                               ))}
                             </div>
                           </div>
-                        ) : null;
+                        ) : (
+                          <div className="bg-medical-green/10 p-3 rounded-lg">
+                            <p className="text-sm font-medium">✅ Nenhum sintoma observado</p>
+                          </div>
+                        );
                       })()}
 
-                      {/* Exibir fotos se existirem */}
                       {record.photo_urls && record.photo_urls.length > 0 && (
-                        <div className="mt-3">
-                          <p className="text-sm font-medium mb-2">Fotos do registro:</p>
-                          <div className="flex space-x-2 overflow-x-auto">
+                        <div className="pt-3 border-t">
+                          <p className="text-sm font-medium mb-2">📸 Fotos do registro:</p>
+                          <div className="flex gap-2 overflow-x-auto pb-2">
                             {record.photo_urls.map((photoUrl: string, photoIndex: number) => (
                               <img
                                 key={photoIndex}
                                 src={photoUrl}
                                 alt={`Foto ${photoIndex + 1}`}
-                                className="w-16 h-16 object-cover rounded-lg cursor-pointer hover:scale-110 transition-transform"
+                                className="w-20 h-20 object-cover rounded-lg cursor-pointer hover:scale-110 transition-transform flex-shrink-0 border-2 border-border"
                                 onClick={() => window.open(photoUrl, '_blank')}
                               />
                             ))}
@@ -493,14 +509,14 @@ const HistoryView: React.FC<HistoryViewProps> = ({ selectedPatient }) => {
                         </div>
                       )}
 
-                      <div className="flex justify-end mt-3">
+                      <div className="flex justify-end pt-2 border-t">
                         <Button
                           variant="outline"
                           size="sm"
                           onClick={() => viewDailyDetails(record)}
                         >
                           <Eye className="h-4 w-4 mr-2" />
-                          Ver Detalhes
+                          Ver Detalhes Completos
                         </Button>
                       </div>
                     </CardContent>
@@ -550,17 +566,28 @@ const HistoryView: React.FC<HistoryViewProps> = ({ selectedPatient }) => {
               </div>
 
               {selectedRecord.answers && selectedRecord.answers.length > 0 && (
-                <div>
-                  <Label className="text-sm font-medium text-muted-foreground mb-2 block">
-                    Respostas Detalhadas
+                <div className="bg-muted/50 p-4 rounded-lg">
+                  <Label className="text-sm font-medium mb-3 block">
+                    📋 Respostas Detalhadas do RaDI
                   </Label>
-                  <div className="space-y-2 max-h-60 overflow-y-auto">
-                    {selectedRecord.answers.map((answer: any, index: number) => (
-                      <div key={index} className="flex justify-between items-center p-2 bg-muted rounded">
-                        <span className="text-sm">{answer.question_id}</span>
-                        <Badge variant="outline">{answer.answer_value}</Badge>
-                      </div>
-                    ))}
+                  <div className="space-y-3 max-h-96 overflow-y-auto">
+                    {selectedRecord.answers.map((answer: any, index: number) => {
+                      const question = radiQuestions[answer.question_id] || answer.question_id;
+                      const answerText = answer.answer_value === 1 ? 'Sim' : 'Não';
+                      const answerColor = answer.answer_value === 1 ? 'bg-medical-amber text-medical-amber-foreground' : 'bg-medical-green text-medical-green-foreground';
+                      
+                      return (
+                        <div key={index} className="flex items-start gap-3 p-3 bg-background rounded border">
+                          <span className="text-xl flex-shrink-0">{index + 1}.</span>
+                          <div className="flex-1">
+                            <p className="text-sm font-medium mb-1">{question}</p>
+                          </div>
+                          <Badge className={answerColor}>
+                            {answerText}
+                          </Badge>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               )}
