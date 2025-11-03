@@ -39,6 +39,8 @@ interface DailyRecord {
   id: string;
   record_date: string;
   food_consistency: string;
+  liquid_consistency?: 'normal' | 'espessado';
+  liquid_consistency_description?: string | null;
   observations: string;
   risk_score: number;
   photo_urls: string[] | null;
@@ -46,6 +48,7 @@ interface DailyRecord {
   patient_id: string;
   created_at: string;
   symptoms?: { symptom_name: string }[];
+  daily_record_symptoms?: { symptom_name: string }[]; // Supabase relation
 }
 
 const HistoryView: React.FC<HistoryViewProps> = ({ selectedPatient }) => {
@@ -239,7 +242,12 @@ const HistoryView: React.FC<HistoryViewProps> = ({ selectedPatient }) => {
     };
     return labels[consistency] || consistency;
   };
-
+  
+  const getLiquidConsistencyLabel = (value?: string) => {
+    if (value === 'espessado') return 'Líquidos: Espessado';
+    if (value === 'normal') return 'Líquidos: Normal';
+    return 'Líquidos: não informado';
+  };
   if (!selectedPatient) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -421,6 +429,18 @@ const HistoryView: React.FC<HistoryViewProps> = ({ selectedPatient }) => {
                           <p className="text-sm text-muted-foreground">
                             Consistência: {getConsistencyLabel(record.food_consistency)}
                           </p>
+                          {(record.liquid_consistency || record.liquid_consistency_description) && (
+                            <>
+                              <p className="text-sm text-muted-foreground">
+                                {getLiquidConsistencyLabel(record.liquid_consistency as string | undefined)}
+                              </p>
+                              {record.liquid_consistency_description && (
+                                <p className="text-sm text-muted-foreground">
+                                  Marca/Indicação: {record.liquid_consistency_description}
+                                </p>
+                              )}
+                            </>
+                          )}
                         </div>
                         <div className="text-right">
                           {getDailyRiskBadge(record.risk_score || 0)}
@@ -437,18 +457,21 @@ const HistoryView: React.FC<HistoryViewProps> = ({ selectedPatient }) => {
                         </div>
                       )}
 
-                      {record.symptoms && record.symptoms.length > 0 && (
-                        <div className="mb-3">
-                          <p className="text-sm font-medium mb-2">Sintomas observados:</p>
-                          <div className="flex flex-wrap gap-1">
-                            {record.symptoms.map((symptom, index) => (
-                              <Badge key={index} variant="secondary" className="text-xs">
-                                {symptom.symptom_name}
-                              </Badge>
-                            ))}
+                      {(() => {
+                        const symptomsList = (record as any).symptoms || (record as any).daily_record_symptoms || [];
+                        return symptomsList.length > 0 ? (
+                          <div className="mb-3">
+                            <p className="text-sm font-medium mb-2">Sintomas observados:</p>
+                            <div className="flex flex-wrap gap-1">
+                              {symptomsList.map((symptom: any, index: number) => (
+                                <Badge key={index} variant="secondary" className="text-xs">
+                                  {symptom.symptom_name}
+                                </Badge>
+                              ))}
+                            </div>
                           </div>
-                        </div>
-                      )}
+                        ) : null;
+                      })()}
 
                       {/* Exibir fotos se existirem */}
                       {record.photo_urls && record.photo_urls.length > 0 && (
@@ -613,6 +636,23 @@ const HistoryView: React.FC<HistoryViewProps> = ({ selectedPatient }) => {
                 </div>
               </div>
 
+              {(selectedDailyRecord.liquid_consistency || selectedDailyRecord.liquid_consistency_description) && (
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-sm font-medium text-muted-foreground">Líquidos</Label>
+                    <p className="text-lg font-semibold">
+                      {getLiquidConsistencyLabel(selectedDailyRecord.liquid_consistency as string | undefined)}
+                    </p>
+                  </div>
+                  {selectedDailyRecord.liquid_consistency_description && (
+                    <div>
+                      <Label className="text-sm font-medium text-muted-foreground">Marca/Indicação</Label>
+                      <p className="mt-1 p-3 bg-muted rounded-lg">{selectedDailyRecord.liquid_consistency_description}</p>
+                    </div>
+                  )}
+                </div>
+              )}
+
               {selectedDailyRecord.observations && (
                 <div>
                   <Label className="text-sm font-medium text-muted-foreground">Observações</Label>
@@ -620,20 +660,23 @@ const HistoryView: React.FC<HistoryViewProps> = ({ selectedPatient }) => {
                 </div>
               )}
 
-              {selectedDailyRecord.symptoms && selectedDailyRecord.symptoms.length > 0 && (
-                <div>
-                  <Label className="text-sm font-medium text-muted-foreground mb-2 block">
-                    Sintomas Observados
-                  </Label>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedDailyRecord.symptoms.map((symptom, index) => (
-                      <Badge key={index} variant="secondary">
-                        {symptom.symptom_name}
-                      </Badge>
-                    ))}
+              {(() => {
+                const symptomsList = (selectedDailyRecord as any).symptoms || (selectedDailyRecord as any).daily_record_symptoms || [];
+                return symptomsList.length > 0 ? (
+                  <div>
+                    <Label className="text-sm font-medium text-muted-foreground mb-2 block">
+                      Sintomas Observados
+                    </Label>
+                    <div className="flex flex-wrap gap-2">
+                      {symptomsList.map((symptom: any, index: number) => (
+                        <Badge key={index} variant="secondary">
+                          {symptom.symptom_name}
+                        </Badge>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
+                ) : null;
+              })()}
 
               {/* Fotos em tamanho maior no modal */}
               {selectedDailyRecord.photo_urls && selectedDailyRecord.photo_urls.length > 0 && (
