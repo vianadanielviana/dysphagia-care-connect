@@ -55,7 +55,7 @@ const DailyRecordForm: React.FC<DailyRecordFormProps> = ({
   const symptoms = [{
     id: 'tosse',
     label: 'Tosse durante alimentação',
-    icon: '🤧'
+    icon: '😮‍💨'
   }, {
     id: 'engasgo',
     label: 'Engasgo',
