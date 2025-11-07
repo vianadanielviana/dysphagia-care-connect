@@ -84,6 +84,14 @@ const DailyRecordForm: React.FC<DailyRecordFormProps> = ({
     id: 'perda_peso',
     label: 'Perda de peso',
     icon: '⚖️'
+  }, {
+    id: 'coriza_nasal',
+    label: 'Coriza Nasal',
+    icon: '🫩'
+  }, {
+    id: 'espirros',
+    label: 'Espirros',
+    icon: '🤧'
   }];
   const consistencyOptions = [{
     value: 'normal',
