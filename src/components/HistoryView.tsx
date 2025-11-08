@@ -66,7 +66,7 @@ const HistoryView: React.FC<HistoryViewProps> = ({ selectedPatient, onChangePati
   const [filters, setFilters] = useState({
     startDate: '',
     endDate: '',
-    riskLevel: 'all'
+    riskLevel: 'all' // 'all' | 'sem_sintomas' | 'com_sintomas'
   });
   const [showExportDialog, setShowExportDialog] = useState(false);
   const [exportOptions, setExportOptions] = useState({
@@ -118,8 +118,10 @@ const HistoryView: React.FC<HistoryViewProps> = ({ selectedPatient, onChangePati
       if (filters.endDate) {
         query = query.lte('completed_at', filters.endDate + 'T23:59:59');
       }
-      if (filters.riskLevel !== 'all') {
-        query = query.eq('risk_level', filters.riskLevel as 'baixo' | 'medio' | 'alto');
+      if (filters.riskLevel === 'sem_sintomas') {
+        query = query.eq('risk_level', 'baixo');
+      } else if (filters.riskLevel === 'com_sintomas') {
+        query = query.in('risk_level', ['medio', 'alto']);
       }
 
       const { data, error } = await query;
@@ -165,10 +167,10 @@ const HistoryView: React.FC<HistoryViewProps> = ({ selectedPatient, onChangePati
       if (filters.endDate) {
         query = query.lte('record_date', filters.endDate);
       }
-      if (filters.riskLevel !== 'all') {
-        const riskRange = filters.riskLevel === 'baixo' ? [0, 3] : 
-                         filters.riskLevel === 'medio' ? [4, 6] : [7, 100];
-        query = query.gte('risk_score', riskRange[0]).lte('risk_score', riskRange[1]);
+      if (filters.riskLevel === 'sem_sintomas') {
+        query = query.eq('risk_score', 0);
+      } else if (filters.riskLevel === 'com_sintomas') {
+        query = query.gt('risk_score', 0);
       }
 
       const { data, error } = await query;
@@ -494,9 +496,8 @@ const HistoryView: React.FC<HistoryViewProps> = ({ selectedPatient, onChangePati
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Todos</SelectItem>
-                  <SelectItem value="baixo">Sem Sintomas</SelectItem>
-                  <SelectItem value="medio">Presença de Sintomas</SelectItem>
-                  <SelectItem value="alto">Presença de Sintomas</SelectItem>
+                  <SelectItem value="sem_sintomas">Sem Sintomas</SelectItem>
+                  <SelectItem value="com_sintomas">Presença de Sintomas</SelectItem>
                 </SelectContent>
               </Select>
             </div>
