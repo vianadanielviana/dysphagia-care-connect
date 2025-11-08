@@ -6,7 +6,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { 
@@ -66,6 +67,12 @@ const HistoryView: React.FC<HistoryViewProps> = ({ selectedPatient, onChangePati
     startDate: '',
     endDate: '',
     riskLevel: 'all'
+  });
+  const [showExportDialog, setShowExportDialog] = useState(false);
+  const [exportOptions, setExportOptions] = useState({
+    includePatientInfo: true,
+    includeRaDI: true,
+    includeDailyRecords: true,
   });
   const { toast } = useToast();
 
@@ -236,24 +243,29 @@ const HistoryView: React.FC<HistoryViewProps> = ({ selectedPatient, onChangePati
     doc.text('Rastreamento de Disfagia', pageWidth / 2, 25, { align: 'center' });
     doc.text(`Data: ${new Date().toLocaleDateString('pt-BR')}`, pageWidth / 2, 33, { align: 'center' });
     
-    // Patient Information
-    doc.setTextColor(0, 0, 0);
-    doc.setFontSize(14);
-    doc.setFont(undefined, 'bold');
-    doc.text('Informações do Paciente', 14, 55);
+    let yPosition = 50;
     
-    doc.setFontSize(11);
-    doc.setFont(undefined, 'normal');
-    doc.text(`Nome: ${selectedPatient.nome}`, 14, 65);
-    doc.text(`Data de Nascimento: ${new Date(selectedPatient.data_nascimento).toLocaleDateString('pt-BR')}`, 14, 72);
-    if (selectedPatient.leito) {
-      doc.text(`Leito: ${selectedPatient.leito}`, 14, 79);
+    // Patient Information
+    if (exportOptions.includePatientInfo) {
+      doc.setTextColor(0, 0, 0);
+      doc.setFontSize(14);
+      doc.setFont(undefined, 'bold');
+      doc.text('Informações do Paciente', 14, yPosition);
+      
+      doc.setFontSize(11);
+      doc.setFont(undefined, 'normal');
+      doc.text(`Nome: ${selectedPatient.nome}`, 14, yPosition + 10);
+      doc.text(`Data de Nascimento: ${new Date(selectedPatient.data_nascimento).toLocaleDateString('pt-BR')}`, 14, yPosition + 17);
+      if (selectedPatient.leito) {
+        doc.text(`Leito: ${selectedPatient.leito}`, 14, yPosition + 24);
+        yPosition += 35;
+      } else {
+        yPosition += 30;
+      }
     }
     
-    let yPosition = 90;
-    
     // RaDI Records Table
-    if (records.length > 0) {
+    if (exportOptions.includeRaDI && records.length > 0) {
       doc.setFontSize(14);
       doc.setFont(undefined, 'bold');
       doc.text('Histórico de Avaliações RaDI', 14, yPosition);
@@ -293,7 +305,7 @@ const HistoryView: React.FC<HistoryViewProps> = ({ selectedPatient, onChangePati
     }
     
     // Daily Records Table
-    if (dailyRecords.length > 0 && yPosition < 250) {
+    if (exportOptions.includeDailyRecords && dailyRecords.length > 0 && yPosition < 250) {
       if (yPosition > 200) {
         doc.addPage();
         yPosition = 20;
@@ -361,6 +373,8 @@ const HistoryView: React.FC<HistoryViewProps> = ({ selectedPatient, onChangePati
     
     // Save PDF
     doc.save(`relatorio_radi_${selectedPatient.nome}_${new Date().toISOString().split('T')[0]}.pdf`);
+    
+    setShowExportDialog(false);
     
     toast({
       title: 'Exportação Concluída',
@@ -432,7 +446,7 @@ const HistoryView: React.FC<HistoryViewProps> = ({ selectedPatient, onChangePati
               Trocar Paciente
             </Button>
           )}
-          <Button onClick={exportToPDF} disabled={records.length === 0}>
+          <Button onClick={() => setShowExportDialog(true)} disabled={records.length === 0}>
             <Download className="h-4 w-4 mr-2" />
             Exportar Relatório
           </Button>
@@ -876,6 +890,82 @@ const HistoryView: React.FC<HistoryViewProps> = ({ selectedPatient, onChangePati
           </DialogContent>
         </Dialog>
       )}
+
+      {/* Export Configuration Dialog */}
+      <Dialog open={showExportDialog} onOpenChange={setShowExportDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Configurar Exportação do Relatório</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <p className="text-sm text-muted-foreground">
+              Selecione as seções que deseja incluir no relatório PDF:
+            </p>
+            
+            <div className="space-y-3">
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="patient-info"
+                  checked={exportOptions.includePatientInfo}
+                  onCheckedChange={(checked) =>
+                    setExportOptions({ ...exportOptions, includePatientInfo: checked as boolean })
+                  }
+                />
+                <label
+                  htmlFor="patient-info"
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                >
+                  Informações do Paciente
+                </label>
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="radi"
+                  checked={exportOptions.includeRaDI}
+                  onCheckedChange={(checked) =>
+                    setExportOptions({ ...exportOptions, includeRaDI: checked as boolean })
+                  }
+                />
+                <label
+                  htmlFor="radi"
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                >
+                  Histórico de Avaliações RaDI ({records.length} registros)
+                </label>
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="daily-records"
+                  checked={exportOptions.includeDailyRecords}
+                  onCheckedChange={(checked) =>
+                    setExportOptions({ ...exportOptions, includeDailyRecords: checked as boolean })
+                  }
+                />
+                <label
+                  htmlFor="daily-records"
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                >
+                  Registros Diários ({dailyRecords.length} registros)
+                </label>
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowExportDialog(false)}>
+              Cancelar
+            </Button>
+            <Button 
+              onClick={exportToPDF}
+              disabled={!exportOptions.includePatientInfo && !exportOptions.includeRaDI && !exportOptions.includeDailyRecords}
+            >
+              <Download className="h-4 w-4 mr-2" />
+              Gerar PDF
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
