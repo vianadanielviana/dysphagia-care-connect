@@ -20,6 +20,8 @@ import {
   CheckCircle,
   User
 } from 'lucide-react';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 interface HistoryViewProps {
   selectedPatient: any;
@@ -34,6 +36,7 @@ interface TriageRecord {
   caregiver_id: string;
   patient_id: string;
   answers?: any[];
+  observations?: string;
 }
 
 interface DailyRecord {
@@ -219,30 +222,149 @@ const HistoryView: React.FC<HistoryViewProps> = ({ selectedPatient, onChangePati
   };
 
   const exportToPDF = () => {
-    // Simplified PDF export - in a real app you'd use libraries like jsPDF
-    const exportData = records.map(record => ({
-      data: formatDateTime(record.completed_at).date,
-      horario: formatDateTime(record.completed_at).time,
-      pontuacao: record.total_score,
-      risco: record.risk_level,
-    }));
-
-    const csvContent = [
-      'Data,Horário,Pontuação,Nível de Risco',
-      ...exportData.map(row => `${row.data},${row.horario},${row.pontuacao},${row.risco}`)
-    ].join('\n');
-
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `historico-radi-${selectedPatient.nome}.csv`;
-    a.click();
-    window.URL.revokeObjectURL(url);
-
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    
+    // Header
+    doc.setFillColor(41, 128, 185);
+    doc.rect(0, 0, pageWidth, 40, 'F');
+    
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(22);
+    doc.text('Relatório Médico - RaDI', pageWidth / 2, 15, { align: 'center' });
+    doc.setFontSize(12);
+    doc.text('Rastreamento de Disfagia', pageWidth / 2, 25, { align: 'center' });
+    doc.text(`Data: ${new Date().toLocaleDateString('pt-BR')}`, pageWidth / 2, 33, { align: 'center' });
+    
+    // Patient Information
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(14);
+    doc.setFont(undefined, 'bold');
+    doc.text('Informações do Paciente', 14, 55);
+    
+    doc.setFontSize(11);
+    doc.setFont(undefined, 'normal');
+    doc.text(`Nome: ${selectedPatient.nome}`, 14, 65);
+    doc.text(`Data de Nascimento: ${new Date(selectedPatient.data_nascimento).toLocaleDateString('pt-BR')}`, 14, 72);
+    if (selectedPatient.leito) {
+      doc.text(`Leito: ${selectedPatient.leito}`, 14, 79);
+    }
+    
+    let yPosition = 90;
+    
+    // RaDI Records Table
+    if (records.length > 0) {
+      doc.setFontSize(14);
+      doc.setFont(undefined, 'bold');
+      doc.text('Histórico de Avaliações RaDI', 14, yPosition);
+      yPosition += 5;
+      
+      const radiTableData = records.map((record) => [
+        new Date(record.completed_at).toLocaleDateString('pt-BR'),
+        new Date(record.completed_at).toLocaleTimeString('pt-BR', {
+          hour: '2-digit',
+          minute: '2-digit',
+        }),
+        record.total_score.toString(),
+        record.risk_level === 'baixo' ? 'Sem Sintomas' : 'Presença de Sintomas',
+        record.observations || 'Sem observações',
+      ]);
+      
+      autoTable(doc, {
+        startY: yPosition,
+        head: [['Data', 'Hora', 'Pontuação', 'Status', 'Observações']],
+        body: radiTableData,
+        theme: 'striped',
+        headStyles: {
+          fillColor: [41, 128, 185],
+          textColor: 255,
+          fontStyle: 'bold',
+        },
+        styles: {
+          fontSize: 9,
+          cellPadding: 3,
+        },
+        columnStyles: {
+          4: { cellWidth: 60 },
+        },
+      });
+      
+      yPosition = (doc as any).lastAutoTable.finalY + 15;
+    }
+    
+    // Daily Records Table
+    if (dailyRecords.length > 0 && yPosition < 250) {
+      if (yPosition > 200) {
+        doc.addPage();
+        yPosition = 20;
+      }
+      
+      doc.setFontSize(14);
+      doc.setFont(undefined, 'bold');
+      doc.text('Registros Diários', 14, yPosition);
+      yPosition += 5;
+      
+      const dailyTableData = dailyRecords.map((record) => {
+        const symptoms = record.daily_record_symptoms
+          ?.map((s) => s.symptom_name)
+          .join(', ') || 'Nenhum';
+        
+        return [
+          new Date(record.record_date).toLocaleDateString('pt-BR'),
+          getConsistencyLabel(record.food_consistency),
+          getLiquidConsistencyLabel(record.liquid_consistency),
+          symptoms.length > 50 ? symptoms.substring(0, 47) + '...' : symptoms,
+          record.observations || '-',
+        ];
+      });
+      
+      autoTable(doc, {
+        startY: yPosition,
+        head: [['Data', 'Consistência Alimento', 'Consistência Líquido', 'Sintomas', 'Observações']],
+        body: dailyTableData,
+        theme: 'striped',
+        headStyles: {
+          fillColor: [41, 128, 185],
+          textColor: 255,
+          fontStyle: 'bold',
+        },
+        styles: {
+          fontSize: 8,
+          cellPadding: 2,
+        },
+        columnStyles: {
+          3: { cellWidth: 45 },
+          4: { cellWidth: 45 },
+        },
+      });
+    }
+    
+    // Footer
+    const pageCount = doc.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setFontSize(8);
+      doc.setTextColor(128, 128, 128);
+      doc.text(
+        `Página ${i} de ${pageCount}`,
+        pageWidth / 2,
+        doc.internal.pageSize.getHeight() - 10,
+        { align: 'center' }
+      );
+      doc.text(
+        'Documento gerado automaticamente pelo Sistema de Rastreamento de Disfagia',
+        pageWidth / 2,
+        doc.internal.pageSize.getHeight() - 5,
+        { align: 'center' }
+      );
+    }
+    
+    // Save PDF
+    doc.save(`relatorio_radi_${selectedPatient.nome}_${new Date().toISOString().split('T')[0]}.pdf`);
+    
     toast({
-      title: "Exportação Concluída",
-      description: "Relatório exportado com sucesso",
+      title: 'Exportação Concluída',
+      description: 'Relatório PDF gerado com sucesso',
     });
   };
 
