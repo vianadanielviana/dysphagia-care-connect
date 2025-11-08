@@ -238,7 +238,7 @@ const HistoryView: React.FC<HistoryViewProps> = ({ selectedPatient, onChangePati
     
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(22);
-    doc.text('Relatório Médico - RaDI', pageWidth / 2, 15, { align: 'center' });
+    doc.text('Relatório', pageWidth / 2, 15, { align: 'center' });
     doc.setFontSize(12);
     doc.text('Rastreamento de Disfagia', pageWidth / 2, 25, { align: 'center' });
     doc.text(`Data: ${new Date().toLocaleDateString('pt-BR')}`, pageWidth / 2, 33, { align: 'center' });
