@@ -23,6 +23,7 @@ import {
 
 interface HistoryViewProps {
   selectedPatient: any;
+  onChangePatient?: () => void;
 }
 
 interface TriageRecord {
@@ -51,7 +52,7 @@ interface DailyRecord {
   daily_record_symptoms?: { symptom_name: string }[]; // Supabase relation
 }
 
-const HistoryView: React.FC<HistoryViewProps> = ({ selectedPatient }) => {
+const HistoryView: React.FC<HistoryViewProps> = ({ selectedPatient, onChangePatient }) => {
   const [records, setRecords] = useState<TriageRecord[]>([]);
   const [dailyRecords, setDailyRecords] = useState<DailyRecord[]>([]);
   const [loading, setLoading] = useState(true);
@@ -302,10 +303,18 @@ const HistoryView: React.FC<HistoryViewProps> = ({ selectedPatient }) => {
           <h2 className="text-2xl font-bold text-foreground">Histórico de RaDI</h2>
           <p className="text-muted-foreground">Paciente: {selectedPatient.nome}</p>
         </div>
-        <Button onClick={exportToPDF} disabled={records.length === 0}>
-          <Download className="h-4 w-4 mr-2" />
-          Exportar Relatório
-        </Button>
+        <div className="flex gap-2">
+          {onChangePatient && (
+            <Button onClick={onChangePatient} variant="outline">
+              <User className="h-4 w-4 mr-2" />
+              Trocar Paciente
+            </Button>
+          )}
+          <Button onClick={exportToPDF} disabled={records.length === 0}>
+            <Download className="h-4 w-4 mr-2" />
+            Exportar Relatório
+          </Button>
+        </div>
       </div>
 
       {/* Filters */}

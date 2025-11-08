@@ -169,7 +169,12 @@ const DisfagiaApp = () => {
             onBack={() => setCurrentView('dashboard')}
           />
         )}
-        {currentView === 'historico' && <HistoryView selectedPatient={selectedPatient} />}
+        {currentView === 'historico' && (
+          <HistoryView 
+            selectedPatient={selectedPatient} 
+            onChangePatient={() => setCurrentView('patient-selection-history')}
+          />
+        )}
         {currentView === 'comunicacao' && <CommunicationView />}
       </main>
     </div>
