@@ -261,8 +261,8 @@ const DisfagiaApp = () => {
         return triageHistory.slice(0, 7).reverse(); // Show last 7 RaDI
       }
       
-      // Fallback to sample data if no RaDI yet
-      return dailyRecords.slice(-7);
+      // Return empty array if no RaDI yet
+      return [];
     };
 
     const currentStatus = getCurrentStatus();
