@@ -13,10 +13,15 @@ interface UserProfile {
   updated_at: string;
 }
 
+interface UserRole {
+  role: 'admin' | 'fonoaudiologo' | 'cuidador';
+}
+
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [userRoles, setUserRoles] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -70,6 +75,19 @@ export function useAuth() {
       }
 
       setProfile(data);
+
+      // Fetch user roles from the new user_roles table
+      const { data: rolesData, error: rolesError } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', userId);
+
+      if (rolesError) {
+        console.error('Error fetching roles:', rolesError);
+        setUserRoles([]);
+      } else {
+        setUserRoles(rolesData?.map(r => r.role) || []);
+      }
     } catch (error) {
       console.error('Error fetching profile:', error);
     }
@@ -109,7 +127,7 @@ export function useAuth() {
 
       if (error) throw error;
 
-      // Check if user is approved (except admin)
+      // Check if user is approved
       if (data.user) {
         const { data: profileData } = await supabase
           .from('profiles')
@@ -117,9 +135,17 @@ export function useAuth() {
           .eq('id', data.user.id)
           .single();
 
-        if (profileData && !profileData.is_approved && 
-            email.toLowerCase() !== 'viana.vianadaniel@outlook.com' && 
-            email.toLowerCase() !== 'adrianepaesdagama@gmail.com') {
+        // Check if user has admin role
+        const { data: rolesData } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', data.user.id)
+          .eq('role', 'admin')
+          .single();
+
+        const isAdmin = !!rolesData;
+
+        if (profileData && !profileData.is_approved && !isAdmin) {
           await supabase.auth.signOut();
           throw new Error('Sua conta ainda não foi aprovada. Aguarde a aprovação de um administrador.');
         }
@@ -216,16 +242,8 @@ export function useAuth() {
     }
   };
 
-  const isAdmin = user?.email?.toLowerCase() === 'viana.vianadaniel@outlook.com' || 
-                  user?.email?.toLowerCase() === 'adrianepaesdagama@gmail.com';
-  
-  // Debug log for admin check
-  console.log('Admin check:', { 
-    userEmail: user?.email, 
-    userEmailLower: user?.email?.toLowerCase(),
-    isAdmin,
-    expectedEmails: ['viana.vianadaniel@outlook.com', 'adrianepaesdagama@gmail.com']
-  });
+  // Check if user has admin role using the new user_roles system
+  const isAdmin = userRoles.includes('admin');
 
   return {
     user,
