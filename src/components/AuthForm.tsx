@@ -339,6 +339,20 @@ const AuthForm = () => {
                               <span>Fonoaudiólogo</span>
                             </Label>
                           </div>
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="nutricionista" id="nutricionista" />
+                            <Label htmlFor="nutricionista" className="flex items-center space-x-2 cursor-pointer">
+                              <User className="h-4 w-4 text-green-600" />
+                              <span>Nutricionista</span>
+                            </Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="outros" id="outros" />
+                            <Label htmlFor="outros" className="flex items-center space-x-2 cursor-pointer">
+                              <User className="h-4 w-4 text-muted-foreground" />
+                              <span>Outros</span>
+                            </Label>
+                          </div>
                         </RadioGroup>
                       </FormControl>
                       <FormMessage />
