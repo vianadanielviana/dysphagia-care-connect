@@ -21,7 +21,7 @@ export const signUpSchema = z.object({
   password: passwordSchema,
   confirmPassword: z.string(),
   nome: nomeSchema,
-  tipo_usuario: z.enum(['cuidador', 'fonoaudiologo'])
+  tipo_usuario: z.enum(['cuidador', 'fonoaudiologo', 'nutricionista', 'outros'])
 }).refine((data) => data.password === data.confirmPassword, {
   message: 'Senhas não coincidem',
   path: ['confirmPassword']
