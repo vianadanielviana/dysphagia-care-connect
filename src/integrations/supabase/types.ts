@@ -1645,7 +1645,12 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "admin" | "fonoaudiologo" | "cuidador"
+      app_role:
+        | "admin"
+        | "fonoaudiologo"
+        | "cuidador"
+        | "nutricionista"
+        | "outros"
       food_consistency:
         | "normal"
         | "pastosa"
@@ -1802,7 +1807,13 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "fonoaudiologo", "cuidador"],
+      app_role: [
+        "admin",
+        "fonoaudiologo",
+        "cuidador",
+        "nutricionista",
+        "outros",
+      ],
       food_consistency: [
         "normal",
         "pastosa",
