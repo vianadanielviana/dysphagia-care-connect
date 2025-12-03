@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { User, Plus, Edit, Trash2, UserPlus } from 'lucide-react';
+import { User, Plus, Edit, Trash2, UserPlus, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -17,6 +17,7 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import InputMask from 'react-input-mask';
 import { useAuth } from '@/hooks/useAuth';
 import PatientDocuments from './PatientDocuments';
+import DelegacaoModal from './DelegacaoModal';
 
 interface Paciente {
   id: string;
@@ -53,6 +54,8 @@ const PacientesManager = () => {
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingPaciente, setEditingPaciente] = useState<Paciente | null>(null);
+  const [delegacaoModalOpen, setDelegacaoModalOpen] = useState(false);
+  const [selectedPacienteForDelegacao, setSelectedPacienteForDelegacao] = useState<Paciente | null>(null);
   const { toast } = useToast();
   const { profile, isAdmin } = useAuth();
 
@@ -590,67 +593,72 @@ const PacientesManager = () => {
                   </div>
                 </div>
 
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold">Usuários Responsáveis no Sistema</h3>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="professional_id"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Profissional Responsável</FormLabel>
-                          <Select onValueChange={field.onChange} value={field.value}>
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Selecione um profissional" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="none">Nenhum</SelectItem>
-                              {usuarios
-                                .filter(u => u.tipo_usuario === 'fonoaudiologo' || u.tipo_usuario === 'admin')
-                                .map(usuario => (
-                                <SelectItem key={usuario.id} value={usuario.id}>
-                                  {usuario.nome} ({usuario.tipo_usuario})
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                {isAdmin && (
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold">Usuários Responsáveis no Sistema</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Apenas administradores podem definir os responsáveis no sistema.
+                    </p>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="professional_id"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Profissional Responsável</FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value}>
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Selecione um profissional" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="none">Nenhum</SelectItem>
+                                {usuarios
+                                  .filter(u => u.tipo_usuario === 'fonoaudiologo' || u.tipo_usuario === 'admin' || u.tipo_usuario === 'nutricionista')
+                                  .map(usuario => (
+                                  <SelectItem key={usuario.id} value={usuario.id}>
+                                    {usuario.nome} ({usuario.tipo_usuario})
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
 
-                    <FormField
-                      control={form.control}
-                      name="caregiver_id"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Cuidador Responsável</FormLabel>
-                          <Select onValueChange={field.onChange} value={field.value}>
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Selecione um cuidador" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="none">Nenhum</SelectItem>
-                              {usuarios
-                                .filter(u => u.tipo_usuario === 'cuidador')
-                                .map(usuario => (
-                                <SelectItem key={usuario.id} value={usuario.id}>
-                                  {usuario.nome}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                      <FormField
+                        control={form.control}
+                        name="caregiver_id"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Cuidador Responsável</FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value}>
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Selecione um cuidador" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="none">Nenhum</SelectItem>
+                                {usuarios
+                                  .filter(u => u.tipo_usuario === 'cuidador')
+                                  .map(usuario => (
+                                  <SelectItem key={usuario.id} value={usuario.id}>
+                                    {usuario.nome}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
                   </div>
-                </div>
+                )}
 
                 <div className="flex justify-end space-x-2 pt-4">
                   <Button type="button" variant="outline" onClick={handleCloseDialog}>
@@ -757,6 +765,19 @@ const PacientesManager = () => {
                   </div>
                   
                   <div className="flex space-x-2 ml-4">
+                    {isAdmin && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          setSelectedPacienteForDelegacao(paciente);
+                          setDelegacaoModalOpen(true);
+                        }}
+                        title="Delegar responsáveis"
+                      >
+                        <Users className="h-4 w-4" />
+                      </Button>
+                    )}
                     <Button
                       size="sm"
                       variant="outline"
@@ -764,7 +785,7 @@ const PacientesManager = () => {
                     >
                       <Edit className="h-4 w-4" />
                     </Button>
-                    {(isAdmin || profile?.tipo_usuario === 'admin') && (
+                    {isAdmin && (
                       <Button
                         size="sm"
                         variant="outline"
@@ -781,6 +802,18 @@ const PacientesManager = () => {
           ))}
         </div>
       )}
+
+      {/* Modal de Delegação - Apenas Admins */}
+      <DelegacaoModal
+        open={delegacaoModalOpen}
+        onOpenChange={setDelegacaoModalOpen}
+        paciente={selectedPacienteForDelegacao}
+        usuarios={usuarios}
+        onSuccess={() => {
+          fetchPacientes();
+          setSelectedPacienteForDelegacao(null);
+        }}
+      />
     </div>
   );
 };
